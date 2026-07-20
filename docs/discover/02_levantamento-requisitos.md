@@ -78,39 +78,33 @@ scope-key: appKeyWso2
 
 ## 3. Natureza do Agente — RAG, API ou Híbrido
 
-> Ponto central: o bot não é apenas um FAQ. É um agente consultivo que combina conhecimento dos docs com dados reais do usuário. Precisamos definir quando usa cada fonte.
+> ✅ **Resolvido** — O processo de RAG será desenhado pelo nosso time. As fontes estão definidas:
+> - **RAG**: os 22 arquivos `.md` da pasta `docs` como única fonte de conhecimento procedimental.
+> - **API**: apenas os endpoints GET listados na seção 4 como dados complementares em tempo real.
+> - **Escrita bloqueada**: o bot opera exclusivamente em modo leitura — sem POST, PUT ou DELETE.
 
-- [ ] Para cada tipo de pergunta, qual é o comportamento esperado?
+**Comportamento por tipo de pergunta:**
 
-  | Tipo de pergunta | Comportamento esperado |
-  |---|---|
-  | "Como faço um pedido?" (procedural) | Só RAG |
-  | "Quais colaboradores eu tenho?" (consulta) | Só API |
-  | "Como cadastro um colaborador?" + "Quem já está cadastrado?" | RAG + API |
-  | "Qual o status do meu último pedido?" | Só API |
+| Tipo de pergunta | Fonte |
+|---|---|
+| "Como faço um pedido?" (procedural) | RAG |
+| "Quais colaboradores eu tenho?" (consulta de dados) | API |
+| "Como cadastro um colaborador?" + "Quem já está cadastrado?" | RAG + API |
+| "Qual o status do meu último pedido?" | API |
+| "Quais benefícios estão ativos?" | API |
+| "O que é faturamento descentralizado?" | RAG |
 
-  - [ ] Essa tabela está correta ou há outros comportamentos esperados?
-
-- [ ] Quando RAG e API são usados juntos, qual é a **ordem de apresentação**? (ex: primeiro explica o processo, depois mostra os dados)
-- [ ] O bot deve deixar **explícito para o usuário** quando está buscando dados reais vs. explicando um processo?
-- [ ] Se a API retornar erro ou estiver fora do ar, o bot responde só com o doc ou informa a indisponibilidade?
-
-**Notas:**
-```
-
-
-
-```
+**Estratégia de fallback:**
+- Se a API retornar erro ou indisponibilidade → bot informa a situação e oferece a resposta procedimental via RAG quando aplicável.
+- O processo de RAG (chunking, embeddings, retrieval, re-ranking) será definido pelo time em fase de design.
 
 ---
 
 ## 4. Integração com APIs do Portal
 
-> ✅ **Parcialmente resolvido** — APIs são REST, somente leitura (GET), base UAT confirmada. Módulos sem endpoint ainda precisam ser verificados.
+> ✅ **Resolvido** — O bot usa **somente GET**. Endpoints definidos e fechados. Nenhuma operação de escrita será executada pelo bot.
 
-**Base URL:** `GET /alelo/uat/cardholders-hr-management/v1` (HRM)
-
-**Endpoints confirmados:**
+**Base URL HRM:** `/alelo/uat/cardholders-hr-management/v1`
 
 *Pedidos*
 | Endpoint | Descrição |
@@ -149,28 +143,10 @@ scope-key: appKeyWso2
 | `GET /companies/{companyId}/payment-methods` | Métodos de pagamento da empresa |
 | `GET /alelo/uat/places/v2/address?zipCode=` | Consulta de CEP |
 
-- [x] APIs são **REST**
-- [x] ⚠️ **A API NÃO é somente leitura** — possui POST, PUT e DELETE confirmados (ver tabela abaixo)
-- [ ] Existe **Swagger / Postman collection** com todos os contratos? *(solicitar ao Carlos)*
+- [x] APIs são **REST**, somente **GET** — bot opera em modo leitura
+- [x] Swagger disponível — ver `03_api-referencia.md`
 - [ ] Existe **rate limiting**? Qual o limite de requisições por minuto/hora?
 - [ ] Ambiente de **homologação/sandbox** disponível para o bot durante desenvolvimento?
-- [ ] Módulos ainda sem endpoint confirmado:
-
-  | Módulo | API disponível? |
-  |---|---|
-  | Relatórios | A confirmar |
-  | Contratos | A confirmar |
-  | Interlocutores / Usuários | A confirmar — `GET /profile` pode cobrir? |
-  | Locais de entrega / Filiais | Parcial — `GET /places` (confirmar se retorna filiais) |
-
-**Notas:**
-```
-- Solicitar Postman collection ou Swagger ao Carlos.
-- Confirmar se há rate limiting nas APIs.
-- Confirmar ambiente de sandbox separado do UAT.
-
-
-```
 
 ---
 
@@ -379,7 +355,7 @@ Ao final da reunião, preencher:
 | Perfis respeitados com guardrails? | ❓ A confirmar |
 | Ações bloqueadas independente de perfil | ❓ A confirmar |
 | APIs disponíveis e documentadas? | ✅ Swagger confirmado — ver `03_api-referencia.md` |
-| Bot lê apenas ou também escreve via API? | ⚠️ API tem POST/PUT/DELETE — definir quais o bot pode usar |
+| Bot lê apenas ou também escreve via API? | ✅ Somente GET — escrita bloqueada por decisão de design |
 | Rate limiting nas APIs | ❓ A confirmar |
 | Sandbox/homologação disponível | ❓ A confirmar |
 | Deep links disponíveis? | ❓ A confirmar |
