@@ -206,17 +206,72 @@ scope-key: appKeyWso2
 
 ---
 
-## 6. Custo e Otimização
+## 6. Infraestrutura AWS — Região São Paulo (sa-east-1)
 
-> O bot anterior foi descontinuado por alto custo mesmo com cache. Precisamos entender os limites e estratégias esperadas.
+> ✅ **Confirmado em reunião:** a infraestrutura será na AWS, restrita à região **sa-east-1 (São Paulo)** por requisito de soberania/latência. Isso limita os serviços disponíveis — ver tabelas abaixo.
+
+### Amazon Bedrock — disponível em sa-east-1
+
+| Recurso | Disponível? |
+|---|---|
+| **Guardrails** | ✅ Sim |
+| **Knowledge Bases** (RAG gerenciado) | ✅ Sim |
+| **Agents** | ✅ Sim |
+| **Provisioned Throughput** | ✅ Sim |
+| Model Evaluation | ❌ Não |
+| Fine-tuning (custom models) | ❌ Não |
+| Continued Pre-training | ❌ Não |
+
+### AgentCore — disponível em sa-east-1
+
+| Recurso | Disponível? |
+|---|---|
+| **AgentCore Runtime** | ✅ Sim |
+| **AgentCore Gateway** | ✅ Sim |
+| **AgentCore Identity** | ✅ Sim |
+| **AgentCore Built-in Tools** | ✅ Sim |
+| **AgentCore Observability** | ✅ Sim |
+| AgentCore Harness | ❌ Não |
+| AgentCore Memory | ❌ Não |
+| AgentCore Evaluations | ❌ Não |
+| AgentCore Optimization | ❌ Não |
+| Policy in AgentCore | ❌ Não |
+| AWS Agent Registry | ❌ Não |
+
+### Implicações para o bot
+
+| Decisão | Impacto da limitação |
+|---|---|
+| **RAG**: usar Bedrock Knowledge Bases ✅ | Disponível — estratégia viável nativamente |
+| **Agente**: usar Bedrock Agents ✅ | Disponível — orquestração de tools nativa |
+| **Guardrails**: usar Bedrock Guardrails ✅ | Disponível — solução para guardrails de perfil |
+| **Memória de sessão**: AgentCore Memory ❌ | **Indisponível** — precisará de solução alternativa (ex: DynamoDB, ElastiCache) |
+| **Avaliação/otimização**: AgentCore Evaluations/Optimization ❌ | **Indisponível** — monitoramento e tuning serão manuais ou via outra ferramenta |
+| **Fine-tuning de modelo** ❌ | Indisponível — usar modelos fundacionais (ex: Claude, Titan) sem customização de pesos |
+
+- [ ] Quais **modelos fundacionais** estão disponíveis no Bedrock sa-east-1? (confirmar: Claude Haiku/Sonnet, Titan, Llama)
+- [ ] A ausência do **AgentCore Memory** é um bloqueador? Qual alternativa para persistir contexto entre sessões?
+- [ ] A ausência do **AgentCore Harness** (testes automatizados de agentes) impacta o processo de QA? Como testar o bot?
+
+**Notas:**
+```
+Confirmado em reunião: infraestrutura AWS sa-east-1 (São Paulo).
+
+
+```
+
+---
+
+## 7. Custo e Otimização
+
+> O bot anterior foi descontinuado por alto custo mesmo com cache. Com Bedrock em sa-east-1, a estratégia de otimização muda.
 
 - [ ] Qual é o **budget mensal** aceitável para o bot? Existe um teto de custo por interação?
-- [ ] O bot anterior usou **cache semântico + Elastic Cache**. Essas estratégias devem ser mantidas, aprimoradas ou substituídas?
+- [ ] O bot anterior usou **cache semântico + Elastic Cache**. Com Bedrock Knowledge Bases, o cache semântico é nativo — confirmar se substitui a necessidade de Elastic.
 - [ ] Qual era o **modelo LLM** do bot anterior? (para evitar repetir o mesmo erro de custo)
-- [ ] Existe preferência por algum provedor de LLM? (OpenAI, Anthropic, Azure OpenAI, modelo open-source auto-hospedado)
-- [ ] O volume esperado de interações é conhecido? (ex: X usuários/dia, Y mensagens/sessão) — impacta diretamente o custo.
-- [ ] Perguntas repetidas e frequentes devem ser identificadas e tratadas com cache. **Quem define** o que é "frequente" — monitoramento automático ou lista manual?
-- [ ] O cliente tem infraestrutura própria (ex: AWS, Azure) onde o bot será hospedado, ou será um serviço gerenciado?
+- [ ] Qual modelo Bedrock usar? Sugestão de hierarquia por custo: **Claude Haiku** para triagem → **Claude Sonnet** para respostas complexas.
+- [ ] O volume esperado de interações é conhecido? (ex: X usuários/dia, Y mensagens/sessão) — impacta diretamente o custo e a escolha de Provisioned Throughput vs. on-demand.
+- [ ] Usar **Provisioned Throughput** (disponível em sa-east-1) para cargas previsíveis ou manter on-demand?
 
 **Notas:**
 ```
@@ -227,7 +282,7 @@ scope-key: appKeyWso2
 
 ---
 
-## 7. Redirecionamento para Telas
+## 8. Redirecionamento para Telas
 
 - [ ] Ao sugerir uma ação, o bot exibe um **botão/link** que leva para a tela correta?
 - [ ] Existe uma lista de **deep links / rotas** do portal para cada módulo? (ex: `/pedidos/novo`, `/cartoes/rastreio`)
@@ -243,7 +298,7 @@ scope-key: appKeyWso2
 
 ---
 
-## 8. Base de Conhecimento (RAG)
+## 9. Base de Conhecimento (RAG — Bedrock Knowledge Bases)
 
 - [ ] Os 22 docs da pasta `docs` são a **única fonte de verdade**, ou há outros materiais (FAQs, e-mails, PDFs, atendimento anterior)?
 - [ ] Com que frequência a documentação é **atualizada**? Quem é responsável — time técnico ou negócio?
@@ -337,7 +392,13 @@ Ao final da reunião, preencher:
 | Fontes além dos 22 docs? | ❓ A confirmar |
 | Fallback sem resposta | ❓ A confirmar |
 | Budget / teto de custo | ❓ A confirmar |
-| Provedor LLM preferido | ❓ A confirmar |
+| Infraestrutura | ✅ AWS sa-east-1 (São Paulo) |
+| Bedrock Guardrails disponível? | ✅ Sim — estratégia viável |
+| Bedrock Knowledge Bases disponível? | ✅ Sim — RAG nativo |
+| Bedrock Agents disponível? | ✅ Sim — orquestração nativa |
+| AgentCore Memory disponível? | ❌ Não — solução alternativa necessária |
+| Modelo LLM (Bedrock) | ❓ Confirmar quais modelos disponíveis em sa-east-1 |
+| Provisioned Throughput vs. on-demand | ❓ A definir com base no volume esperado |
 | MVP — fases acordadas | ❓ A confirmar |
 | Prazo | ❓ A confirmar |
 | Ponto de contato técnico do cliente | ⚠️ Carlos (mencionado) |
