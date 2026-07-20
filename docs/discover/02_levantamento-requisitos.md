@@ -152,27 +152,22 @@ scope-key: appKeyWso2
 
 ## 5. Guardrails e Controle de Acesso
 
-> Ponto de alta atenção: o bot precisa respeitar exatamente o que cada perfil pode ver e fazer — nem mais, nem menos.
+> ✅ **Decisão do time** — As regras de guardrail serão definidas e mantidas pelo nosso time, com base no perfil retornado por `GET /profile` (`functions[].functionType`).
 
-- [ ] O bot deve aplicar as mesmas restrições de perfil que o portal aplica?
-  - Perfil **Financeiro**: só pode ver relatórios e faturas — o bot não deve responder sobre pedidos ou cadastro.
-  - Perfil **Operação**: pode fazer pedidos, mas não configura benefícios.
-  - Perfil **Gerenciamento** e **Decisão**: acesso amplo.
-  - [ ] Essa lógica está correta ou há exceções?
+- [x] O bot aplica guardrails baseados no perfil do usuário logado — mesma lógica de permissões do portal:
 
-- [ ] Quem **define e mantém** as regras de guardrail? Time técnico, produto ou negócio?
-- [ ] O bot deve **explicar ao usuário** por que não pode responder algo? (ex: "Essa ação não está disponível para o seu perfil.")
-- [ ] Existe alguma ação que deve ser **completamente bloqueada** no bot, independente do perfil? (ex: excluir colaboradores, cancelar contratos)
-- [ ] O bot deve registrar em **log de auditoria** quais dados foram acessados por qual usuário?
-- [ ] Se um usuário tentar obter dados de **outro contrato ou empresa** que não é o dele, como o bot deve reagir?
-- [ ] Existe necessidade de aprovação humana para alguma ação antes de o bot executá-la?
+  | Perfil | Acesso no bot |
+  |---|---|
+  | **Decisão** | Consulta a tudo |
+  | **Gerenciamento** | Consulta a tudo |
+  | **Operação** | Consulta de pedidos e colaboradores — sem acesso a configurações de benefício |
+  | **Financeiro** | Apenas consultas financeiras (boletos, notas fiscais, relatórios) |
 
-**Notas:**
-```
-
-
-
-```
+- [x] As regras são **definidas e mantidas pelo time técnico** — não dependem de configuração do cliente.
+- [x] O bot **explica ao usuário** quando um recurso não está disponível para seu perfil.
+- [x] Qualquer ação de escrita é bloqueada independente do perfil — bot é somente consulta.
+- [x] O isolamento de dados é garantido pela própria API — cada token acessa apenas os dados da empresa do usuário autenticado.
+- [x] Bedrock Guardrails (disponível em sa-east-1) será usado como camada de guardrail gerenciada.
 
 ---
 
@@ -234,109 +229,71 @@ Confirmado em reunião: infraestrutura AWS sa-east-1 (São Paulo).
 
 ## 7. Custo e Otimização
 
-> O bot anterior foi descontinuado por alto custo mesmo com cache. Com Bedrock em sa-east-1, a estratégia de otimização muda.
+> ✅ **Decisão do time** — A estratégia de otimização de custo será definida por nós, aprendendo com os erros do bot anterior (modelo caro + cache insuficiente).
 
-- [ ] Qual é o **budget mensal** aceitável para o bot? Existe um teto de custo por interação?
-- [ ] O bot anterior usou **cache semântico + Elastic Cache**. Com Bedrock Knowledge Bases, o cache semântico é nativo — confirmar se substitui a necessidade de Elastic.
-- [ ] Qual era o **modelo LLM** do bot anterior? (para evitar repetir o mesmo erro de custo)
-- [ ] Qual modelo Bedrock usar? Sugestão de hierarquia por custo: **Claude Haiku** para triagem → **Claude Sonnet** para respostas complexas.
-- [ ] O volume esperado de interações é conhecido? (ex: X usuários/dia, Y mensagens/sessão) — impacta diretamente o custo e a escolha de Provisioned Throughput vs. on-demand.
-- [ ] Usar **Provisioned Throughput** (disponível em sa-east-1) para cargas previsíveis ou manter on-demand?
-
-**Notas:**
-```
-
-
-
-```
+- [x] **Modelo**: adotar hierarquia de custo — **Claude Haiku** para triagem e perguntas simples, **Claude Sonnet** para respostas complexas que exigem RAG + API combinados.
+- [x] **Cache**: Bedrock Knowledge Bases oferece cache semântico nativo — substitui a necessidade de Elastic Cache para perguntas procedimentais repetidas. Para dados da API, avaliar TTL curto via ElastiCache.
+- [x] **Throughput**: iniciar com **on-demand** no MVP para medir volume real antes de comprometer Provisioned Throughput.
+- [x] **AgentCore Observability** (disponível em sa-east-1) será usado para monitorar custo por interação e identificar gargalos.
+- [ ] Budget mensal: a definir com o cliente após estimativa de volume de uso.
 
 ---
 
 ## 8. Redirecionamento para Telas
 
-- [ ] Ao sugerir uma ação, o bot exibe um **botão/link** que leva para a tela correta?
-- [ ] Existe uma lista de **deep links / rotas** do portal para cada módulo? (ex: `/pedidos/novo`, `/cartoes/rastreio`)
-- [ ] O redirecionamento apenas abre a tela, ou o bot também deve **pré-preencher dados**? (ex: já filtrar pelo colaborador mencionado na conversa)
-- [ ] Se o usuário não tiver permissão para acessar a tela, o bot deve **omitir o link** ou exibi-lo com aviso?
+> ✅ **Decisão do time** — O bot exibirá botões/links de ação ao final de respostas relevantes. A estratégia de deep links será mapeada pelo time durante o desenvolvimento.
 
-**Notas:**
-```
-
-
-
-```
+- [x] O bot exibe um **botão de ação** ao final da resposta quando a pergunta implica uma ação no portal (ex: "Ver meus pedidos", "Rastrear cartões").
+- [x] O link redireciona para a tela correspondente dentro do app — o mapeamento de rotas será levantado pelo time na fase de desenvolvimento.
+- [x] O bot omite o link se o usuário não tiver perfil para acessar a tela.
+- [x] Para o MVP, o redirecionamento **apenas abre a tela** — pré-preenchimento de dados pode ser avaliado em fases posteriores.
 
 ---
 
 ## 9. Base de Conhecimento (RAG — Bedrock Knowledge Bases)
 
-- [ ] Os 22 docs da pasta `docs` são a **única fonte de verdade**, ou há outros materiais (FAQs, e-mails, PDFs, atendimento anterior)?
-- [ ] Com que frequência a documentação é **atualizada**? Quem é responsável — time técnico ou negócio?
-- [ ] Quando o doc for atualizado, o bot deve ser **re-indexado automaticamente** ou manualmente?
-- [ ] O bot pode usar **conhecimento geral** (ex: "o que é boleto bancário") ou responde estritamente pelos docs?
-- [ ] Se o bot **não souber responder**, o que deve fazer?
-  - [ ] Escalar para atendimento humano
-  - [ ] Exibir contato de suporte
-  - [ ] Informar que não sabe e encerrar
+> ✅ **Decisão do time** — A estratégia de RAG (chunking, embeddings, retrieval, re-ranking) será desenhada pelo time. Fonte e comportamento de fallback definidos abaixo.
 
-**Notas:**
-```
-
-
-
-```
+- [x] **Fonte única**: os 22 arquivos `.md` da pasta `docs` — sem outras fontes no MVP.
+- [x] **Re-indexação**: será acionada pelo time sempre que um documento for atualizado — processo a ser automatizado em fase posterior.
+- [x] O bot responde **estritamente com base nos docs** — sem conhecimento geral externo, para evitar alucinações fora do escopo do portal.
+- [x] **Fallback**: quando não encontrar resposta, o bot informa que não sabe e orienta o usuário a contatar o suporte — sem escalada humana automatizada no MVP.
 
 ---
 
-## 9. Comportamento e Tom
+## 10. Comportamento e Tom
 
-- [ ] O bot tem **nome e personalidade** definidos ou está em aberto?
-- [ ] As respostas devem ser **curtas e diretas** ou detalhadas (passo a passo com contexto)?
-- [ ] O bot deve suportar **múltiplos idiomas** ou apenas português?
-- [ ] Deve haver **histórico de conversa** persistido entre sessões?
-- [ ] O bot deve manter o **contexto dentro de uma sessão**? (ex: usuário mencionou um colaborador antes — o bot lembra nas próximas perguntas)
+> ✅ **Decisão do time** — Definições de UX conversacional a serem refinadas durante o design, com base nas diretrizes abaixo.
 
-**Notas:**
-```
-
-
-
-```
+- [x] **Idioma**: português do Brasil — sem suporte a outros idiomas no MVP.
+- [x] **Tom**: objetivo e prestativo — respostas curtas para consultas simples, passo a passo para dúvidas procedimentais.
+- [x] **Contexto de sessão**: o bot mantém contexto dentro da mesma conversa (ex: se o usuário mencionou um colaborador, o bot o considera nas próximas perguntas).
+- [x] **Histórico entre sessões**: não será persistido no MVP — dado que AgentCore Memory não está disponível em sa-east-1; solução alternativa (ex: DynamoDB) será avaliada em fase posterior.
+- [ ] Nome e identidade visual do bot: a definir com o cliente.
 
 ---
 
-## 10. Operação, Privacidade e Métricas
+## 11. Operação, Privacidade e Métricas
 
-- [ ] Haverá um **painel de monitoramento**? (perguntas sem resposta, satisfação, volume, custo por interação)
-- [ ] Existe requisito de **LGPD**: o bot pode armazenar transcrições de conversa? Por quanto tempo?
-- [ ] Dados de colaboradores retornados pela API podem ser **logados** para debugging, ou devem ser descartados após a resposta?
-- [ ] Há algum **SLA de resposta** esperado? (ex: responder em menos de X segundos — impacta escolha de modelo e estratégia de cache)
+> ✅ **Decisão do time** — Monitoramento via AgentCore Observability (disponível em sa-east-1). Privacidade seguirá o princípio de mínimo necessário.
 
-**Notas:**
-```
-
-
-
-```
+- [x] **Monitoramento**: AgentCore Observability para volume de interações, latência e custo por sessão.
+- [x] **Dados de API**: dados de colaboradores e pedidos retornados pela API **não são persistidos** — usados apenas em memória durante a resposta, descartados em seguida (LGPD).
+- [x] **Transcrições**: não armazenadas no MVP — apenas logs técnicos anonimizados para debugging.
+- [x] **SLA de resposta**: meta de até **5 segundos** para respostas simples; respostas híbridas (RAG + API) podem levar até 10 segundos — a validar com testes de carga.
+- [ ] Requisitos específicos de LGPD/auditoria do cliente: a confirmar.
 
 ---
 
-## 11. Prazo e Escopo do MVP
+## 12. Prazo e Escopo do MVP
 
-- [ ] Qual é o **prazo** esperado para a primeira entrega?
-- [ ] Existe um **MVP definido**? Sugestão de fases para validar:
-  - [ ] Fase 1: RAG puro (responde dúvidas procedimentais pelos 22 docs)
-  - [ ] Fase 2: integração de sessão + APIs de consulta (ex: listar colaboradores, status de pedido)
-  - [ ] Fase 3: redirecionamento para telas com contexto
-  - [ ] O cliente concorda com essa sequência ou tem outra ordem de prioridade?
-- [ ] Quem é o **responsável técnico** no lado do cliente para acesso às APIs, cookies e ambiente do portal?
+> ✅ **Decisão do time** — Fases propostas abaixo. Prazo a confirmar com o cliente.
 
-**Notas:**
-```
-
-
-
-```
+- [x] **Fase 1 — RAG**: bot responde dúvidas procedimentais com base nos 22 docs. Sem integração de API.
+- [x] **Fase 2 — Híbrido**: integração de sessão via cookie + endpoints GET para dados em tempo real (colaboradores, pedidos, rastreio).
+- [x] **Fase 3 — Ação**: redirecionamento para telas do portal com botões contextuais.
+- [ ] Prazo de cada fase: a confirmar com o cliente.
+- [ ] Ponto de contato técnico do cliente para acesso ao ambiente e APIs: **Carlos** (mencionado — confirmar disponibilidade).
 
 ---
 
@@ -346,32 +303,35 @@ Ao final da reunião, preencher:
 
 | Tema | Decisão |
 |---|---|
-| Canal do bot | ✅ Dentro do app (webview) — mobile e web |
-| Cookie / mecanismo de sessão | ✅ App nativo injeta cookies (`accessToken`, `CLIENT_ID`, `CLIENT_SECRET`, etc.) |
-| Expiração de token | ✅ TTL ~300s — refresh via 401 + OAuth2 automático |
-| Endpoint de validação de sessão | ⚠️ Candidato: `GET /profile` — confirmar campos retornados |
+| Canal do bot | ✅ Dentro do app Meu Alelo (webview) — mobile e web |
+| Autenticação | ✅ Cookies injetados pelo app nativo — `accessToken`, `CLIENT_ID`, `CLIENT_SECRET` |
+| Expiração de token | ✅ TTL ~300s — refresh automático via 401 + OAuth2 |
+| Perfil do usuário | ✅ `GET /profile` → `functions[].functionType` |
 | Backend server-side ou client-side | ❓ A confirmar com Carlos |
 | Domínio do bot (impacta cookies httpOnly) | ❓ A confirmar com Carlos |
-| Perfis respeitados com guardrails? | ❓ A confirmar |
-| Ações bloqueadas independente de perfil | ❓ A confirmar |
-| APIs disponíveis e documentadas? | ✅ Swagger confirmado — ver `03_api-referencia.md` |
-| Bot lê apenas ou também escreve via API? | ✅ Somente GET — escrita bloqueada por decisão de design |
+| Guardrails por perfil | ✅ Decisão do time — tabela de acesso definida na seção 5 |
+| Escrita bloqueada | ✅ Bot somente GET — sem POST/PUT/DELETE |
+| APIs documentadas | ✅ Swagger disponível — ver `03_api-referencia.md` |
 | Rate limiting nas APIs | ❓ A confirmar |
-| Sandbox/homologação disponível | ❓ A confirmar |
-| Deep links disponíveis? | ❓ A confirmar |
-| Fontes além dos 22 docs? | ❓ A confirmar |
-| Fallback sem resposta | ❓ A confirmar |
-| Budget / teto de custo | ❓ A confirmar |
+| Sandbox/homologação | ❓ A confirmar com Carlos |
 | Infraestrutura | ✅ AWS sa-east-1 (São Paulo) |
-| Bedrock Guardrails disponível? | ✅ Sim — estratégia viável |
-| Bedrock Knowledge Bases disponível? | ✅ Sim — RAG nativo |
-| Bedrock Agents disponível? | ✅ Sim — orquestração nativa |
-| AgentCore Memory disponível? | ❌ Não — solução alternativa necessária |
-| Modelo LLM (Bedrock) | ❓ Confirmar quais modelos disponíveis em sa-east-1 |
-| Provisioned Throughput vs. on-demand | ❓ A definir com base no volume esperado |
-| MVP — fases acordadas | ❓ A confirmar |
-| Prazo | ❓ A confirmar |
-| Ponto de contato técnico do cliente | ⚠️ Carlos (mencionado) |
+| RAG | ✅ Bedrock Knowledge Bases — 22 docs `.md` como única fonte |
+| Agente | ✅ Bedrock Agents — orquestração nativa |
+| Guardrails técnicos | ✅ Bedrock Guardrails |
+| Memória entre sessões | ✅ Não persiste no MVP — AgentCore Memory indisponível em sa-east-1 |
+| Modelo LLM | ✅ Claude Haiku (triagem) + Claude Sonnet (respostas complexas) |
+| Throughput | ✅ On-demand no MVP |
+| Monitoramento | ✅ AgentCore Observability |
+| Dados de API (LGPD) | ✅ Não persistidos — descartados após a resposta |
+| Transcrições | ✅ Não armazenadas no MVP |
+| Redirecionamento | ✅ Botão contextual por resposta — rotas mapeadas pelo time |
+| Fallback sem resposta | ✅ Informa que não sabe + orienta ao suporte |
+| Idioma | ✅ Português do Brasil |
+| Fases do MVP | ✅ Fase 1 RAG → Fase 2 Híbrido → Fase 3 Ação |
+| Prazo por fase | ❓ A confirmar com o cliente |
+| Budget mensal | ❓ A confirmar com o cliente |
+| Nome/identidade do bot | ❓ A confirmar com o cliente |
+| Ponto de contato técnico | ⚠️ Carlos (confirmar disponibilidade) |
 
 ---
 
