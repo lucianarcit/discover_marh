@@ -13,18 +13,12 @@ Participantes: ___________________________
 
 ## 1. Canal e Ambiente
 
-- [ ] O bot vai viver **dentro do portal Alelo** (widget embutido) ou em canal externo (WhatsApp, Teams, página separada)?
-- [ ] O usuário já estará **logado no portal** ao abrir o bot, ou o bot precisa autenticar separadamente?
-- [ ] O bot precisa funcionar em **mobile**?
+> ✅ **Resolvido**
 
-**Notas:**
-```
-Só dentro do aplicativo.  de acordo com perfil (role) de cada usuário.
-Sim com o usuário autenticado
-Mobile / web
-
-
-```
+- [x] O bot vive **exclusivamente dentro do aplicativo Meu Alelo** — não há canal externo (WhatsApp, Teams, etc.).
+- [x] O usuário sempre estará **autenticado** ao abrir o bot — não há fluxo de login separado.
+- [x] O bot deve funcionar em **mobile e web**.
+- [x] O comportamento e as permissões do bot variam conforme o **perfil (role) do usuário logado** (Decisão, Gerenciamento, Operação, Financeiro).
 
 ---
 
