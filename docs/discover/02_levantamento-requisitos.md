@@ -155,8 +155,8 @@ scope-key: appKeyWso2
 | `GET /companies/{companyId}/payment-methods` | Métodos de pagamento da empresa |
 | `GET /alelo/uat/places/v2/address?zipCode=` | Consulta de CEP |
 
-- [x] APIs são **REST**, somente **GET** (leitura)
-- [x] Bot pode apenas **ler** dados — sem escrita via API
+- [x] APIs são **REST**
+- [x] ⚠️ **A API NÃO é somente leitura** — possui POST, PUT e DELETE confirmados (ver tabela abaixo)
 - [ ] Existe **Swagger / Postman collection** com todos os contratos? *(solicitar ao Carlos)*
 - [ ] Existe **rate limiting**? Qual o limite de requisições por minuto/hora?
 - [ ] Ambiente de **homologação/sandbox** disponível para o bot durante desenvolvimento?
@@ -329,8 +329,8 @@ Ao final da reunião, preencher:
 | Domínio do bot (impacta cookies httpOnly) | ❓ A confirmar com Carlos |
 | Perfis respeitados com guardrails? | ❓ A confirmar |
 | Ações bloqueadas independente de perfil | ❓ A confirmar |
-| APIs disponíveis e documentadas? | ✅ REST / GET confirmados — Swagger/Postman a solicitar |
-| Bot lê apenas ou também escreve via API? | ✅ Somente leitura (GET) |
+| APIs disponíveis e documentadas? | ✅ Swagger confirmado — ver `03_api-referencia.md` |
+| Bot lê apenas ou também escreve via API? | ⚠️ API tem POST/PUT/DELETE — definir quais o bot pode usar |
 | Rate limiting nas APIs | ❓ A confirmar |
 | Sandbox/homologação disponível | ❓ A confirmar |
 | Deep links disponíveis? | ❓ A confirmar |
