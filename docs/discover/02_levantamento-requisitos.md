@@ -152,22 +152,76 @@ scope-key: appKeyWso2
 
 ## 5. Guardrails e Controle de Acesso
 
-> ✅ **Decisão do time** — As regras de guardrail serão definidas e mantidas pelo nosso time, com base no perfil retornado por `GET /profile` (`functions[].functionType`).
+> ✅ **Decisão do time** — Guardrails atuam em duas camadas independentes: controle de acesso por perfil (lógica de negócio) e Bedrock Guardrails (proteção do modelo).
 
-- [x] O bot aplica guardrails baseados no perfil do usuário logado — mesma lógica de permissões do portal:
+---
+
+### Camada 1 — Controle de Acesso por Perfil (lógica de negócio)
+
+Implementada no **system prompt do Bedrock Agent**. Antes de qualquer resposta, o bot chama `GET /profile` → obtém `functions[].functionType` → verifica se o módulo solicitado é permitido para aquele perfil.
+
+- [x] O bot aplica guardrails baseados no perfil do usuário logado:
 
   | Perfil | Acesso no bot |
   |---|---|
-  | **Decisão** | Consulta a tudo |
-  | **Gerenciamento** | Consulta a tudo |
-  | **Operação** | Consulta de pedidos e colaboradores — sem acesso a configurações de benefício |
-  | **Financeiro** | Apenas consultas financeiras (boletos, notas fiscais, relatórios) |
+  | **Decisão** | Consulta a todos os módulos |
+  | **Gerenciamento** | Consulta a todos os módulos |
+  | **Operação** | Pedidos, colaboradores, locais de entrega, rastreio, 2ª via, contrato — sem configuração de benefícios |
+  | **Financeiro** | Apenas boleto, nota fiscal e relatórios |
 
+- [x] Se o módulo não for permitido para o perfil → bot responde com mensagem de bloqueio **sem buscar no RAG**.
+
+  > Exemplo: usuário com perfil `OPERACAO` pergunta "Como adiciono um novo usuário?"
+  > → Bot responde: *"Apenas interlocutores com perfil Decisão podem gerenciar usuários do sistema."*
+
+- [x] O isolamento de dados entre empresas é garantido pela própria API — o token do usuário só retorna dados da sua empresa.
+- [x] Qualquer ação de escrita é bloqueada independente do perfil — bot opera somente em consulta.
 - [x] As regras são **definidas e mantidas pelo time técnico** — não dependem de configuração do cliente.
-- [x] O bot **explica ao usuário** quando um recurso não está disponível para seu perfil.
-- [x] Qualquer ação de escrita é bloqueada independente do perfil — bot é somente consulta.
-- [x] O isolamento de dados é garantido pela própria API — cada token acessa apenas os dados da empresa do usuário autenticado.
-- [x] Bedrock Guardrails (disponível em sa-east-1) será usado como camada de guardrail gerenciada.
+
+---
+
+### Camada 2 — Bedrock Guardrails (proteção do modelo)
+
+Camada **gerenciada pela AWS**, disponível em sa-east-1. Filtra entrada e saída do LLM independente da lógica de negócio. Atua em dois momentos:
+
+```
+Mensagem do usuário
+        ↓
+[Bedrock Guardrails — ENTRADA]
+Bloqueia: jailbreak, injeção de prompt, tópicos fora do escopo, conteúdo nocivo
+        ↓
+[Lógica de perfil — Camada 1]
+GET /profile → verifica permissão do módulo
+        ↓
+[Bedrock Agent — RAG + API]
+Busca nos docs e/ou chama endpoint GET
+        ↓
+[Bedrock Guardrails — SAÍDA]
+Mascara PII, verifica grounding, bloqueia invenção
+        ↓
+Resposta ao usuário
+```
+
+**Configuração planejada:**
+
+| Proteção | Regra para este bot |
+|---|---|
+| **Tópicos bloqueados** | Qualquer assunto fora do portal Meu Alelo (concorrentes, finanças pessoais, RH geral, etc.) |
+| **Filtro de conteúdo** | Bloqueia jailbreak, prompt injection e linguagem inadequada |
+| **Grounding** | Respostas devem ter base nos docs ou nos dados da API — sem inventar informações |
+| **Mascaramento de PII** | CPF exibido de forma parcial (ex: `***.456.**-**`); tokens e secrets nunca expostos na resposta |
+| **Fora do escopo** | Se pergunta não tiver relação com o portal → acionar fallback, não tentar responder |
+
+---
+
+### Pendências de definição
+
+| Decisão | Impacto |
+|---|---|
+| Nível de mascaramento de CPF | Exibir parcial ou não exibir na resposta? |
+| Perfil Financeiro em MOD 5 | Pode ver beneficiários de um pedido ou apenas boleto/NF? |
+| Comportamento em insistência | Bot repete o bloqueio ou encerra a conversa após N tentativas? |
+| Lista fechada de tópicos fora do escopo | A detalhar durante o design |
 
 ---
 
