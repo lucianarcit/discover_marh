@@ -1,0 +1,12 @@
+
+# Projeto local usado apenas como referï¿½ncia pelo Claude
+/_referencia_alelo_faq_ciandt/
+
+# Configuração pessoal do Claude Code
+.claude/settings.local.json
+
+# Código usado apenas como referência
+/docs/_referencia_alelo_faq_ciandt/
+
+# Arquivos de exemplo locais
+/docs/sample/
