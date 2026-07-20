@@ -9,76 +9,79 @@
 
 ```mermaid
 flowchart TD
-    subgraph APP["📱 App Meu Alelo"]
-        WEBVIEW[Webview\ncookies injetados]
+    subgraph APP[App Meu Alelo]
+        WEBVIEW[Webview - cookies injetados]
     end
 
-    subgraph EDGE["🔀 Edge / Entrada"]
-        APIGW[API Gateway\nHTTPS endpoint do bot]
-        LAMBDA_AUTH[Lambda\nAuth + Profile]
+    subgraph SECRETS[Segredos]
+        SM[Secrets Manager\nCLIENT_ID - CLIENT_SECRET - API keys]
     end
 
-    subgraph SECRETS["🔐 Segredos"]
-        SM[Secrets Manager\nCLIENT_ID · CLIENT_SECRET\nAPI keys]
+    subgraph EDGE[Edge - Entrada]
+        APIGW[API Gateway\nHTTPS endpoint]
+        LAMBDA_AUTH[Lambda Auth\nperfil + contexto]
     end
 
-    subgraph AI["🤖 Camada de IA — Bedrock"]
-        GRD_IN[Guardrails\nEntrada]
-        AGENT[Bedrock Agent\nClaude Sonnet / Haiku]
-        KB[Knowledge Bases\n22 docs · OpenSearch Serverless]
-        GRD_OUT[Guardrails\nSaída · PII · Grounding]
+    subgraph AI[Bedrock - Camada de IA]
+        GRD_IN[Guardrails Entrada\nbloqueia jailbreak]
+        AGENT[Bedrock Agent\nClaude Haiku + Sonnet]
+        KB[Knowledge Bases\n22 docs .md]
+        OS[OpenSearch Serverless\nVector Store]
+        GRD_OUT[Guardrails Saida\ngrounding - PII]
     end
 
-    subgraph ACTIONS["⚙️ Action Groups — Lambda"]
-        L_PROFILE[Lambda\nGET /profile\nGET /companies]
-        L_ORDERS[Lambda\nGET /orders/*]
-        L_BENEF[Lambda\nGET /beneficiaries]
-        L_TRACK[Lambda\nGET /tracking/*]
-        L_AUX[Lambda\nGET /benefits\n/products · /places]
+    subgraph ACTIONS[Action Groups - Lambda]
+        L_PROFILE[Lambda Profile\nGET /profile - /companies]
+        L_ORDERS[Lambda Orders\nGET /orders]
+        L_BENEF[Lambda Beneficiaries\nGET /beneficiaries]
+        L_TRACK[Lambda Tracking\nGET /tracking]
+        L_AUX[Lambda Auxiliares\nGET /benefits - /places]
     end
 
-    subgraph SESSION["💾 Contexto de Sessão"]
-        REDIS[ElastiCache Redis\nContexto in-session\nTTL = duração da conversa]
+    subgraph HRM[API Alelo HRM - externa]
+        HRM_API[cardholders-hr-management v1\nsomente GET]
     end
 
-    subgraph HRM["🌐 API Alelo HRM"]
-        HRM_API[/alelo/uat/\ncardholders-hr-management/v1]
+    subgraph SESSION[Contexto de Sessao]
+        REDIS[ElastiCache Redis\nTTL 30 min]
     end
 
-    subgraph OBS["📊 Observabilidade"]
-        AGOBS[AgentCore Observability]
-        CW[CloudWatch\nLogs · Métricas · Alertas]
+    subgraph STORE[Armazenamento]
+        S3[S3\n22 docs .md]
     end
 
-    subgraph STORE["🗂️ Armazenamento"]
-        S3[S3\n22 docs .md\nfonte do Knowledge Base]
+    subgraph OBS[Observabilidade]
+        AGOBS[AgentCore Observability\ntraces - custo por sessao]
+        CW[CloudWatch\nlogs - metricas - alertas]
     end
 
     WEBVIEW -->|HTTPS + cookies| APIGW
     APIGW --> LAMBDA_AUTH
-    LAMBDA_AUTH -->|lê secrets| SM
-    LAMBDA_AUTH --> GRD_IN
+    LAMBDA_AUTH -.->|le credenciais| SM
+    LAMBDA_AUTH -->|mensagem + perfil| GRD_IN
     GRD_IN --> AGENT
     AGENT <-->|RAG| KB
-    KB -->|indexa| S3
+    KB <--> OS
+    KB -.->|indexa| S3
     AGENT <-->|contexto| REDIS
-    AGENT --> L_PROFILE & L_ORDERS & L_BENEF & L_TRACK & L_AUX
-    L_PROFILE & L_ORDERS & L_BENEF & L_TRACK & L_AUX -->|GET| HRM_API
-    L_PROFILE & L_ORDERS & L_BENEF & L_TRACK & L_AUX -->|lê secrets| SM
+    AGENT --> L_PROFILE
+    AGENT --> L_ORDERS
+    AGENT --> L_BENEF
+    AGENT --> L_TRACK
+    AGENT --> L_AUX
+    L_PROFILE -->|GET| HRM_API
+    L_ORDERS -->|GET| HRM_API
+    L_BENEF -->|GET| HRM_API
+    L_TRACK -->|GET| HRM_API
+    L_AUX -->|GET| HRM_API
+    L_PROFILE -.->|le credenciais| SM
+    L_ORDERS -.->|le credenciais| SM
     AGENT --> GRD_OUT
-    GRD_OUT -->|resposta| APIGW
+    GRD_OUT -->|resposta validada| APIGW
     APIGW -->|resposta| WEBVIEW
-    AGENT --> AGOBS
-    LAMBDA_AUTH & L_PROFILE & L_ORDERS --> CW
-
-    style APP fill:#1A73E8,color:#fff
-    style AI fill:#6B2FA0,color:#fff
-    style ACTIONS fill:#0D6EFD,color:#fff
-    style SESSION fill:#E67E22,color:#fff
-    style HRM fill:#27AE60,color:#fff
-    style OBS fill:#17A589,color:#fff
-    style SECRETS fill:#C0392B,color:#fff
-    style STORE fill:#7D6608,color:#fff
+    AGENT -.-> AGOBS
+    LAMBDA_AUTH -.-> CW
+    L_ORDERS -.-> CW
 ```
 
 ---
