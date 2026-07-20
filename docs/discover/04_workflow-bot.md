@@ -4,6 +4,61 @@ Mapeamento dos fluxos que o bot precisa navegar com base nos 22 documentos da pa
 
 ---
 
+## Diagrama Geral
+
+```mermaid
+flowchart TD
+    A([👤 Usuário envia mensagem]) --> B
+
+    B[Bedrock Guardrails\nEntrada\nbloqueia jailbreak / fora do escopo]
+    B --> C
+
+    C[GET /profile\nIdentifica perfil + empresa]
+    C --> D{Classificar\nintenção}
+
+    D --> M1[MOD 1\nConfigurar Benefícios]
+    D --> M2[MOD 2\nGerenciar Usuários]
+    D --> M3[MOD 3\nColaboradores]
+    D --> M4[MOD 4\nFazer Pedido]
+    D --> M5[MOD 5\nAcompanhar Pedido]
+    D --> M6[MOD 6\nRelatórios]
+    D --> M7[MOD 7\nRastrear Cartão]
+    D --> M8[MOD 8\n2ª Via Cartão]
+    D --> M9[MOD 9\nLocais de Entrega]
+    D --> M10[MOD 10\nFaturamento Desc.]
+    D --> M11[MOD 11\nConsultar Contrato]
+
+    M1 & M2 & M3 & M4 & M5 & M6 & M7 & M8 & M9 & M10 & M11 --> G
+
+    G{Guardrail\nde perfil}
+    G -- ❌ Sem permissão --> BLOCK[Mensagem de bloqueio\npara o usuário]
+    G -- ✅ Permitido --> H
+
+    H{Fonte da\nresposta?}
+    H -- Procedimental --> RAG[Bedrock Knowledge Bases\n22 docs .md]
+    H -- Dados em tempo real --> API[Action Group\nGET endpoints HRM]
+    H -- Ambos --> RAG & API
+
+    RAG --> OUT
+    API --> OUT
+
+    OUT[Bedrock Guardrails\nSaída\ngrounding · mascara PII · bloqueia invenção]
+    OUT --> RESP[Resposta ao usuário\n+ botão de redirecionamento]
+
+    D -- ❓ Sem intenção reconhecida --> FALL[Fallback\nNão encontrei essa informação\nContate o suporte]
+
+    style A fill:#4A90D9,color:#fff
+    style BLOCK fill:#E74C3C,color:#fff
+    style FALL fill:#E67E22,color:#fff
+    style RESP fill:#27AE60,color:#fff
+    style B fill:#8E44AD,color:#fff
+    style OUT fill:#8E44AD,color:#fff
+    style G fill:#F39C12,color:#fff
+    style H fill:#F39C12,color:#fff
+```
+
+---
+
 ## Fluxo Principal — Roteamento de Intenção
 
 ```
