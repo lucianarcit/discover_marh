@@ -30,20 +30,52 @@ Mobile / web
 
 ## 2. Autenticação e Sessão via Cookie
 
-> Ponto crítico: o bot deve recuperar o usuário logado via cookies, mas ainda não está claro como isso funciona tecnicamente.
+> ✅ **Resolvido** — O app nativo injeta os cookies na webview antes de abri-la. O bot lê esses cookies e monta os headers de cada chamada de API. O ciclo de vida do token é gerenciado inteiramente pelo app nativo.
 
-- [ ] Qual é o **nome e estrutura do cookie** de sessão do portal? (ex: `session_token`, JWT, etc.)
-- [ ] O backend do bot é **server-side** (pode ler cookies diretamente) ou client-side (precisa que o frontend passe o token)?
-- [ ] Existe um **endpoint de validação de sessão** que, dado o cookie, retorna os dados do usuário (id, perfil, contratos)?
-- [ ] O token de sessão é suficiente para chamar todas as APIs do portal, ou são necessárias credenciais adicionais para o bot?
-- [ ] Como lidar com **sessão expirada** durante uma conversa? O bot deve pedir novo login ou encerrar?
-- [ ] O bot terá um **domínio próprio** ou será servido no mesmo domínio do portal? (impacta se o cookie é acessível via `httpOnly`, `SameSite`, etc.)
+**Cookies injetados pelo app nativo:**
+
+| Cookie | Descrição |
+|---|---|
+| `accessToken` | JWT de acesso (expira em ~300s) |
+| `refreshToken` | Token de renovação OAuth2 |
+| `CLIENT_ID` | Client ID OAuth2 |
+| `CLIENT_SECRET` | Client Secret OAuth2 |
+| `PLATFORM` | `ANDROID` ou `IOS` |
+| `APP_VERSION` | Versão do app nativo |
+| `FNP` | Fingerprint do dispositivo |
+| `USER_ID` | ID do usuário (fallback se não vier no JWT) |
+
+**Headers obrigatórios em cada chamada de API:**
+```
+Authorization: Bearer <accessToken>
+client_id / x-ibm-client-id: <CLIENT_ID>
+x-ibm-client-secret: <CLIENT_SECRET>
+X-BASIC-AUTHORIZATION: Basic base64(CLIENT_ID:CLIENT_SECRET)
+PLATFORM: <PLATFORM>
+APP_VERSION: <APP_VERSION>
+USER_ID: <USER_ID>
+FNP: <FNP>
+auth_type: IS-ALELO
+scope-key: appKeyWso2
+```
+
+**Gestão de expiração:**
+- Não há expiração explícita no cookie — a expiração é detectada via **401 da API**
+- Ao receber 401, o bot dispara refresh automático usando `CLIENT_ID` + `CLIENT_SECRET` (fluxo OAuth2)
+- A webview **não reescreve** os cookies — quem gerencia o ciclo de vida é o app nativo
+- TTL base do token: **300 segundos**
+
+- [x] Qual é o **nome e estrutura do cookie** de sessão? → Ver tabela acima
+- [x] O token de sessão é suficiente para as APIs? → Sim, junto com `CLIENT_ID` e `CLIENT_SECRET`
+- [x] Como lidar com **sessão expirada**? → Detectar 401 e fazer refresh OAuth2 automaticamente
+- [ ] O backend do bot é **server-side** (lê cookies diretamente) ou precisa que o frontend passe os tokens?
+- [ ] O bot terá **domínio próprio** ou mesmo domínio do portal? (impacta acesso aos cookies `httpOnly`)
+- [ ] Existe endpoint `/profile` ou similar que retorna perfil completo do usuário a partir do `accessToken`? *(candidato: `GET /profile` da base HRM — confirmar campos retornados)*
 
 **Notas:**
 ```
-- Ver como ta autenticação do MeuAlelo, copiar os cookies de la.
-- Autenticação já está tratada no outro.
--Falar com Carlos (essas dúvidas)
+- Autenticação do MeuAlelo como referência.
+- Falar com Carlos para confirmar domínio e acesso server-side aos cookies.
 
 
 ```
@@ -80,28 +112,68 @@ Mobile / web
 
 ## 4. Integração com APIs do Portal
 
-- [ ] Existe uma **API documentada** do portal? (Swagger, Postman collection, ambiente de sandbox?)
-- [ ] Quem será o **ponto de contato técnico** do lado do cliente para esclarecer e liberar acesso às APIs?
-- [ ] Quais módulos têm API disponível? Confirmar cada um:
+> ✅ **Parcialmente resolvido** — APIs são REST, somente leitura (GET), base UAT confirmada. Módulos sem endpoint ainda precisam ser verificados.
 
-  | Módulo | API disponível? | Endpoint conhecido? |
-  |---|---|---|
-  | Colaboradores (listar, buscar por CPF) | | |
-  | Pedidos (listar, status, detalhe) | | |
-  | Cartões (rastreio, 2ª via) | | |
-  | Relatórios | | |
-  | Contratos | | |
-  | Interlocutores / Usuários | | |
-  | Locais de entrega / Filiais | | |
+**Base URL:** `GET /alelo/uat/cardholders-hr-management/v1` (HRM)
 
-- [ ] As APIs são **REST**? Existe GraphQL, gRPC ou outro padrão?
-- [ ] Existe **rate limiting** nas APIs? (importante para estimar cache necessário)
-- [ ] O bot pode apenas **ler** dados via API, ou também pode **escrever** (ex: iniciar um pedido, emitir 2ª via)?
-- [ ] Existe ambiente de **homologação/sandbox** separado do produção para o bot usar durante o desenvolvimento?
+**Endpoints confirmados:**
+
+*Pedidos*
+| Endpoint | Descrição |
+|---|---|
+| `GET /orders` | Lista de pedidos |
+| `GET /orders/{orderNumber}` | Detalhe do pedido |
+| `GET /orders/{orderNumber}/beneficiaries` | Beneficiários do pedido |
+| `GET /orders/{orderNumber}/bank-ticket` | Boleto |
+| `GET /orders/{orderNumber}/invoice` | Nota fiscal |
+
+*Gestão de Colaboradores*
+| Endpoint | Descrição |
+|---|---|
+| `GET /beneficiaries` | Listar colaboradores (paginado, filtro `nameOrCpf`) |
+| `GET /companies` | Empresas do usuário logado |
+| `GET /profile` | Perfil do usuário logado |
+
+*Rastreio de Cartões*
+| Endpoint | Descrição |
+|---|---|
+| `GET /tracking` | Lista de pedidos em rastreio |
+| `GET /orders/{orderNumber}/tracking` | Rastreio por pedido |
+| `GET /orders/{orderNumber}/tracking/{arNumber}/detail` | Detalhe do AR |
+
+*Auxiliares (mesma base HRM)*
+| Endpoint | Descrição |
+|---|---|
+| `GET /benefits` | Tipos de benefício |
+| `GET /products` | Produtos disponíveis |
+| `GET /places` | Locais de entrega |
+| `GET /availability-dates-for-credit` | Datas disponíveis para disponibilização |
+
+*Fora da base HRM*
+| Endpoint | Descrição |
+|---|---|
+| `GET /companies/{companyId}/payment-methods` | Métodos de pagamento da empresa |
+| `GET /alelo/uat/places/v2/address?zipCode=` | Consulta de CEP |
+
+- [x] APIs são **REST**, somente **GET** (leitura)
+- [x] Bot pode apenas **ler** dados — sem escrita via API
+- [ ] Existe **Swagger / Postman collection** com todos os contratos? *(solicitar ao Carlos)*
+- [ ] Existe **rate limiting**? Qual o limite de requisições por minuto/hora?
+- [ ] Ambiente de **homologação/sandbox** disponível para o bot durante desenvolvimento?
+- [ ] Módulos ainda sem endpoint confirmado:
+
+  | Módulo | API disponível? |
+  |---|---|
+  | Relatórios | A confirmar |
+  | Contratos | A confirmar |
+  | Interlocutores / Usuários | A confirmar — `GET /profile` pode cobrir? |
+  | Locais de entrega / Filiais | Parcial — `GET /places` (confirmar se retorna filiais) |
 
 **Notas:**
 ```
-
+- Solicitar Postman collection ou Swagger ao Carlos.
+- Confirmar se há rate limiting nas APIs.
+- Confirmar ambiente de sandbox separado do UAT.
 
 
 ```
@@ -249,21 +321,26 @@ Ao final da reunião, preencher:
 
 | Tema | Decisão |
 |---|---|
-| Canal do bot | |
-| Cookie / mecanismo de sessão | |
-| Endpoint de validação de sessão existe? | |
-| Perfis respeitados com guardrails? | |
-| Ações bloqueadas independente de perfil | |
-| APIs disponíveis e documentadas? | |
-| Bot lê apenas ou também escreve via API? | |
-| Deep links disponíveis? | |
-| Fontes além dos 22 docs? | |
-| Fallback sem resposta | |
-| Budget / teto de custo | |
-| Provedor LLM preferido | |
-| MVP — fases acordadas | |
-| Prazo | |
-| Ponto de contato técnico do cliente | |
+| Canal do bot | ✅ Dentro do app (webview) — mobile e web |
+| Cookie / mecanismo de sessão | ✅ App nativo injeta cookies (`accessToken`, `CLIENT_ID`, `CLIENT_SECRET`, etc.) |
+| Expiração de token | ✅ TTL ~300s — refresh via 401 + OAuth2 automático |
+| Endpoint de validação de sessão | ⚠️ Candidato: `GET /profile` — confirmar campos retornados |
+| Backend server-side ou client-side | ❓ A confirmar com Carlos |
+| Domínio do bot (impacta cookies httpOnly) | ❓ A confirmar com Carlos |
+| Perfis respeitados com guardrails? | ❓ A confirmar |
+| Ações bloqueadas independente de perfil | ❓ A confirmar |
+| APIs disponíveis e documentadas? | ✅ REST / GET confirmados — Swagger/Postman a solicitar |
+| Bot lê apenas ou também escreve via API? | ✅ Somente leitura (GET) |
+| Rate limiting nas APIs | ❓ A confirmar |
+| Sandbox/homologação disponível | ❓ A confirmar |
+| Deep links disponíveis? | ❓ A confirmar |
+| Fontes além dos 22 docs? | ❓ A confirmar |
+| Fallback sem resposta | ❓ A confirmar |
+| Budget / teto de custo | ❓ A confirmar |
+| Provedor LLM preferido | ❓ A confirmar |
+| MVP — fases acordadas | ❓ A confirmar |
+| Prazo | ❓ A confirmar |
+| Ponto de contato técnico do cliente | ⚠️ Carlos (mencionado) |
 
 ---
 
