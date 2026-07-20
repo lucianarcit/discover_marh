@@ -1,6 +1,7 @@
 # Referência de API — cardholders-hr-management
 
 **Base path:** `/cardholders-hr-management/v1`
+**Base URL HML:** `https://api-ma.homologacaoalelo.com.br/alelo/uat/cardholders-hr-management/v1`
 **Versão:** 1
 **Contato:** casiqueira@alelo.com.br (Lego)
 

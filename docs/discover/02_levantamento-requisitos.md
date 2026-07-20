@@ -104,7 +104,25 @@ scope-key: appKeyWso2
 
 > ✅ **Resolvido** — O bot usa **somente GET**. Endpoints definidos e fechados. Nenhuma operação de escrita será executada pelo bot.
 
-**Base URL HRM:** `/alelo/uat/cardholders-hr-management/v1`
+**Base URL HML (homologação):** `https://api-ma.homologacaoalelo.com.br/alelo/uat/cardholders-hr-management/v1`
+
+**Headers obrigatórios confirmados via curl real:**
+```
+Authorization: Bearer {accessToken}
+CLIENT_ID: {client_id}
+CLIENT_SECRET: {client_secret}
+X-BASIC-AUTHORIZATION: Basic {base64(client_id:client_secret)}
+APP_VERSION: 8.55.0 (2026071702)
+PLATFORM: IOS | ANDROID
+FNP: {device_fingerprint}
+user_id: {user_id}
+x-ibm-client-id: {client_id}
+AUTH_TYPE: IS-ALELO
+Accept: application/json
+Content-Type: application/json
+```
+
+**Parâmetro adicional confirmado:** `lang=pt` (query string — define idioma da resposta)
 
 *Pedidos*
 | Endpoint | Descrição |
@@ -145,8 +163,9 @@ scope-key: appKeyWso2
 
 - [x] APIs são **REST**, somente **GET** — bot opera em modo leitura
 - [x] Swagger disponível — ver `03_api-referencia.md`
+- [x] Ambiente de **homologação** confirmado: `api-ma.homologacaoalelo.com.br`
+- [x] Credenciais de HML disponíveis — ver `docs/sample/user_hml.txt` e `sample_curl.txt`
 - [ ] Existe **rate limiting**? Qual o limite de requisições por minuto/hora?
-- [ ] Ambiente de **homologação/sandbox** disponível para o bot durante desenvolvimento?
 
 ---
 
