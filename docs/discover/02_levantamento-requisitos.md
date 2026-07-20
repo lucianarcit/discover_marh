@@ -19,7 +19,9 @@ Participantes: ___________________________
 
 **Notas:**
 ```
-
+Só dentro do aplicativo.  de acordo com perfil (role) de cada usuário.
+Sim com o usuário autenticado
+Mobile / web
 
 
 ```
@@ -39,7 +41,9 @@ Participantes: ___________________________
 
 **Notas:**
 ```
-
+- Ver como ta autenticação do MeuAlelo, copiar os cookies de la.
+- Autenticação já está tratada no outro.
+-Falar com Carlos (essas dúvidas)
 
 
 ```
