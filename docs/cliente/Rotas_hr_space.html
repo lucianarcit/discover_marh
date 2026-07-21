@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Mapa de rotas da webview hr-space consolidado do documento fornecido."
+    >
+    <title>Rotas - hr-space</title>
+    <style>
+      :root {
+  --navy: #12333b;
+  --navy-soft: #21464e;
+  --green: #087a63;
+  --green-bright: #0b9476;
+  --mint: #eaf6f1;
+  --orange: #f28c45;
+  --ink: #1e2d32;
+  --muted: #617278;
+  --line: #dce6e3;
+  --paper: #f7faf9;
+  --white: #ffffff;
+  --code: #0f252b;
+  --shadow: 0 18px 50px rgba(18, 51, 59, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 24px;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family:
+    Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.hero {
+  position: relative;
+  min-height: 390px;
+  overflow: hidden;
+  color: var(--white);
+  background:
+    radial-gradient(circle at 88% 24%, rgba(11, 148, 118, 0.24), transparent 26%),
+    linear-gradient(135deg, #102f37 0%, #12333b 62%, #17464b 100%);
+}
+
+.hero::after {
+  position: absolute;
+  right: -7%;
+  bottom: -48%;
+  width: 52vw;
+  height: 52vw;
+  max-width: 690px;
+  max-height: 690px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  content: "";
+}
+
+.hero-accent {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 9px;
+  background: var(--green-bright);
+}
+
+.hero-ring {
+  position: absolute;
+  top: 54px;
+  right: max(7vw, 72px);
+  width: 112px;
+  height: 112px;
+  border: 24px solid var(--orange);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 66px 0 48px;
+}
+
+.eyebrow {
+  margin: 0 0 26px;
+  color: #9ed8c9;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(3.25rem, 7vw, 5.8rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+}
+
+.hero-description {
+  max-width: 700px;
+  margin: 24px 0 34px;
+  color: #d7e5e2;
+  font-size: clamp(1rem, 2vw, 1.22rem);
+  line-height: 1.6;
+}
+
+.hero-meta {
+  display: flex;
+  max-width: 770px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.hero-meta span {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 16px 20px;
+}
+
+.hero-meta span + span {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-meta strong {
+  overflow: hidden;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-meta small {
+  color: #a9c1bd;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 56px;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 62px 0 90px;
+}
+
+.sidebar {
+  min-width: 0;
+}
+
+.sidebar-sticky {
+  position: sticky;
+  top: 24px;
+}
+
+.search {
+  display: block;
+}
+
+.search span {
+  display: block;
+  margin: 0 0 10px;
+  color: var(--navy);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.search input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+  background: var(--white);
+  color: var(--ink);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.search input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(8, 122, 99, 0.1);
+}
+
+.search input::placeholder {
+  color: #91a09d;
+}
+
+.result-summary {
+  margin: 12px 0 20px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.section-nav a {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: #46575c;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.section-nav a:hover,
+.section-nav a.active {
+  color: var(--green);
+  background: var(--mint);
+  transform: translateX(3px);
+}
+
+.section-nav a span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--green);
+  font-size: 0.7rem;
+  font-weight: 850;
+  box-shadow: 0 2px 9px rgba(18, 51, 59, 0.06);
+}
+
+.content {
+  min-width: 0;
+}
+
+.doc-section {
+  overflow: hidden;
+  margin: 0 0 30px;
+  scroll-margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 26px 30px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(234, 246, 241, 0.88), transparent 66%),
+    var(--white);
+}
+
+.section-heading > span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 18px rgba(8, 122, 99, 0.2);
+}
+
+.section-heading h2 {
+  margin: 0 0 6px;
+  color: var(--navy);
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  letter-spacing: -0.025em;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.markdown {
+  padding: 30px;
+  color: #304147;
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  color: var(--navy);
+  letter-spacing: -0.025em;
+}
+
+.markdown h1 {
+  margin: 32px 0 12px;
+  font-size: 1.45rem;
+}
+
+.markdown h1:first-child {
+  margin-top: 0;
+  color: var(--green);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.markdown h2 {
+  margin: 30px 0 10px;
+  font-size: 1.07rem;
+}
+
+.markdown h3 {
+  margin: 24px 0 9px;
+  font-size: 0.94rem;
+}
+
+.markdown p {
+  margin: 10px 0;
+}
+
+.markdown ul {
+  padding-left: 22px;
+}
+
+.markdown li {
+  margin: 5px 0;
+}
+
+.markdown code:not(pre code) {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--mint);
+  color: var(--green);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.84em;
+}
+
+.code-block {
+  overflow: hidden;
+  margin: 14px 0 22px;
+  border: 1px solid #29454c;
+  border-radius: 12px;
+  background: var(--code);
+  box-shadow: 0 12px 30px rgba(15, 37, 43, 0.13);
+}
+
+.code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #a9c1bd;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.code-toolbar button {
+  padding: 5px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d8e7e4;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.code-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.code-block pre {
+  max-height: 620px;
+  margin: 0;
+  overflow: auto;
+  padding: 20px;
+  color: #d8e7e4;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.76rem;
+  line-height: 1.58;
+  tab-size: 2;
+}
+
+.diagram-block {
+  overflow: hidden;
+  margin: 18px 0 26px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  box-shadow: 0 12px 32px rgba(18, 51, 59, 0.08);
+}
+
+.diagram-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--mint);
+  color: var(--green);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.diagram-toolbar > div {
+  display: flex;
+  gap: 7px;
+}
+
+.diagram-toolbar button {
+  padding: 6px 9px;
+  border: 1px solid rgba(8, 122, 99, 0.18);
+  border-radius: 7px;
+  background: var(--white);
+  color: var(--green);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.diagram-toolbar button:hover {
+  border-color: var(--green);
+}
+
+.mermaid-canvas {
+  min-height: 260px;
+  overflow-x: auto;
+  padding: 28px 22px;
+  background:
+    linear-gradient(rgba(8, 122, 99, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 122, 99, 0.025) 1px, transparent 1px),
+    #fcfefd;
+  background-size: 22px 22px;
+  text-align: center;
+}
+
+.mermaid-canvas svg {
+  display: block;
+  min-width: 720px;
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
+}
+
+.diagram-loading,
+.diagram-error {
+  display: inline-block;
+  margin: 85px auto;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.diagram-error {
+  max-width: 520px;
+  color: #a14c2d;
+}
+
+.mermaid-source {
+  max-height: 480px;
+  margin: 0;
+  overflow: auto;
+  padding: 20px;
+  border-top: 1px solid #29454c;
+  background: var(--code);
+  color: #d8e7e4;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.table-scroll {
+  margin: 14px 0 24px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.markdown th {
+  background: var(--green);
+  color: var(--white);
+  text-align: left;
+}
+
+.markdown th,
+.markdown td {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.markdown tr:last-child td {
+  border-bottom: 0;
+}
+
+.markdown tr:nth-child(even) td {
+  background: #fbfdfc;
+}
+
+.reference-text {
+  color: var(--green);
+  font-weight: 650;
+}
+
+.empty-state {
+  padding: 80px 30px;
+  border: 1px dashed #b8cbc6;
+  border-radius: 18px;
+  background: var(--white);
+  text-align: center;
+}
+
+.empty-state span {
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.empty-state h2 {
+  margin: 12px 0 8px;
+  color: var(--navy);
+}
+
+.empty-state p {
+  margin: 0 0 22px;
+  color: var(--muted);
+}
+
+.empty-state button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--green);
+  color: var(--white);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--navy);
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgba(18, 51, 59, 0.2);
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px max(24px, calc((100vw - 1160px) / 2));
+  background: var(--navy);
+  color: #a9c1bd;
+  font-size: 0.77rem;
+}
+
+footer p {
+  margin: 0;
+}
+
+@media (max-width: 930px) {
+  .hero-ring {
+    right: 34px;
+    width: 86px;
+    height: 86px;
+    border-width: 18px;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .sidebar-sticky {
+    position: static;
+  }
+
+  .section-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .hero {
+    min-height: 0;
+  }
+
+  .hero-inner,
+  .workspace {
+    width: min(100% - 30px, 1160px);
+  }
+
+  .hero-inner {
+    padding: 48px 0 34px;
+  }
+
+  .hero-ring {
+    top: 30px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-width: 13px;
+    opacity: 0.9;
+  }
+
+  .eyebrow {
+    max-width: 230px;
+    line-height: 1.5;
+  }
+
+  .hero h1 {
+    font-size: 3.2rem;
+  }
+
+  .hero-meta {
+    flex-direction: column;
+  }
+
+  .hero-meta span + span {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 0;
+  }
+
+  .workspace {
+    padding-top: 34px;
+  }
+
+  .section-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    padding: 22px 18px;
+  }
+
+  .section-heading > span {
+    width: 42px;
+    height: 42px;
+  }
+
+  .section-heading p {
+    overflow-wrap: anywhere;
+  }
+
+  .markdown {
+    padding: 22px 18px;
+  }
+
+  .code-block pre {
+    max-height: 460px;
+    padding: 16px;
+    font-size: 0.7rem;
+  }
+
+  .mermaid-canvas {
+    min-height: 210px;
+    padding: 20px 14px;
+  }
+
+  .mermaid-canvas svg {
+    min-width: 620px;
+  }
+
+  .diagram-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  footer {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    transition: none !important;
+  }
+}
+
+      
+  .api-overview {
+    margin: 0 0 30px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(120deg, var(--mint), var(--white) 68%);
+    box-shadow: var(--shadow);
+  }
+
+  .api-overview-label {
+    padding: 18px 30px 0;
+    color: var(--green);
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .api-overview .markdown {
+    padding-top: 14px;
+    padding-bottom: 22px;
+  }
+
+  .markdown blockquote {
+    margin: 18px 0 24px;
+    padding: 14px 18px;
+    border-left: 4px solid var(--orange);
+    border-radius: 0 9px 9px 0;
+    background: #fff6ee;
+    color: #6f3d24;
+  }
+
+  .markdown blockquote p {
+    margin: 0;
+  }
+
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero" id="topo">
+        <div class="hero-accent" aria-hidden="true"></div>
+        <div class="hero-ring" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <p class="eyebrow">Portador / MARH / Arquitetura e Engenharia</p>
+          <h1>Rotas - hr-space</h1>
+          <p class="hero-description">
+            Mapa de telas e padrões de navegação da webview utilizada no Espaço
+            RH do app Meu Alelo.
+          </p>
+          <div class="hero-meta" aria-label="Metadados do documento">
+            <span><strong>Documento anexado</strong><small>Origem</small></span>
+            <span><strong>21 de jul. de 2026</strong><small>Geração</small></span>
+            <span><strong>7 seções</strong><small>Conteúdo</small></span>
+          </div>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="Navegação da documentação">
+          <div class="sidebar-sticky">
+            <label class="search" for="doc-search">
+              <span>Buscar na documentação</span>
+              <input
+                id="doc-search"
+                type="search"
+                placeholder="Ex.: employees, pedido, rastreamento..."
+              >
+            </label>
+            <div class="result-summary" id="result-summary" aria-live="polite">
+              7 de 7 seções
+            </div>
+            <nav class="section-nav">
+      <a href="#secao-1" data-target="secao-1">
+        <span>01</span>Base URLs
+      </a>
+      <a href="#secao-2" data-target="secao-2">
+        <span>02</span>Padrão de navegação via app
+      </a>
+      <a href="#secao-3" data-target="secao-3">
+        <span>03</span>Uso pelo agente de IA
+      </a>
+      <a href="#secao-4" data-target="secao-4">
+        <span>04</span>Rotas disponíveis
+      </a>
+      <a href="#secao-5" data-target="secao-5">
+        <span>05</span>Rotas recomendadas para uso pelo agente
+      </a>
+      <a href="#secao-6" data-target="secao-6">
+        <span>06</span>Regras para montagem das URLs
+      </a>
+      <a href="#secao-7" data-target="secao-7">
+        <span>07</span>Exemplos práticos
+      </a></nav>
+          </div>
+        </aside>
+
+        <div class="content">
+          
+  <section class="api-overview" aria-label="Contexto da API">
+    <div class="api-overview-label">Contexto compartilhado</div>
+    <div class="markdown"><h1>Rotas — hr-space</h1>
+<p>Mapa de telas da webview <code>hr-space</code>, utilizada no Espaço RH do app Meu Alelo.</p>
+<p>A aplicação utiliza <code>HashRouter</code>, portanto a URL final deve seguir o padrão:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">{BASE_URL}/#{ROTA}
+</code></pre></div>
+<p>Exemplo:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking
+</code></pre></div>
+<hr/></div>
+  </section>
+          
+      <article
+        id="secao-1"
+        class="doc-section"
+        data-search="base urls rotas-hr-space.txt · seção 1 ### hml
+
+```text
+https://meualelo-webviews-hml.siteteste.inf.br/
+```
+
+### prd
+
+```text
+https://meualelo-webviews.alelo.com.br/
+```
+
+---"
+      >
+        <div class="section-heading">
+          <span>01</span>
+          <div>
+            <h2>Base URLs</h2>
+            <p>Rotas-hr-space.txt · seção 1</p>
+          </div>
+        </div>
+        <div class="markdown"><h3>HML</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews-hml.siteteste.inf.br/
+</code></pre></div>
+<h3>PRD</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/
+</code></pre></div>
+<hr/></div>
+      </article>
+      <article
+        id="secao-2"
+        class="doc-section"
+        data-search="padrão de navegação via app rotas-hr-space.txt · seção 2 para abrir uma rota da webview dentro do app meu alelo, deve ser utilizado o deeplink:
+
+```text
+meualelo://app/webview?url={url_encoded}&amp;ismodal=false&amp;shownavbar=false&amp;authrequired=true
+```
+
+onde:
+
+* `url={url_encoded}` deve receber a url completa da webview em formato url encoded.
+* `ismodal=false` indica que a webview não será aberta como modal.
+* `shownavbar=false` indica que a navbar nativa não será exibida.
+* `authrequired=true` indica que o usuário precisa estar autenticado.
+
+### exemplo
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fcard-tracking
+```
+
+deeplink final:
+
+```text
+meualelo://app/webview?url=https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fcard-tracking&amp;ismodal=false&amp;shownavbar=false&amp;authrequired=true
+```
+
+---"
+      >
+        <div class="section-heading">
+          <span>02</span>
+          <div>
+            <h2>Padrão de navegação via app</h2>
+            <p>Rotas-hr-space.txt · seção 2</p>
+          </div>
+        </div>
+        <div class="markdown"><p>Para abrir uma rota da webview dentro do app Meu Alelo, deve ser utilizado o deeplink:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">meualelo://app/webview?url={URL_ENCODED}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true
+</code></pre></div>
+<p>Onde:</p>
+<ul>
+<li><code>url={URL_ENCODED}</code> deve receber a URL completa da webview em formato URL encoded.</li>
+<li><code>isModal=false</code> indica que a webview não será aberta como modal.</li>
+<li><code>showNavbar=false</code> indica que a navbar nativa não será exibida.</li>
+<li><code>authRequired=true</code> indica que o usuário precisa estar autenticado.</li>
+</ul>
+<h3>Exemplo</h3>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking
+</code></pre></div>
+<p>Deeplink final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true
+</code></pre></div>
+<hr/></div>
+      </article>
+      <article
+        id="secao-3"
+        class="doc-section"
+        data-search="uso pelo agente de ia rotas-hr-space.txt · seção 3 quando o agente retornar uma resposta com atalho visual, deve usar o elemento:
+
+```markdown
+[list_navigation]
+```
+
+o frontend deve identificar o elemento `[list_navigation]` e renderizar um componente visual para abrir a rota correspondente dentro da webview.
+
+exemplo:
+
+```markdown
+encontrei o pedido **342671**.
+
+status: **pago**
+data do pedido: **21/05/2026**
+
+[list_navigation]
+```
+
+---"
+      >
+        <div class="section-heading">
+          <span>03</span>
+          <div>
+            <h2>Uso pelo agente de IA</h2>
+            <p>Rotas-hr-space.txt · seção 3</p>
+          </div>
+        </div>
+        <div class="markdown"><p>Quando o agente retornar uma resposta com atalho visual, deve usar o elemento:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url={URL_ENCODED}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<p>O frontend deve identificar o elemento <code>[list_navigation]</code> e renderizar um componente visual para abrir a rota correspondente dentro da webview.</p>
+<p>Exemplo:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">Encontrei o pedido **342671**.
+
+Status: **Pago**
+Data do pedido: **21/05/2026**
+
+[list_navigation](meualelo://app/webview?url={URL_ENCODED_ORDER_DETAIL}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/></div>
+      </article>
+      <article
+        id="secao-4"
+        class="doc-section"
+        data-search="rotas disponíveis rotas-hr-space.txt · seção 4 ## 4.1 onboarding
+
+| rota           | tela       |
+| -------------- | ---------- |
+| `#/onboarding` | onboarding |
+
+---
+
+## 4.2 perfil
+
+| rota        | tela   |
+| ----------- | ------ |
+| `#/profile` | perfil |
+
+---
+
+## 4.3 colaboradores
+
+| rota                              | tela                                   |
+| --------------------------------- | -------------------------------------- |
+| `#/employees`                     | lista de colaboradores                 |
+| `#/employees/new`                 | novo colaborador                       |
+| `#/employees/new/filiais`         | novo colaborador · filial              |
+| `#/employees/new/postos`          | novo colaborador · posto de trabalho   |
+| `#/employees/new/residencia`      | novo colaborador · residência          |
+| `#/employees/:id/edit`            | editar colaborador                     |
+| `#/employees/:id/edit/filiais`    | editar colaborador · filial            |
+| `#/employees/:id/edit/postos`     | editar colaborador · posto de trabalho |
+| `#/employees/:id/edit/residencia` | editar colaborador · residência        |
+
+### exemplo de url
+
+```text
+https://meualelo-webviews.alelo.com.br/#/employees
+```
+
+### exemplo de navegação para colaborador
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## 4.4 pedidos
+
+| rota                                        | tela                    |
+| ------------------------------------------- | ----------------------- |
+| `#/orders`                                  | lista de pedidos        |
+| `#/order-request-group`                     | detalhes da solicitação |
+| `#/order-detail/:ordernumber`               | detalhes do pedido      |
+| `#/order-detail/:ordernumber/beneficiaries` | colaboradores do pedido |
+
+### exemplo de url para detalhes do pedido
+
+```text
+https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+```
+
+### exemplo de url encoded
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2forder-detail%2f342671
+```
+
+### exemplo de navegação para pedido
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## 4.5 novo pedido
+
+| rota                              | tela                      |
+| --------------------------------- | ------------------------- |
+| `#/new-order`                     | redireciona para produtos |
+| `#/new-order/products`            | produtos                  |
+| `#/new-order/benefits`            | benefícios                |
+| `#/new-order/employees`           | colaboradores             |
+| `#/new-order/employee-values`     | saldos                    |
+| `#/new-order/per-employee-values` | valores por colaborador   |
+| `#/new-order/credit-date`         | data do crédito           |
+| `#/new-order/summary`             | resumo do pedido          |
+
+### exemplo de url
+
+```text
+https://meualelo-webviews.alelo.com.br/#/new-order/products
+```
+
+### exemplo de resposta orientativa do agente
+
+```markdown
+eu não consigo criar pedidos pelo chat, mas você pode fazer isso pela jornada oficial do espaço rh.
+
+[list_navigation]
+```
+
+---
+
+## 4.6 rastrear cartões
+
+| rota                                     | tela                              |
+| ---------------------------------------- | --------------------------------- |
+| `#/card-tracking`                        | lista de pedidos com rastreamento |
+| `#/card-tracking/:ordernumber`           | detalhe do pedido no rastreamento |
+| `#/card-tracking/:ordernumber/:arnumber` | detalhe do cartão/rastreio        |
+
+### exemplo de url para lista de rastreamento
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking
+```
+
+### exemplo de url encoded
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fcard-tracking
+```
+
+### exemplo de navegação para rastreamento
+
+```markdown
+[list_navigation]
+```
+
+### exemplo de url para detalhe de pedido no rastreamento
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking/342671
+```
+
+### exemplo de url para detalhe do cartão/rastreio
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking/342671/70000000010253
+```
+
+---
+
+## 4.7 pagamentos e entrega
+
+| rota                   | tela                |
+| ---------------------- | ------------------- |
+| `#/payment-methods`    | formas de pagamento |
+| `#/delivery-locations` | locais de entrega   |
+
+---
+
+## 4.8 suporte
+
+| rota                 | tela                  |
+| -------------------- | --------------------- |
+| `#/support-channels` | canais de atendimento |
+
+---
+
+## 4.9 utilitários
+
+| rota               | tela                                     |
+| ------------------ | ---------------------------------------- |
+| `#/pdf-viewer`     | visualizador de pdf                      |
+| `#/phone-redirect` | redirecionamento para ligação telefônica |
+
+---"
+      >
+        <div class="section-heading">
+          <span>04</span>
+          <div>
+            <h2>Rotas disponíveis</h2>
+            <p>Rotas-hr-space.txt · seção 4</p>
+          </div>
+        </div>
+        <div class="markdown"><h2>4.1 Onboarding</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/onboarding</code></td><td>Onboarding</td></tr></tbody></table></div>
+<hr/>
+<h2>4.2 Perfil</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/profile</code></td><td>Perfil</td></tr></tbody></table></div>
+<hr/>
+<h2>4.3 Colaboradores</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/employees</code></td><td>Lista de colaboradores</td></tr><tr><td><code>#/employees/new</code></td><td>Novo colaborador</td></tr><tr><td><code>#/employees/new/filiais</code></td><td>Novo colaborador · Filial</td></tr><tr><td><code>#/employees/new/postos</code></td><td>Novo colaborador · Posto de trabalho</td></tr><tr><td><code>#/employees/new/residencia</code></td><td>Novo colaborador · Residência</td></tr><tr><td><code>#/employees/:id/edit</code></td><td>Editar colaborador</td></tr><tr><td><code>#/employees/:id/edit/filiais</code></td><td>Editar colaborador · Filial</td></tr><tr><td><code>#/employees/:id/edit/postos</code></td><td>Editar colaborador · Posto de trabalho</td></tr><tr><td><code>#/employees/:id/edit/residencia</code></td><td>Editar colaborador · Residência</td></tr></tbody></table></div>
+<h3>Exemplo de URL</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/employees
+</code></pre></div>
+<h3>Exemplo de navegação para colaborador</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url={URL_ENCODED_EMPLOYEE_DETAIL_OR_EDIT}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>4.4 Pedidos</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/orders</code></td><td>Lista de pedidos</td></tr><tr><td><code>#/order-request-group</code></td><td>Detalhes da solicitação</td></tr><tr><td><code>#/order-detail/:orderNumber</code></td><td>Detalhes do pedido</td></tr><tr><td><code>#/order-detail/:orderNumber/beneficiaries</code></td><td>Colaboradores do pedido</td></tr></tbody></table></div>
+<h3>Exemplo de URL para detalhes do pedido</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+</code></pre></div>
+<h3>Exemplo de URL encoded</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671
+</code></pre></div>
+<h3>Exemplo de navegação para pedido</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>4.5 Novo pedido</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/new-order</code></td><td>Redireciona para produtos</td></tr><tr><td><code>#/new-order/products</code></td><td>Produtos</td></tr><tr><td><code>#/new-order/benefits</code></td><td>Benefícios</td></tr><tr><td><code>#/new-order/employees</code></td><td>Colaboradores</td></tr><tr><td><code>#/new-order/employee-values</code></td><td>Saldos</td></tr><tr><td><code>#/new-order/per-employee-values</code></td><td>Valores por colaborador</td></tr><tr><td><code>#/new-order/credit-date</code></td><td>Data do crédito</td></tr><tr><td><code>#/new-order/summary</code></td><td>Resumo do pedido</td></tr></tbody></table></div>
+<h3>Exemplo de URL</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/new-order/products
+</code></pre></div>
+<h3>Exemplo de resposta orientativa do agente</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">Eu não consigo criar pedidos pelo chat, mas você pode fazer isso pela jornada oficial do Espaço RH.
+
+[list_navigation](meualelo://app/webview?url={URL_ENCODED_NEW_ORDER_PRODUCTS}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>4.6 Rastrear cartões</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/card-tracking</code></td><td>Lista de pedidos com rastreamento</td></tr><tr><td><code>#/card-tracking/:orderNumber</code></td><td>Detalhe do pedido no rastreamento</td></tr><tr><td><code>#/card-tracking/:orderNumber/:arNumber</code></td><td>Detalhe do cartão/rastreio</td></tr></tbody></table></div>
+<h3>Exemplo de URL para lista de rastreamento</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking
+</code></pre></div>
+<h3>Exemplo de URL encoded</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking
+</code></pre></div>
+<h3>Exemplo de navegação para rastreamento</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<h3>Exemplo de URL para detalhe de pedido no rastreamento</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking/342671
+</code></pre></div>
+<h3>Exemplo de URL para detalhe do cartão/rastreio</h3>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking/342671/70000000010253
+</code></pre></div>
+<hr/>
+<h2>4.7 Pagamentos e entrega</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/payment-methods</code></td><td>Formas de pagamento</td></tr><tr><td><code>#/delivery-locations</code></td><td>Locais de entrega</td></tr></tbody></table></div>
+<hr/>
+<h2>4.8 Suporte</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/support-channels</code></td><td>Canais de atendimento</td></tr></tbody></table></div>
+<hr/>
+<h2>4.9 Utilitários</h2>
+<div class="table-scroll"><table><thead><tr><th>Rota</th><th>Tela</th></tr></thead><tbody><tr><td><code>#/pdf-viewer</code></td><td>Visualizador de PDF</td></tr><tr><td><code>#/phone-redirect</code></td><td>Redirecionamento para ligação telefônica</td></tr></tbody></table></div>
+<hr/></div>
+      </article>
+      <article
+        id="secao-5"
+        class="doc-section"
+        data-search="rotas recomendadas para uso pelo agente rotas-hr-space.txt · seção 5 ## consultar colaborador
+
+quando a resposta estiver relacionada a colaboradores, o agente pode direcionar para:
+
+```text
+#/employees
+```
+
+ou, quando houver identificador disponível:
+
+```text
+#/employees/:id/edit
+```
+
+exemplo conceitual:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## consultar pedido
+
+quando a resposta estiver relacionada a um pedido específico, o agente pode direcionar para:
+
+```text
+#/order-detail/:ordernumber
+```
+
+exemplo:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+```
+
+---
+
+## consultar colaboradores do pedido
+
+quando a resposta estiver relacionada aos colaboradores de um pedido, o agente pode direcionar para:
+
+```text
+#/order-detail/:ordernumber/beneficiaries
+```
+
+exemplo:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/order-detail/342671/beneficiaries
+```
+
+---
+
+## consultar últimos pedidos
+
+quando a resposta estiver relacionada à lista de pedidos, o agente pode direcionar para:
+
+```text
+#/orders
+```
+
+---
+
+## rastrear cartões
+
+quando a resposta estiver relacionada a rastreamento de cartões, o agente pode direcionar para:
+
+```text
+#/card-tracking
+```
+
+quando houver número do pedido:
+
+```text
+#/card-tracking/:ordernumber
+```
+
+quando houver número do pedido e ar:
+
+```text
+#/card-tracking/:ordernumber/:arnumber
+```
+
+---
+
+## criar pedido
+
+quando o usuário perguntar como fazer um pedido, o agente pode explicar que não cria pedidos pelo chat e direcionar para a jornada oficial:
+
+```text
+#/new-order/products
+```
+
+---"
+      >
+        <div class="section-heading">
+          <span>05</span>
+          <div>
+            <h2>Rotas recomendadas para uso pelo agente</h2>
+            <p>Rotas-hr-space.txt · seção 5</p>
+          </div>
+        </div>
+        <div class="markdown"><h2>Consultar colaborador</h2>
+<p>Quando a resposta estiver relacionada a colaboradores, o agente pode direcionar para:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/employees
+</code></pre></div>
+<p>Ou, quando houver identificador disponível:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/employees/:id/edit
+</code></pre></div>
+<p>Exemplo conceitual:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url={URL_ENCODED_EMPLOYEE_ROUTE}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Consultar pedido</h2>
+<p>Quando a resposta estiver relacionada a um pedido específico, o agente pode direcionar para:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/order-detail/:orderNumber
+</code></pre></div>
+<p>Exemplo:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+</code></pre></div>
+<hr/>
+<h2>Consultar colaboradores do pedido</h2>
+<p>Quando a resposta estiver relacionada aos colaboradores de um pedido, o agente pode direcionar para:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/order-detail/:orderNumber/beneficiaries
+</code></pre></div>
+<p>Exemplo:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/order-detail/342671/beneficiaries
+</code></pre></div>
+<hr/>
+<h2>Consultar últimos pedidos</h2>
+<p>Quando a resposta estiver relacionada à lista de pedidos, o agente pode direcionar para:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/orders
+</code></pre></div>
+<hr/>
+<h2>Rastrear cartões</h2>
+<p>Quando a resposta estiver relacionada a rastreamento de cartões, o agente pode direcionar para:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/card-tracking
+</code></pre></div>
+<p>Quando houver número do pedido:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/card-tracking/:orderNumber
+</code></pre></div>
+<p>Quando houver número do pedido e AR:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/card-tracking/:orderNumber/:arNumber
+</code></pre></div>
+<hr/>
+<h2>Criar pedido</h2>
+<p>Quando o usuário perguntar como fazer um pedido, o agente pode explicar que não cria pedidos pelo chat e direcionar para a jornada oficial:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">#/new-order/products
+</code></pre></div>
+<hr/></div>
+      </article>
+      <article
+        id="secao-6"
+        class="doc-section"
+        data-search="regras para montagem das urls rotas-hr-space.txt · seção 6 1. a rota deve ser montada usando a base url do ambiente.
+2. como a aplicação usa `hashrouter`, a rota deve vir após `/#/`.
+3. a url completa da webview deve ser convertida para url encoded antes de ser enviada no parâmetro `url` do deeplink.
+4. o deeplink final deve seguir o padrão:
+
+```text
+meualelo://app/webview?url={url_encoded}&amp;ismodal=false&amp;shownavbar=false&amp;authrequired=true
+```
+
+5. o agente não deve inventar ids, números de pedido ou ar.
+6. o agente só deve retornar `list_navigation` quando a rota estiver diretamente relacionada à resposta.
+7. links para jornadas transacionais devem apenas abrir a tela oficial, sem executar a ação automaticamente.
+
+---"
+      >
+        <div class="section-heading">
+          <span>06</span>
+          <div>
+            <h2>Regras para montagem das URLs</h2>
+            <p>Rotas-hr-space.txt · seção 6</p>
+          </div>
+        </div>
+        <div class="markdown"><ol>
+<li>A rota deve ser montada usando a base URL do ambiente.</li>
+<li>Como a aplicação usa <code>HashRouter</code>, a rota deve vir após <code>/#/</code>.</li>
+<li>A URL completa da webview deve ser convertida para URL encoded antes de ser enviada no parâmetro <code>url</code> do deeplink.</li>
+<li>O deeplink final deve seguir o padrão:</li>
+</ol>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">meualelo://app/webview?url={URL_ENCODED}&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true
+</code></pre></div>
+<ol start="5">
+<li>O agente não deve inventar IDs, números de pedido ou AR.</li>
+<li>O agente só deve retornar <code>list_navigation</code> quando a rota estiver diretamente relacionada à resposta.</li>
+<li>Links para jornadas transacionais devem apenas abrir a tela oficial, sem executar a ação automaticamente.</li>
+</ol>
+<hr/></div>
+      </article>
+      <article
+        id="secao-7"
+        class="doc-section"
+        data-search="exemplos práticos rotas-hr-space.txt · seção 7 ## abrir lista de pedidos
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/orders
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2forders
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## abrir detalhe do pedido
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2forder-detail%2f342671
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## abrir colaboradores do pedido
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/order-detail/342671/beneficiaries
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2forder-detail%2f342671%2fbeneficiaries
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## abrir rastreamento de cartões
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fcard-tracking
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## abrir detalhe de rastreamento do pedido
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/card-tracking/342671
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fcard-tracking%2f342671
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```
+
+---
+
+## abrir novo pedido
+
+url original:
+
+```text
+https://meualelo-webviews.alelo.com.br/#/new-order/products
+```
+
+url encoded:
+
+```text
+https%3a%2f%2fmeualelo-webviews.alelo.com.br%2f%23%2fnew-order%2fproducts
+```
+
+elemento final:
+
+```markdown
+[list_navigation]
+```"
+      >
+        <div class="section-heading">
+          <span>07</span>
+          <div>
+            <h2>Exemplos práticos</h2>
+            <p>Rotas-hr-space.txt · seção 7</p>
+          </div>
+        </div>
+        <div class="markdown"><h2>Abrir lista de pedidos</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/orders
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forders
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forders&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Abrir detalhe do pedido</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/order-detail/342671
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Abrir colaboradores do pedido</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/order-detail/342671/beneficiaries
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671%2Fbeneficiaries
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-detail%2F342671%2Fbeneficiaries&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Abrir rastreamento de cartões</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Abrir detalhe de rastreamento do pedido</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/card-tracking/342671
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking%2F342671
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fcard-tracking%2F342671&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div>
+<hr/>
+<h2>Abrir novo pedido</h2>
+<p>URL original:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https://meualelo-webviews.alelo.com.br/#/new-order/products
+</code></pre></div>
+<p>URL encoded:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-text">https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fnew-order%2Fproducts
+</code></pre></div>
+<p>Elemento final:</p>
+<div class="code-block"><div class="code-toolbar"><span>Código</span><button type="button" data-copy-code="">Copiar</button></div><pre><code class="language-markdown">[list_navigation](meualelo://app/webview?url=https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Fnew-order%2Fproducts&amp;isModal=false&amp;showNavbar=false&amp;authRequired=true)
+</code></pre></div></div>
+      </article>
+          <div class="empty-state" id="empty-state" hidden>
+            <span>0 resultados</span>
+            <h2>Nenhuma seção encontrada</h2>
+            <p>Tente buscar por outro termo técnico ou nome de endpoint.</p>
+            <button id="clear-search" type="button">Limpar busca</button>
+          </div>
+        </div>
+      </div>
+
+      <a class="back-to-top" href="#topo" aria-label="Voltar ao topo">↑</a>
+      <footer>
+        <p>Fonte: documento fornecido</p>
+        <p>Rotas hr-space / MARH</p>
+      </footer>
+    </main>
+    <script>
+  const search = document.querySelector("#doc-search");
+  const summary = document.querySelector("#result-summary");
+  const empty = document.querySelector("#empty-state");
+  const articles = [...document.querySelectorAll(".doc-section")];
+  const navLinks = [...document.querySelectorAll(".section-nav a")];
+
+  function applySearch() {
+    const query = search.value.trim().toLocaleLowerCase("pt-BR");
+    let visible = 0;
+    articles.forEach((article) => {
+      const matches = !query || article.dataset.search.includes(query);
+      article.hidden = !matches;
+      const link = navLinks.find((item) => item.dataset.target === article.id);
+      if (link) link.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    summary.textContent = visible + " de " + articles.length + " seções";
+    empty.hidden = visible !== 0;
+  }
+
+  search.addEventListener("input", applySearch);
+  document.querySelector("#clear-search").addEventListener("click", () => {
+    search.value = "";
+    applySearch();
+    search.focus();
+  });
+
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-copy-code]");
+    if (button) {
+      const code = button.closest(".code-block").querySelector("code").textContent;
+      await navigator.clipboard.writeText(code);
+      button.textContent = "Copiado";
+      window.setTimeout(() => (button.textContent = "Copiar"), 1400);
+      return;
+    }
+
+    const diagramButton = event.target.closest("[data-copy-diagram]");
+    if (diagramButton) {
+      const code = diagramButton
+        .closest("[data-mermaid-block]")
+        .querySelector(".mermaid-source code").textContent;
+      await navigator.clipboard.writeText(code);
+      diagramButton.textContent = "Copiado";
+      window.setTimeout(() => (diagramButton.textContent = "Copiar"), 1400);
+      return;
+    }
+
+    const toggleButton = event.target.closest("[data-toggle-diagram]");
+    if (toggleButton) {
+      const source = toggleButton
+        .closest("[data-mermaid-block]")
+        .querySelector(".mermaid-source");
+      source.hidden = !source.hidden;
+      toggleButton.textContent = source.hidden ? "Ver código" : "Ocultar código";
+    }
+  });
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const current = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (!current) return;
+      navLinks.forEach((link) =>
+        link.classList.toggle("active", link.dataset.target === current.target.id),
+      );
+    },
+    { rootMargin: "-18% 0px -72% 0px" },
+  );
+  articles.forEach((article) => observer.observe(article));
+
+</script>
+  </body>
+</html>
