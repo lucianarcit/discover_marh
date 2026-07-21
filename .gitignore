@@ -4,6 +4,7 @@
 
 # Configura��o pessoal do Claude Code
 .claude/settings.local.json
+.claude/
 
 # C�digo usado apenas como refer�ncia
 /docs/_referencia_alelo_faq_ciandt/
@@ -16,5 +17,13 @@
 .env.local
 docs/tests/.env.example
 
+# Arquivos de teste com tokens e respostas reais
+docs/tests/request.json
+docs/tests/response.json
+
 # Virtual environment
 .venv/
+
+#testes apis
+/tests/request.json
+/tests/response.json

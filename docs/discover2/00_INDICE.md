@@ -19,6 +19,14 @@ Esta pasta contém a documentação técnica vigente do Agente Consultivo MARH, 
 | 05 | `05_infraestrutura-aws-mvp.md` | Proposta — decisões pendentes |
 | 06 | `06_plano-testes.md` | Proposta |
 | 07 | `07_decisoes-pendentes.md` | Atualizado continuamente |
+| 08 | `08_mapeamento-apis-e-rotas.md` | Referência técnica — APIs, rotas, campos, POC |
+
+**08 — `08_mapeamento-apis-e-rotas.md`**
+
+- **Finalidade:** inventário técnico das operações consultivas, rotas de webview, campos observados e gaps identificados a partir da consolidação do brief técnico.
+- **Fontes usadas:** `docs/cliente/brief_kiro_apis_rotas_marh.md` (consolidação de Gestao_de_Colaboradores.html, Gestao_de_Pedidos.html, Rotas_hr_space.html).
+- **Posição de leitura:** após `04_contratos.md` e antes de `06_plano-testes.md`. Serve como referência para validação de contratos e construção de testes.
+- **Não é fonte funcional:** não altera os requisitos de `01_requisitos-cliente.md`.
 
 ## Decisões bloqueadoras
 
