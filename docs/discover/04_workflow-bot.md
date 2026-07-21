@@ -292,7 +292,7 @@ Pergunta sobre rastreio de cartão
 Identificar dúvida
         │
         ├── "Como está o rastreio dos meus cartões?"
-        │       → [API] GET /tracking → exibe lista de pedidos em rastreio
+        │       → [API] GET /tracking → exibe lista de pedidos em rastreio (listar os últimos 3)
         │
         ├── "Qual o status do cartão do pedido X?"
         │       → [API] GET /orders/{n}/tracking → exibe ARs e status
