@@ -228,7 +228,7 @@ Identificar dúvida
         │        → Aguardando Disponibilização → Creditado | Cancelado)
         │
         ├── "Onde está meu boleto?"
-        │       → [API] GET /orders/{n}/bank-ticket → retorna boleto em base64
+        │       → [API] GET /orders/{n}/bank-ticket → verificar se há url do boleto
         │       → RAG: boleto disponível imediatamente após confirmação do pedido
         │
         ├── "Onde está minha nota fiscal?"
