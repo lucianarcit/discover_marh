@@ -2,11 +2,19 @@
 # Projeto local usado apenas como referï¿½ncia pelo Claude
 /_referencia_alelo_faq_ciandt/
 
-# Configuração pessoal do Claude Code
+# Configuraï¿½ï¿½o pessoal do Claude Code
 .claude/settings.local.json
 
-# Código usado apenas como referência
+# Cï¿½digo usado apenas como referï¿½ncia
 /docs/_referencia_alelo_faq_ciandt/
 
 # Arquivos de exemplo locais
 /docs/sample/
+
+# VariÃ¡veis de ambiente com credenciais (nunca commitar com valores reais)
+.env
+.env.local
+docs/tests/.env.example
+
+# Virtual environment
+.venv/

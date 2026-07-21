@@ -1,6 +1,6 @@
 # Workflow do Bot — Caminhos de Decisão
 
-Mapeamento dos fluxos que o bot precisa navegar com base nos 22 documentos da pasta `docs`. Cada módulo representa um caminho distinto que o agente deve ser capaz de percorrer.
+Mapeamento dos fluxos que o bot precisa navegar com base nos 22 documentos da pasta `docs/kb`. Cada módulo representa um caminho distinto que o agente deve ser capaz de percorrer.
 
 ---
 

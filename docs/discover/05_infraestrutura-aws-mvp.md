@@ -185,7 +185,7 @@ sequenceDiagram
 | Item | Detalhe |
 |---|---|
 | **Tecnologia** | Bedrock Knowledge Bases + Amazon OpenSearch Serverless (vector store) |
-| **Função** | Indexa e faz busca semântica nos 22 arquivos `.md` da pasta `docs` |
+| **Função** | Indexa e faz busca semântica nos 22 arquivos `.md` da pasta `docs/kb` |
 | **Modelo de embedding** | Amazon Titan Embeddings v2 |
 | **Fonte dos documentos** | Bucket S3 com os 22 `.md` |
 | **Por que** | RAG gerenciado — sem necessidade de pipeline de indexação manual; re-indexação automática ao atualizar S3 |

@@ -79,7 +79,7 @@ scope-key: appKeyWso2
 ## 3. Natureza do Agente — RAG, API ou Híbrido
 
 > ✅ **Resolvido** — O processo de RAG será desenhado pelo nosso time. As fontes estão definidas:
-> - **RAG**: os 22 arquivos `.md` da pasta `docs` como única fonte de conhecimento procedimental.
+> - **RAG**: os 22 arquivos `.md` da pasta `docs/kb` como única fonte de conhecimento procedimental.
 > - **API**: apenas os endpoints GET listados na seção 4 como dados complementares em tempo real.
 > - **Escrita bloqueada**: o bot opera exclusivamente em modo leitura — sem POST, PUT ou DELETE.
 
@@ -164,7 +164,7 @@ Content-Type: application/json
 - [x] APIs são **REST**, somente **GET** — bot opera em modo leitura
 - [x] Swagger disponível — ver `03_api-referencia.md`
 - [x] Ambiente de **homologação** confirmado: `api-ma.homologacaoalelo.com.br`
-- [x] Credenciais de HML disponíveis — ver `docs/sample/user_hml.txt` e `sample_curl.txt`
+- [x] Credenciais de HML disponíveis — ver `../sample/user_hml.txt` e `../sample/sample_curl.txt`
 - [ ] Existe **rate limiting**? Qual o limite de requisições por minuto/hora?
 
 ---
@@ -327,7 +327,7 @@ Confirmado em reunião: infraestrutura AWS sa-east-1 (São Paulo).
 
 > ✅ **Decisão do time** — A estratégia de RAG (chunking, embeddings, retrieval, re-ranking) será desenhada pelo time. Fonte e comportamento de fallback definidos abaixo.
 
-- [x] **Fonte única**: os 22 arquivos `.md` da pasta `docs` — sem outras fontes no MVP.
+- [x] **Fonte única**: os 22 arquivos `.md` da pasta `docs/kb` — sem outras fontes no MVP.
 - [x] **Re-indexação**: será acionada pelo time sempre que um documento for atualizado — processo a ser automatizado em fase posterior.
 - [x] O bot responde **estritamente com base nos docs** — sem conhecimento geral externo, para evitar alucinações fora do escopo do portal.
 - [x] **Fallback**: quando não encontrar resposta, o bot informa que não sabe e orienta o usuário a contatar o suporte — sem escalada humana automatizada no MVP.
@@ -388,7 +388,7 @@ Ao final da reunião, preencher:
 | Rate limiting nas APIs | ❓ A confirmar |
 | Sandbox/homologação | ❓ A confirmar com Carlos |
 | Infraestrutura | ✅ AWS sa-east-1 (São Paulo) |
-| RAG | ✅ Bedrock Knowledge Bases — 22 docs `.md` como única fonte |
+| RAG | ✅ Bedrock Knowledge Bases — 22 docs `.md` da pasta `docs/kb` como única fonte |
 | Agente | ✅ Bedrock Agents — orquestração nativa |
 | Guardrails técnicos | ✅ Bedrock Guardrails |
 | Memória entre sessões | ✅ Não persiste no MVP — AgentCore Memory indisponível em sa-east-1 |
