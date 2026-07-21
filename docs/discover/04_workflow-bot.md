@@ -325,9 +325,7 @@ Pergunta sobre 2ª via de cartão
 Identificar dúvida
         │
         ├── "Como solicitar 2ª via?"
-        │       → RAG: fluxo de 4 passos
-        │       → [API] GET /products (contratos disponíveis)
-        │       → [API] GET /beneficiaries (colaboradores elegíveis)
+        │       → RAG: fluxo de 4 passos  + link      │ 
         │
         ├── "Motivos aceitos para 2ª via?"
         │       → RAG: apenas Perda ou Roubo
