@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Kiro" pages="3">
+  <diagram name="1 - Multi-Agent MVP" id="1_multi_agent_mvp">
+    <mxGraphModel dx="2800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- AWS Cloud boundary -->
+        <mxCell id="aws" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#232F3E;strokeWidth=2;fontSize=16;align=left;verticalAlign=top;spacingLeft=20;spacingTop=10;" value="&lt;b&gt;AWS Cloud — sa-east-1 (São Paulo)&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="220" y="20" width="1960" height="1320" as="geometry" />
+        </mxCell>
+        <!-- Regional note -->
+        <mxCell id="region" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F8F5;strokeColor=#148F77;fontSize=11;align=center;" value="&lt;b&gt;Residência regional:&lt;/b&gt; processamento em sa-east-1 · cross-region inference desativado" vertex="1" parent="1">
+          <mxGeometry x="240" y="50" width="1920" height="35" as="geometry" />
+        </mxCell>
+        <!-- App Meu Alelo (externo) -->
+        <mxCell id="app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBF5FB;strokeColor=#1A73E8;fontSize=14;align=center;verticalAlign=top;spacingTop=8;" value="&lt;b&gt;App Meu Alelo&lt;/b&gt;&lt;br&gt;&lt;span style='font-size:10px'&gt;externo à conta AWS&lt;/span&gt;" vertex="1" parent="1">
+          <mxGeometry x="20" y="380" width="160" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="webview" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.mobile;fillColor=#1A73E8;strokeColor=none;align=center;fontSize=10;fontStyle=1;" value="WebView&lt;br&gt;cookie/JWT" vertex="1" parent="1">
+          <mxGeometry x="55" y="440" width="60" height="60" as="geometry" />
+        </mxCell>
+        <!-- EDGE -->
+        <mxCell id="edge_box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F1FA;strokeColor=#7D3C98;fontSize=13;align=center;verticalAlign=top;spacingTop=8;" value="&lt;b&gt;1. Edge e Autenticação&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="240" y="100" width="320" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="apigw" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;fillColor=#8C4FFF;strokeColor=none;fontSize=10;fontStyle=1;" value="API Gateway&lt;br&gt;HTTPS /chat" vertex="1" parent="1">
+          <mxGeometry x="360" y="160" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="authorizer" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E88427;strokeColor=none;fontSize=10;fontStyle=1;" value="Authorizer&lt;br&gt;JWT→claims" vertex="1" parent="1">
+          <mxGeometry x="280" y="320" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="chathandler" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E88427;strokeColor=none;fontSize=10;fontStyle=1;" value="Chat Handler&lt;br&gt;sessionId+msg" vertex="1" parent="1">
+          <mxGeometry x="440" y="320" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="val_in" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#7D3C98;fontSize=10;align=center;" value="&lt;b&gt;Validação Entrada&lt;/b&gt;&lt;br&gt;escopo · prompt injection" vertex="1" parent="1">
+          <mxGeometry x="270" y="460" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="claims_note" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#7D3C98;fontSize=9;align=center;" value="Claims: user_id · company_id&lt;br&gt;roles · scopes&lt;br&gt;&lt;b&gt;Cookie bruto não entra no modelo&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="270" y="570" width="250" height="60" as="geometry" />
+        </mxCell>
+        <!-- AgentCore Runtime box -->
+        <mxCell id="runtime_box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F0F8;strokeColor=#6C3483;fontSize=13;align=center;verticalAlign=top;spacingTop=8;" value="&lt;b&gt;2. AgentCore Runtime — IA e Orquestração&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="620" y="100" width="620" height="700" as="geometry" />
+        </mxCell>
+        <!-- Orchestrator -->
+        <mxCell id="orchestrator" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;fillColor=#6C3483;strokeColor=none;fontSize=11;fontStyle=1;" value="&lt;b&gt;Orchestrator Agent&lt;/b&gt;&lt;br&gt;classifica · roteia · finaliza" vertex="1" parent="1">
+          <mxGeometry x="830" y="160" width="100" height="100" as="geometry" />
+        </mxCell>
+        <!-- Domain Specialists box -->
+        <mxCell id="specialists_box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF0FF;strokeColor=#9B59B6;strokeDasharray=6 4;fontSize=10;align=center;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Domain Specialists&lt;/b&gt; — configurações lógicas no mesmo Runtime (MVP)" vertex="1" parent="1">
+          <mxGeometry x="650" y="320" width="560" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_cadastro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#1E8449;fontSize=9;align=center;" value="&lt;b&gt;Cadastro &amp;&lt;br&gt;Benefícios&lt;/b&gt;&lt;br&gt;MOD 1, 2, 3" vertex="1" parent="1">
+          <mxGeometry x="670" y="370" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_pedidos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D6EAF8;strokeColor=#2E86C1;fontSize=9;align=center;" value="&lt;b&gt;Pedidos, Pagamentos&lt;br&gt;&amp; Relatórios&lt;/b&gt;&lt;br&gt;MOD 4, 5, 6" vertex="1" parent="1">
+          <mxGeometry x="800" y="370" width="125" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_cartoes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBD0;strokeColor=#E67E22;fontSize=9;align=center;" value="&lt;b&gt;Cartões &amp;&lt;br&gt;Locais&lt;/b&gt;&lt;br&gt;MOD 7, 8, 9" vertex="1" parent="1">
+          <mxGeometry x="940" y="370" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_financeiro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEDEC;strokeColor=#C0392B;fontSize=9;align=center;" value="&lt;b&gt;Financeiro &amp;&lt;br&gt;Contratos&lt;/b&gt;&lt;br&gt;MOD 10, 11" vertex="1" parent="1">
+          <mxGeometry x="1070" y="370" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_note" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=9;fontColor=#6C3483;align=center;" value="Cada Specialist: system prompt · metadata filter · allowlist tools · policy Cedar · schema · testes" vertex="1" parent="1">
+          <mxGeometry x="670" y="460" width="530" height="30" as="geometry" />
+        </mxCell>
+        <!-- Reviewer -->
+        <mxCell id="reviewer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E67E22;strokeDasharray=4 4;fontSize=10;align=center;" value="&lt;b&gt;Reviewer (opcional)&lt;/b&gt;&lt;br&gt;grounding · coerência&lt;br&gt;&lt;span style='font-size:8px'&gt;somente RAG+API ou baixa confiança&lt;/span&gt;" vertex="1" parent="1">
+          <mxGeometry x="660" y="560" width="200" height="70" as="geometry" />
+        </mxCell>
+        <!-- KB + Memory -->
+        <mxCell id="memory" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;fillColor=#6C3483;strokeColor=none;fontSize=9;fontStyle=1;" value="Memory&lt;br&gt;sessão" vertex="1" parent="1">
+          <mxGeometry x="900" y="560" width="55" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="kb" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;fillColor=#6C3483;strokeColor=none;fontSize=9;fontStyle=1;" value="Knowledge&lt;br&gt;Base" vertex="1" parent="1">
+          <mxGeometry x="980" y="560" width="55" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="s3v" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;fillColor=#7D6608;strokeColor=none;fontSize=9;fontStyle=1;" value="S3 Vectors" vertex="1" parent="1">
+          <mxGeometry x="1060" y="560" width="55" height="55" as="geometry" />
+        </mxCell>
+        <!-- Tool Response Validator -->
+        <mxCell id="tool_validator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEDEC;strokeColor=#C0392B;fontSize=9;align=center;" value="&lt;b&gt;Tool Response Validator&lt;/b&gt;&lt;br&gt;sanitiza API response&lt;br&gt;allowlist campos · PII · schema" vertex="1" parent="1">
+          <mxGeometry x="1300" y="460" width="180" height="70" as="geometry" />
+        </mxCell>
+        <!-- Final Output Validator -->
+        <mxCell id="final_validator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEDEC;strokeColor=#C0392B;fontSize=9;align=center;" value="&lt;b&gt;Final Output Validator&lt;/b&gt;&lt;br&gt;schema final · PII · tokens&lt;br&gt;fontes · deeplinks · política" vertex="1" parent="1">
+          <mxGeometry x="660" y="700" width="200" height="70" as="geometry" />
+        </mxCell>
+        <!-- AgentCore Gateway + Policy -->
+        <mxCell id="gw_box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#D68910;fontSize=12;align=center;verticalAlign=top;spacingTop=8;" value="&lt;b&gt;3. Tools e Autorização&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="100" width="560" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="agw" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.api_gateway;fillColor=#6C3483;strokeColor=none;fontSize=10;fontStyle=1;" value="AgentCore&lt;br&gt;Gateway" vertex="1" parent="1">
+          <mxGeometry x="1340" y="160" width="65" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="policy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#D4AC0D;fontSize=9;align=center;fontStyle=1;" value="&lt;b&gt;Policy / Cedar&lt;/b&gt;&lt;br&gt;default deny&lt;br&gt;user_id · company_id&lt;br&gt;roles · scopes · tool · op · params" vertex="1" parent="1">
+          <mxGeometry x="1440" y="140" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="adapter" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E88427;strokeColor=none;fontSize=10;fontStyle=1;" value="HRM API&lt;br&gt;Adapter&lt;br&gt;&lt;span style='font-size:8px'&gt;double-check auth&lt;/span&gt;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="290" width="70" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="token_provider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E67E22;fontSize=9;align=center;" value="&lt;b&gt;Token Provider&lt;/b&gt;&lt;br&gt;cache · expiração&lt;br&gt;retry 401×1" vertex="1" parent="1">
+          <mxGeometry x="1480" y="280" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="secrets" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.secrets_manager;fillColor=#DD344C;strokeColor=none;fontSize=9;fontStyle=1;" value="Secrets&lt;br&gt;Manager" vertex="1" parent="1">
+          <mxGeometry x="1670" y="280" width="55" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="egress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#1E8449;strokeDasharray=6 4;fontSize=9;align=center;" value="&lt;b&gt;Saída controlada&lt;/b&gt;&lt;br&gt;NAT / proxy / privado" vertex="1" parent="1">
+          <mxGeometry x="1750" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <!-- External systems -->
+        <mxCell id="ext_box" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAFAF1;strokeColor=#1E8449;fontSize=12;align=center;verticalAlign=top;spacingTop=8;" value="&lt;b&gt;Sistemas Alelo (externos)&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="1950" y="100" width="200" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="oauth_ext" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.general;fillColor=#1E8449;strokeColor=none;fontSize=9;fontStyle=1;" value="OAuth&lt;br&gt;client_credentials" vertex="1" parent="1">
+          <mxGeometry x="2010" y="160" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hrm_ext" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.general;fillColor=#1E8449;strokeColor=none;fontSize=9;fontStyle=1;" value="API HRM&lt;br&gt;GET endpoints" vertex="1" parent="1">
+          <mxGeometry x="2010" y="300" width="60" height="60" as="geometry" />
+        </mxCell>
+        <!-- Observability (transversal) -->
+        <mxCell id="obs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F8F5;strokeColor=#148F77;fontSize=11;align=center;" value="&lt;b&gt;Observabilidade transversal&lt;/b&gt; — AgentCore Observability + CloudWatch · traces · latência · custo/sessão · model calls · Correlation ID&lt;br&gt;&lt;span style='font-size:9px'&gt;Redação de PII e segredos antes de registrar telemetria&lt;/span&gt;" vertex="1" parent="1">
+          <mxGeometry x="240" y="860" width="1620" height="80" as="geometry" />
+        </mxCell>
+        <!-- Security note -->
+        <mxCell id="sec" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEDEC;strokeColor=#C0392B;fontSize=10;align=center;" value="&lt;b&gt;Segurança:&lt;/b&gt; IAM mínimo · KMS · tokens nunca em logs/prompts/respostas · LGPD · default deny · company_id validado" vertex="1" parent="1">
+          <mxGeometry x="240" y="960" width="1620" height="50" as="geometry" />
+        </mxCell>
+        <!-- Edges (simplified — main flows) -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1A73E8;strokeWidth=2;endArrow=block;endFill=1;" edge="1" source="webview" target="apigw" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#7D3C98;strokeWidth=1.5;endArrow=block;endFill=1;dashed=1;" edge="1" source="apigw" target="authorizer" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1A73E8;strokeWidth=2;endArrow=block;endFill=1;" edge="1" source="apigw" target="chathandler" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6C3483;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="chathandler" target="val_in" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6C3483;strokeWidth=2;endArrow=block;endFill=1;" edge="1" source="val_in" target="orchestrator" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#D68910;strokeWidth=2;endArrow=block;endFill=1;startArrow=block;startFill=1;" edge="1" source="orchestrator" target="agw" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#D4AC0D;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="agw" target="policy" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#D68910;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="policy" target="adapter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#E67E22;strokeWidth=1.5;endArrow=block;endFill=1;startArrow=block;startFill=1;" edge="1" source="adapter" target="token_provider" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#C0392B;strokeWidth=1;endArrow=block;endFill=1;dashed=1;" edge="1" source="token_provider" target="secrets" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1E8449;strokeWidth=1.5;endArrow=block;endFill=1;startArrow=block;startFill=1;dashed=1;" edge="1" source="egress" target="oauth_ext" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1E8449;strokeWidth=1.5;endArrow=block;endFill=1;startArrow=block;startFill=1;" edge="1" source="egress" target="hrm_ext" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#C0392B;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="adapter" target="tool_validator" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#6C3483;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="orchestrator" target="final_validator" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1A73E8;strokeWidth=2;endArrow=block;endFill=1;" edge="1" source="final_validator" target="chathandler" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Legend -->
+        <mxCell id="legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#AAB7B8;fontSize=10;align=left;spacingLeft=10;" value="&lt;b&gt;Legenda&lt;/b&gt;&lt;br&gt;&lt;span style='color:#1A73E8'&gt;━━&lt;/span&gt; request/response&lt;br&gt;&lt;span style='color:#6C3483'&gt;━━&lt;/span&gt; IA/orquestração&lt;br&gt;&lt;span style='color:#D68910'&gt;━━&lt;/span&gt; tool call&lt;br&gt;&lt;span style='color:#D4AC0D'&gt;━━&lt;/span&gt; policy&lt;br&gt;&lt;span style='color:#C0392B'&gt;- - -&lt;/span&gt; segredo&lt;br&gt;&lt;span style='color:#1E8449'&gt;━━&lt;/span&gt; externo" vertex="1" parent="1">
+          <mxGeometry x="20" y="700" width="160" height="160" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2 - Fluxo Autorização e Tools" id="2_auth_tools">
+    <mxGraphModel dx="2400" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#D4AC0D;fontSize=16;align=center;" value="&lt;b&gt;Fluxo de Autorização e Tool Call&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1900" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="flow2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#2C3E50;fontSize=11;align=left;spacingLeft=20;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Sequência de Autorização (default deny):&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. Sub-Agent solicita tool call (operação + params)&lt;br&gt;2. AgentCore Gateway recebe a chamada&lt;br&gt;3. Policy / Cedar avalia:&lt;br&gt;   • user_id ∈ authorized_users?&lt;br&gt;   • company_id ∈ user.companies?&lt;br&gt;   • role permite esta tool?&lt;br&gt;   • scope permite esta operação?&lt;br&gt;   • parâmetros dentro dos limites?&lt;br&gt;   • vínculo usuário↔empresa válido?&lt;br&gt;4. Se DENY → retorna erro estruturado (sem chamar Adapter)&lt;br&gt;5. Se ALLOW → HRM API Adapter recebe chamada&lt;br&gt;6. Adapter executa double-check:&lt;br&gt;   • re-valida roles + company_id&lt;br&gt;   • verifica que empresa solicitada ∈ empresas do usuário&lt;br&gt;7. Token Provider obtém Bearer (cache ou OAuth)&lt;br&gt;8. Adapter chama API HRM via Saída Controlada&lt;br&gt;9. Resposta da API → Tool Response Validator:&lt;br&gt;   • sanitiza campos&lt;br&gt;   • aplica allowlist&lt;br&gt;   • mascara PII&lt;br&gt;   • remove tokens/headers&lt;br&gt;   • valida schema&lt;br&gt;10. Resultado sanitizado → contexto do modelo" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="600" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="flow2b" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#2C3E50;fontSize=11;align=left;spacingLeft=20;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Reviewer e Validação Final:&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. Sub-Agent gera resposta provisória&lt;br&gt;2. Se condição de Reviewer:&lt;br&gt;   • RAG + API combinados&lt;br&gt;   • baixa confiança do modelo&lt;br&gt;   • alto risco (dados financeiros)&lt;br&gt;   → Reviewer avalia grounding/coerência&lt;br&gt;   → Retorna resultado estruturado:&lt;br&gt;     {approved, grounded, retry_recommended,&lt;br&gt;      unsupported_claims[], missing_information[]}&lt;br&gt;3. Orchestrator decide:&lt;br&gt;   • Se approved → continua&lt;br&gt;   • Se retry_recommended → max 1 retry&lt;br&gt;   • Registra: domínio, motivo, model calls, resultado&lt;br&gt;4. Orchestrator finaliza resposta&lt;br&gt;5. Final Output Validator:&lt;br&gt;   • schema final&lt;br&gt;   • PII masking&lt;br&gt;   • remove tokens/segredos&lt;br&gt;   • valida fontes&lt;br&gt;   • valida deeplinks e botões&lt;br&gt;   • limita tamanho&lt;br&gt;   • bloqueia conteúdo fora da política&lt;br&gt;6. Chat Handler → resposta ao App" vertex="1" parent="1">
+          <mxGeometry x="700" y="120" width="600" height="500" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3 - RAG Metadata e Domínios" id="3_rag_domains">
+    <mxGraphModel dx="2400" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F5E3;strokeColor=#1E8449;fontSize=16;align=center;" value="&lt;b&gt;RAG — Metadata Filters por Domínio&lt;/b&gt;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1900" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="rag_table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#2C3E50;fontSize=10;align=left;spacingLeft=15;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Filtros obrigatórios por documento:&lt;/b&gt;&lt;br&gt;&lt;br&gt;• domain — identifica o domínio lógico&lt;br&gt;• module — MOD numérico (1–11)&lt;br&gt;• document_type — guia | referência | passo-a-passo | conceitual&lt;br&gt;• document_version — versão do conteúdo&lt;br&gt;• environment — dev | hml | prd&lt;br&gt;• active — true | false&lt;br&gt;&lt;br&gt;&lt;b&gt;Metadata auxiliar (não é camada de autorização):&lt;/b&gt;&lt;br&gt;• allowed_profiles — [DECISAO, GERENCIAMENTO, OPERACAO, FINANCEIRO]&lt;br&gt;&lt;br&gt;Autorização permanece determinística (Policy/Cedar), não depende do RAG." vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="500" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="domain_table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#2C3E50;fontSize=10;align=left;spacingLeft=15;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Mapeamento domain → documentos:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;cadastro-beneficios&lt;/b&gt; (MOD 1,2,3):&lt;br&gt;  1CONFIG_BENE_1, 1CONFIG_BENE_REDES,&lt;br&gt;  2CADASTRO_INTERLO_PERFIS, 2CADASTRO_INTERLO_EDITAR,&lt;br&gt;  3CADASTRO_COLAB_TELA, 3CADASTRO_COLAB_PLANILHA, 3CADASTRO_COLAB_TAGS&lt;br&gt;&lt;br&gt;&lt;b&gt;pedidos-pagamentos-relatorios&lt;/b&gt; (MOD 4,5,6):&lt;br&gt;  4PEDIDO_TELA, 4PEDIDO_PLANILHA,&lt;br&gt;  5PAG_DISPO, 5PAG_DISPO_BOLETO, 5PAG_DISPO_MODELO_COBRANCA,&lt;br&gt;  6ACOMPA_PEDIDO_STATUS, 6ACOMPA_PEDIDO_BOLETO_NF,&lt;br&gt;  6ACOMPA_PEDIDO_ALTERAR_DATA_CREDITOS, 7RELATORIOS&lt;br&gt;&lt;br&gt;&lt;b&gt;cartoes-locais&lt;/b&gt; (MOD 7,8,9):&lt;br&gt;  8RASTREIO_CARTOES, manual-emissao-2via,&lt;br&gt;  10CADASTRO_FILIAIS_TELA, 10CADASTRO_POSTO_DE_TRABALHO_PLANILHA&lt;br&gt;&lt;br&gt;&lt;b&gt;financeiro-contratos&lt;/b&gt; (MOD 10,11):&lt;br&gt;  faturamento-descentralizado, 9VISUALIZAR_CONTRATOS" vertex="1" parent="1">
+          <mxGeometry x="600" y="120" width="550" height="400" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -483,4 +483,40 @@ Para mais detalhes, entre em contato com o suporte Alelo."
 | Perfil Financeiro em MOD 5 | Confirmar quais sub-fluxos são permitidos (boleto e NF confirmados — demais?) |
 | MOD 8 — escrita | A solicitação de 2ª via exige `POST` — fora do escopo do bot no MVP; apenas orientar e redirecionar |
 | Contexto de empresa | Usuário com múltiplas empresas: bot deve confirmar qual empresa está operando antes de chamar APIs |
-| Classificação de intenção | Definir se usamos prompt engineering puro no Bedrock Agents ou um nó de classificação dedicado |
+| Classificação de intenção | Orchestrator Agent decide; domínios como Specialists lógicos |
+
+---
+
+## Arquitetura Multi-Agente — Mapeamento de Domínios
+
+O Bot Alelo usa uma arquitetura **Orchestrator + Domain Specialists**. No MVP, os Specialists são configurações lógicas dentro do mesmo AgentCore Runtime (não deployments separados).
+
+### Domínios MVP
+
+| Specialist | MODs | Foco |
+|---|---|---|
+| **Cadastro & Benefícios** | 1, 2, 3 | Configuração, perfis, colaboradores |
+| **Pedidos, Pagamentos & Relatórios** | 4, 5, 6 | Criação e acompanhamento de pedidos, boleto, NF, relatórios |
+| **Cartões & Locais** | 7, 8, 9 | Rastreio, 2ª via, locais de entrega |
+| **Financeiro & Contratos** | 10, 11 | Faturamento descentralizado, contratos |
+
+### Pipeline por interação
+
+```
+Orchestrator
+    → classifica intenção
+    → verifica perfil (fast-fail)
+    → delega ao Domain Specialist
+        → RAG (metadata filter por domínio)
+        → Tool call (se necessário) → Policy/Cedar → HRM API Adapter
+            → Tool Response Validator (sanitiza antes de entrar no modelo)
+    → Reviewer (opcional: RAG+API, baixa confiança, alto risco)
+        → retorna {approved, grounded, retry_recommended, ...}
+    → Orchestrator decide retry (max 1)
+    → Final Output Validator (schema, PII, tokens, fontes, deeplinks)
+    → resposta final
+```
+
+### Detalhes completos
+
+Ver `docs/discover/05_infraestrutura-aws-mvp.md` para: matriz de tools, policies, schemas, metadata filters e testes por domínio.
