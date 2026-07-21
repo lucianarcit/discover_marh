@@ -220,7 +220,7 @@ Pergunta sobre acompanhamento de pedido
 Identificar dúvida
         │
         ├── "Quais são meus pedidos?" / "Status dos pedidos?"
-        │       → [API] GET /orders → exibe lista com status atual
+        │       → [API] GET /orders → exibe lista com status atual dos últimos 3 pedidos
         │
         ├── "O que significa o status X?"
         │       → RAG: tabela de status e significados
@@ -231,7 +231,7 @@ Identificar dúvida
         │       → [API] GET /orders/{n}/bank-ticket → verificar se há url do boleto
         │       → RAG: boleto disponível imediatamente após confirmação do pedido
         │
-        ├── "Onde está minha nota fiscal?"
+        ├── "Onde está minha nota fiscal do pedido específico?"
         │       → [API] GET /orders/{n}/invoice → retorna link da NF
         │       → RAG: NF só disponível após crédito nos cartões
         │       ↓ Se NF ainda não disponível
