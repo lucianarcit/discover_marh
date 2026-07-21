@@ -193,8 +193,7 @@ Identificar dúvida
         ├── "Quando os créditos ficam disponíveis?"
         │       ↓ Tipo de disponibilização?
         │       ├── Automática → RAG: até 2 dias úteis após compensação do boleto
-        │       └── Agendada → RAG: data escolhida; boleto deve ser pago antes
-        │       → [API] GET /availability-dates-for-credit → exibe datas disponíveis
+        │       └── Agendada → RAG: data escolhida; boleto deve ser pago antes        │    
         │
         ├── "Como funciona a cobrança/taxas?"
         │       → RAG: modelo de taxas diferidas (1º pedido vs. pedidos seguintes)
@@ -205,7 +204,7 @@ Identificar dúvida
         └── "Posso adicionar um colaborador novo direto no pedido?"
                 → RAG: sim, mas CPF novo exige validação na Receita Federal (pode causar atraso)
         ↓
-[BOTÃO] "Ir para Fazer seu Pedido"
+Resposta
 ```
 
 ---
