@@ -151,7 +151,7 @@ Pergunta sobre colaboradores
         └── SIM ↓
 Identificar dúvida
         ├── "Quais colaboradores tenho?"
-        │       → [API] GET /beneficiaries → exibe lista
+        │       → [API] GET /beneficiaries → exibe total de colaboradores + [LINK] para listagem completa
         │
         ├── "Como cadastrar um colaborador?" → RAG: fluxo de 2 etapas
         │       ↓ Tipo de entrega?
@@ -175,7 +175,7 @@ Identificar dúvida
 ## MOD 4 — Realizar Pedido de Crédito
 
 **Fonte:** RAG (`4PEDIDO_TELA.md`, `4PEDIDO_PLANILHA.md`, `5PAG_DISPO.md`, `5PAG_DISPO_BOLETO.md`, `5PAG_DISPO_MODELO_COBRANCA.md`)
-**API:** `GET /benefits`, `GET /products`, `GET /beneficiaries`, `GET /places`, `GET /availability-dates-for-credit`
+**API:** `GET /benefits`, `GET /products`, `GET /beneficiaries`, `GET /places`
 
 ```
 Pergunta sobre fazer um pedido
@@ -194,7 +194,6 @@ Identificar dúvida
         │       ↓ Tipo de disponibilização?
         │       ├── Automática → RAG: até 2 dias úteis após compensação do boleto
         │       └── Agendada → RAG: data escolhida; boleto deve ser pago antes
-        │       → [API] GET /availability-dates-for-credit → exibe datas disponíveis
         │
         ├── "Como funciona a cobrança/taxas?"
         │       → RAG: modelo de taxas diferidas (1º pedido vs. pedidos seguintes)
@@ -221,7 +220,7 @@ Pergunta sobre acompanhamento de pedido
 Identificar dúvida
         │
         ├── "Quais são meus pedidos?" / "Status dos pedidos?"
-        │       → [API] GET /orders → exibe lista com status atual
+        │       → [API] GET /orders → exibe os 3 últimos pedidos + status + [LINK] para listagem completa
         │
         ├── "O que significa o status X?"
         │       → RAG: tabela de status e significados
@@ -229,17 +228,19 @@ Identificar dúvida
         │        → Aguardando Disponibilização → Creditado | Cancelado)
         │
         ├── "Onde está meu boleto?"
-        │       → [API] GET /orders/{n}/bank-ticket → retorna boleto em base64
+        │       → Bot lista os 3 últimos pedidos OU pede o número do pedido
+        │       → [API] GET /orders/{n}/bank-ticket → retorna link para gerar o boleto
         │       → RAG: boleto disponível imediatamente após confirmação do pedido
         │
         ├── "Onde está minha nota fiscal?"
+        │       → Bot lista os 3 últimos pedidos OU pede o número do pedido
         │       → [API] GET /orders/{n}/invoice → retorna link da NF
         │       → RAG: NF só disponível após crédito nos cartões
         │       ↓ Se NF ainda não disponível
         │       → "A nota fiscal é emitida após os créditos serem carregados nos cartões."
         │
         ├── "Quem está neste pedido?"
-        │       → [API] GET /orders/{n}/beneficiaries → lista colaboradores do pedido
+        │       → [API] GET /orders/{n}/beneficiaries → exibe total de pessoas + [LINK] para listagem completa
         │
         ├── "Como altero a data de disponibilização do crédito?"
         │       → RAG: fluxo de 4 passos (somente para pedidos já pagos, sem tarifa adicional)
@@ -285,7 +286,7 @@ Identificar dúvida
 ## MOD 7 — Rastreio de Cartões
 
 **Fonte:** RAG (`8RASTREIO_CARTOES.md`)
-**API:** `GET /tracking`, `GET /orders/{n}/tracking`, `GET /orders/{n}/tracking/{ar}/detail`
+**API:** `GET /tracking`, `GET /orders/{n}/tracking` (endpoint de detalhe por AR aguardando evolução pela Alelo)
 
 ```
 Pergunta sobre rastreio de cartão
@@ -293,13 +294,15 @@ Pergunta sobre rastreio de cartão
 Identificar dúvida
         │
         ├── "Como está o rastreio dos meus cartões?"
-        │       → [API] GET /tracking → exibe lista de pedidos em rastreio
+        │       → [API] GET /tracking → exibe os 3 últimos pedidos em rastreio + status
         │
         ├── "Qual o status do cartão do pedido X?"
+        │       → Se usuário não informar o número: listar os 3 últimos + opção de digitar número
         │       → [API] GET /orders/{n}/tracking → exibe ARs e status
         │
         ├── "Detalhe do envio / onde está o cartão?"
-        │       → [API] GET /orders/{n}/tracking/{ar}/detail → exibe timeline, endereço, responsável
+        │       → Aguardando endpoint por CPF (em desenvolvimento pela Alelo)
+        │       → Enquanto indisponível: fornecer [LINK] para consulta na tela de rastreio
         │
         ├── "Por que não consigo ver o rastreio?"
         │       → RAG: rastreio disponível somente após entrega à transportadora
@@ -315,7 +318,7 @@ Identificar dúvida
 ## MOD 8 — 2ª Via de Cartão
 
 **Fonte:** RAG (`manual-emissao-2via.md`)
-**API:** `GET /products`, `GET /beneficiaries` (para exibir elegíveis)
+**API:** nenhuma — apenas orientação procedimental + [LINK] para a tela
 
 ```
 Pergunta sobre 2ª via de cartão
@@ -326,9 +329,8 @@ Pergunta sobre 2ª via de cartão
 Identificar dúvida
         │
         ├── "Como solicitar 2ª via?"
-        │       → RAG: fluxo de 4 passos
-        │       → [API] GET /products (contratos disponíveis)
-        │       → [API] GET /beneficiaries (colaboradores elegíveis)
+        │       → RAG: fluxo de 4 passos + [LINK] para a tela de emissão de 2ª via
+        │       (sem integração com API — apenas orientação e redirecionamento)
         │
         ├── "Motivos aceitos para 2ª via?"
         │       → RAG: apenas Perda ou Roubo
@@ -364,7 +366,7 @@ Pergunta sobre locais de entrega
 Identificar dúvida
         │
         ├── "Quais locais de entrega tenho cadastrados?"
-        │       → [API] GET /places → exibe lista (filtro por BRANCH ou WORKPLACE)
+        │       → [API] GET /places → exibe até 3 locais + [LINK] para listagem completa na tela
         │
         ├── "Como cadastrar uma filial?"
         │       → RAG: modal de 3 etapas (dados cadastrais → responsáveis cartões → responsáveis NF)
@@ -387,7 +389,7 @@ Identificar dúvida
 ## MOD 10 — Faturamento Descentralizado
 
 **Fonte:** RAG (`faturamento-descentralizado.md`)
-**API:** `GET /companies`, `GET /orders` (número de solicitação agrupa pedidos)
+**API:** `GET /orders` (somente se solicitado — últimos 3 pedidos)
 
 ```
 Pergunta sobre faturamento descentralizado
@@ -402,7 +404,7 @@ Identificar dúvida
         │
         ├── "Por que recebi mais de um boleto para o mesmo pedido?"
         │       → RAG: cada filial com CNPJ de faturamento diferente gera boleto separado
-        │       → [API] GET /orders → exibe número de solicitação agrupador
+        │       → Se solicitado: [API] GET /orders → exibe os 3 últimos pedidos + número de solicitação agrupador
         │
         ├── "O que é o Número de Solicitação?"
         │       → RAG: agrupador único de todos os sub-pedidos gerados por um pedido com faturamento desc.
@@ -418,7 +420,7 @@ Identificar dúvida
 ## MOD 11 — Consultar Contrato
 
 **Fonte:** RAG (`9VISUALIZAR_CONTRATOS.md`)
-**API:** `GET /companies` (dados da empresa), `GET /products` (produtos do contrato)
+**API:** nenhuma — apenas orientação procedimental + [LINK] direto para a tela
 
 ```
 Pergunta sobre contrato
@@ -426,8 +428,8 @@ Pergunta sobre contrato
 Identificar dúvida
         │
         ├── "Como consulto meu contrato?"
-        │       → RAG: Menu Administração > Contratos
-        │       → [API] GET /companies → exibe empresas/contratos disponíveis
+        │       → RAG: Menu Administração > Contratos + [LINK] direto para a tela
+        │       (sem integração com API — apenas orientação e redirecionamento)
         │
         ├── "Quais são as taxas do meu contrato?"
         │       → RAG: tabela de tarifas (emissão R$10, reemissão R$15, entrega corp. R$5, res. R$2, crédito R$2)
