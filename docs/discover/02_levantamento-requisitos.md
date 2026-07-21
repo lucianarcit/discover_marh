@@ -262,28 +262,29 @@ Resposta ao usuário
 
 ### AgentCore — disponível em sa-east-1
 
-| Recurso | Disponível? |
-|---|---|
-| **AgentCore Runtime** | ✅ Sim |
-| **AgentCore Gateway** | ✅ Sim |
-| **AgentCore Identity** | ✅ Sim |
-| **AgentCore Built-in Tools** | ✅ Sim |
-| **AgentCore Observability** | ✅ Sim |
-| AgentCore Harness | ❌ Não |
-| AgentCore Memory | ❌ Não |
-| AgentCore Evaluations | ❌ Não |
-| AgentCore Optimization | ❌ Não |
-| Policy in AgentCore | ❌ Não |
-| AWS Agent Registry | ❌ Não |
+| Recurso | Disponível? | Atualização |
+|---|---|---|
+| **AgentCore Runtime** | ✅ Sim | — |
+| **AgentCore Gateway** | ✅ Sim | — |
+| **AgentCore Identity** | ✅ Sim | — |
+| **AgentCore Built-in Tools** | ✅ Sim | — |
+| **AgentCore Observability** | ✅ Sim | — |
+| **AgentCore Memory** | ✅ Sim | Confirmado Mar 2026 (streaming LTM) |
+| AgentCore Harness | ❌ Não | — |
+| AgentCore Evaluations | ❌ Não | — |
+| AgentCore Optimization | ❌ Não | — |
+| Policy in AgentCore | ❌ Não | — |
+| AWS Agent Registry | ❌ Não | — |
 
 ### Implicações para o bot
 
 | Decisão | Impacto da limitação |
 |---|---|
 | **RAG**: usar Bedrock Knowledge Bases ✅ | Disponível — estratégia viável nativamente |
-| **Agente**: usar Bedrock Agents ✅ | Disponível — orquestração de tools nativa |
-| **Guardrails**: usar Bedrock Guardrails ✅ | Disponível — solução para guardrails de perfil |
-| **Memória de sessão**: AgentCore Memory ❌ | **Indisponível** — precisará de solução alternativa (ex: DynamoDB, ElastiCache) |
+| **Agente**: usar Bedrock AgentCore Runtime ✅ | Disponível — orquestração de tools nativa |
+| **Guardrails**: usar Bedrock Guardrails ✅ | Disponível — solução para validação de entrada/saída |
+| **Memória de sessão**: AgentCore Memory ✅ | **Disponível** — confirmado em sa-east-1 (Mar 2026) |
+| **Vector Store**: S3 Vectors ✅ | Disponível — custo até 90% menor que OpenSearch |
 | **Avaliação/otimização**: AgentCore Evaluations/Optimization ❌ | **Indisponível** — monitoramento e tuning serão manuais ou via outra ferramenta |
 | **Fine-tuning de modelo** ❌ | Indisponível — usar modelos fundacionais (ex: Claude, Titan) sem customização de pesos |
 
@@ -391,7 +392,7 @@ Ao final da reunião, preencher:
 | RAG | ✅ Bedrock Knowledge Bases — 22 docs `.md` da pasta `docs/kb` como única fonte |
 | Agente | ✅ Bedrock Agents — orquestração nativa |
 | Guardrails técnicos | ✅ Bedrock Guardrails |
-| Memória entre sessões | ✅ Não persiste no MVP — AgentCore Memory indisponível em sa-east-1 |
+| Memória entre sessões | ✅ AgentCore Memory — confirmado em sa-east-1 (Mar 2026) |
 | Modelo LLM | ✅ Claude Haiku (triagem) + Claude Sonnet (respostas complexas) |
 | Throughput | ✅ On-demand no MVP |
 | Monitoramento | ✅ AgentCore Observability |

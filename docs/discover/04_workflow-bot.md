@@ -10,7 +10,7 @@ Mapeamento dos fluxos que o bot precisa navegar com base nos 22 documentos da pa
 flowchart TD
     A([👤 Usuário envia mensagem]) --> B
 
-    B[Bedrock Guardrails\nEntrada\nbloqueia jailbreak / fora do escopo]
+    B[Validação de entrada\nescopo · prompt injection]
     B --> C
 
     C[GET /profile\nIdentifica perfil + empresa]
@@ -36,13 +36,13 @@ flowchart TD
 
     H{Fonte da\nresposta?}
     H -- Procedimental --> RAG[Bedrock Knowledge Bases\n22 docs .md]
-    H -- Dados em tempo real --> API[Action Group\nGET endpoints HRM]
+    H -- Dados em tempo real --> API[HRM API Adapter\nGET endpoints HRM]
     H -- Ambos --> RAG & API
 
     RAG --> OUT
     API --> OUT
 
-    OUT[Bedrock Guardrails\nSaída\ngrounding · mascara PII · bloqueia invenção]
+    OUT[Validação de saída\ngrounding · PII · formato]
     OUT --> RESP[Resposta ao usuário\n+ botão de redirecionamento]
 
     D -- ❓ Sem intenção reconhecida --> FALL[Fallback\nNão encontrei essa informação\nContate o suporte]

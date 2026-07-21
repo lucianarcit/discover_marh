@@ -1,87 +1,83 @@
 # Infraestrutura AWS — MVP Bot Alelo
 
 **Região:** sa-east-1 (São Paulo)
-**Paradigma:** Serverless + Managed AI — sem servidores a gerenciar, escala automática, pague pelo uso.
+**Restrição:** cross-region inference desativado · todos os componentes em sa-east-1
+**Paradigma:** Serverless + Managed AI
+**Diagrama de referência:** `docs/desenhos/arquitetura_bot_alelo_v2.drawio.xml`
+
+---
+
+## Disponibilidade Regional Confirmada (sa-east-1)
+
+| Serviço | Disponível | Fonte de confirmação | Data |
+|---|---|---|---|
+| Amazon Bedrock AgentCore Runtime | ✅ | AWS Regions doc | Jul 2026 |
+| Amazon Bedrock AgentCore Gateway | ✅ | AWS Regions doc | Jul 2026 |
+| Amazon Bedrock AgentCore Memory | ✅ | Anúncio AWS (streaming LTM) | Mar 2026 |
+| Amazon Bedrock AgentCore Observability | ✅ | AWS Regions doc | Jul 2026 |
+| Amazon Bedrock Knowledge Bases | ✅ | AWS Regions doc | Jul 2026 |
+| Amazon S3 Vectors | ✅ | Expansão 17 regiões | Mar 2026 |
+| Amazon Bedrock Guardrails | ✅ | AWS Regions doc | Jul 2026 |
+| Amazon Titan Embeddings V2 | ✅ | Bedrock models catalog | Jul 2026 |
+| Amazon API Gateway | ✅ | Serviço global | — |
+| AWS Lambda | ✅ | Serviço global | — |
+| AWS Secrets Manager | ✅ | Serviço global | — |
+| Amazon S3 | ✅ | Serviço global | — |
+| Amazon CloudWatch | ✅ | Serviço global | — |
+| AgentCore Harness | ❌ | Não listado em sa-east-1 | Jul 2026 |
+| AgentCore Evaluations | ❌ | Não listado em sa-east-1 | Jul 2026 |
 
 ---
 
 ## Visão Geral da Arquitetura
 
+> Diagrama completo nas 3 páginas do Draw.io. Abaixo, representação Mermaid simplificada.
+
 ```mermaid
-flowchart TD
-    subgraph APP[App Meu Alelo]
-        WEBVIEW[Webview - cookies injetados]
+flowchart LR
+    subgraph EXT[Externo]
+        APP[App Meu Alelo\nWebView]
+        OAUTH[OAuth Alelo\nclient_credentials]
+        HRM[API HRM Alelo\nGET endpoints]
     end
 
-    subgraph SECRETS[Segredos]
-        SM[Secrets Manager\nCLIENT_ID - CLIENT_SECRET - API keys]
+    subgraph AWS[AWS sa-east-1]
+        APIGW[API Gateway\nHTTPS /chat]
+        AUTH[Lambda Authorizer\ncookie/JWT → claims]
+        CHAT[Lambda Chat Handler\nsessionId + mensagem]
+        VAL_IN[Validação de entrada\nescopo · prompt injection]
+        AGENT[Bedrock AgentCore\nRuntime · modelo in-region]
+        VAL_OUT[Validação de saída\nPII · grounding · formato]
+        MEM[AgentCore Memory\ncontexto da sessão]
+        KB[Knowledge Base\nRAG documental]
+        S3V[S3 Vectors\nvector store]
+        GW[AgentCore Gateway\ntools · scopes]
+        ADAPTER[HRM API Adapter\nvalida autorização\nsanitiza respostas]
+        TP[Token Provider\ncache · retry 401×1]
+        SM[Secrets Manager\nCLIENT_ID / SECRET]
+        EGRESS[Saída controlada\nNAT / proxy / privado]
+        S3[S3 docs .md]
     end
 
-    subgraph EDGE[Edge - Entrada]
-        APIGW[API Gateway\nHTTPS endpoint]
-        LAMBDA_AUTH[Lambda Auth\nperfil + contexto]
-    end
-
-    subgraph AI[Bedrock - Camada de IA]
-        GRD_IN[Guardrails Entrada\nbloqueia jailbreak]
-        AGENT[Bedrock Agent\nClaude Haiku + Sonnet]
-        KB[Knowledge Bases\n22 docs .md]
-        OS[OpenSearch Serverless\nVector Store]
-        GRD_OUT[Guardrails Saida\ngrounding - PII]
-    end
-
-    subgraph ACTIONS[Action Groups - Lambda]
-        L_PROFILE[Lambda Profile\nGET /profile - /companies]
-        L_ORDERS[Lambda Orders\nGET /orders]
-        L_BENEF[Lambda Beneficiaries\nGET /beneficiaries]
-        L_TRACK[Lambda Tracking\nGET /tracking]
-        L_AUX[Lambda Auxiliares\nGET /benefits - /places]
-    end
-
-    subgraph HRM[API Alelo HRM - externa]
-        HRM_API[cardholders-hr-management v1\nsomente GET]
-    end
-
-    subgraph SESSION[Contexto de Sessao]
-        REDIS[ElastiCache Redis\nTTL 30 min]
-    end
-
-    subgraph STORE[Armazenamento]
-        S3[S3\n22 docs .md]
-    end
-
-    subgraph OBS[Observabilidade]
-        AGOBS[AgentCore Observability\ntraces - custo por sessao]
-        CW[CloudWatch\nlogs - metricas - alertas]
-    end
-
-    WEBVIEW -->|HTTPS + cookies| APIGW
-    APIGW --> LAMBDA_AUTH
-    LAMBDA_AUTH -.->|le credenciais| SM
-    LAMBDA_AUTH -->|mensagem + perfil| GRD_IN
-    GRD_IN --> AGENT
-    AGENT <-->|RAG| KB
-    KB <--> OS
-    KB -.->|indexa| S3
-    AGENT <-->|contexto| REDIS
-    AGENT --> L_PROFILE
-    AGENT --> L_ORDERS
-    AGENT --> L_BENEF
-    AGENT --> L_TRACK
-    AGENT --> L_AUX
-    L_PROFILE -->|GET| HRM_API
-    L_ORDERS -->|GET| HRM_API
-    L_BENEF -->|GET| HRM_API
-    L_TRACK -->|GET| HRM_API
-    L_AUX -->|GET| HRM_API
-    L_PROFILE -.->|le credenciais| SM
-    L_ORDERS -.->|le credenciais| SM
-    AGENT --> GRD_OUT
-    GRD_OUT -->|resposta validada| APIGW
-    APIGW -->|resposta| WEBVIEW
-    AGENT -.-> AGOBS
-    LAMBDA_AUTH -.-> CW
-    L_ORDERS -.-> CW
+    APP -->|1. HTTPS| APIGW
+    APIGW -->|2. valida| AUTH
+    APIGW -->|3. request| CHAT
+    CHAT -->|4. msg + claims| VAL_IN
+    VAL_IN -->|5. entrada OK| AGENT
+    AGENT <-->|contexto| MEM
+    AGENT <-->|retrieve| KB
+    KB <-->|busca vetorial| S3V
+    AGENT -->|6. tool call| GW
+    GW -->|7. invoca| ADAPTER
+    ADAPTER -->|token| TP
+    TP -.->|segredo| SM
+    TP -.->|OAuth| EGRESS
+    ADAPTER -->|8. GET + Bearer| EGRESS
+    EGRESS -->|TLS| OAUTH
+    EGRESS -->|TLS| HRM
+    AGENT -->|resposta| VAL_OUT
+    VAL_OUT -->|resposta validada| CHAT
+    S3 -.->|ingestão| KB
 ```
 
 ---
@@ -91,281 +87,374 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    participant App as 📱 App Meu Alelo
+    participant App as App Meu Alelo
     participant APIGW as API Gateway
-    participant Auth as Lambda Auth
-    participant SM as Secrets Manager
-    participant GI as Guardrails Entrada
-    participant Agent as Bedrock Agent
-    participant Redis as ElastiCache Redis
+    participant Auth as Lambda Authorizer
+    participant Chat as Chat Handler
+    participant ValIn as Validação Entrada
+    participant Agent as AgentCore Runtime
+    participant Mem as AgentCore Memory
     participant KB as Knowledge Base
-    participant AL as Action Group Lambda
-    participant HRM as API Alelo HRM
-    participant GO as Guardrails Saída
+    participant GW as AgentCore Gateway
+    participant Adapter as HRM API Adapter
+    participant TP as Token Provider
+    participant SM as Secrets Manager
+    participant Egress as Saída Controlada
+    participant OAuth as OAuth Alelo
+    participant HRM as API HRM
+    participant ValOut as Validação Saída
 
-    App->>APIGW: POST /chat {mensagem, sessionId}\n+ cookies no header
-    APIGW->>Auth: invoca Lambda
-    Auth->>SM: busca CLIENT_ID / CLIENT_SECRET
-    SM-->>Auth: credenciais
-    Auth->>HRM: GET /profile (Bearer accessToken)
-    HRM-->>Auth: {functionType: "OPERACAO", ...}
-    Auth->>Auth: valida perfil + monta contexto
-    Auth->>GI: mensagem + perfil
+    App->>APIGW: POST /chat {mensagem, sessionId} + cookie/JWT
+    APIGW->>Auth: invoca Authorizer
+    Auth->>Auth: valida cookie/JWT → extrai claims
+    Auth-->>APIGW: {user_id, company_id, roles, scopes}
+    APIGW->>Chat: request + claims autorizados
+    Chat->>ValIn: mensagem + claims (sem cookie bruto)
 
-    GI->>GI: filtra jailbreak / fora do escopo
-    GI->>Agent: mensagem validada
+    ValIn->>ValIn: valida escopo, mitiga prompt injection
+    ValIn->>Agent: entrada validada
 
-    Agent->>Redis: GET session:{sessionId}
-    Redis-->>Agent: histórico da conversa
+    Agent->>Mem: recupera contexto da sessão
+    Mem-->>Agent: histórico + empresa selecionada
 
-    Agent->>Agent: classifica intenção
-    Agent->>Agent: verifica guardrail de perfil
+    Agent->>Agent: classifica intenção + verifica perfil
 
-    alt Resposta procedimental
-        Agent->>KB: busca semântica nos 22 docs
-        KB-->>Agent: chunks relevantes
-    else Dados em tempo real
-        Agent->>AL: invoca Action Group
-        AL->>SM: busca credenciais
-        SM-->>AL: credenciais
-        AL->>HRM: GET /orders (ou outro endpoint)
-        HRM-->>AL: dados
-        AL-->>Agent: dados formatados
-    else Híbrido
-        Agent->>KB: busca no RAG
-        Agent->>AL: busca na API
-        KB-->>Agent: contexto procedimental
-        AL-->>Agent: dados em tempo real
+    alt Resposta procedimental (RAG)
+        Agent->>KB: retrieve query
+        KB->>S3V: busca vetorial
+        S3V-->>KB: chunks + scores
+        KB-->>Agent: contexto + fontes + metadados
+    else Dados em tempo real (API)
+        Agent->>GW: tool call (operação + params)
+        GW->>Adapter: invoca com user_id, company_id, roles
+        Adapter->>Adapter: valida autorização novamente
+        Adapter->>TP: get_valid_token()
+        TP->>SM: lê CLIENT_ID + CLIENT_SECRET (cache miss)
+        SM-->>TP: credenciais
+        TP->>Egress: POST /oauth/token
+        Egress->>OAuth: client_credentials via TLS
+        OAuth-->>TP: access_token + expires_in
+        TP-->>Adapter: Bearer token
+        Adapter->>Egress: GET /endpoint + Bearer
+        Egress->>HRM: request via TLS
+        HRM-->>Adapter: dados JSON
+        Adapter->>Adapter: sanitiza resposta, limita campos
+        Adapter-->>GW: resultado sanitizado
+        GW-->>Agent: tool result
     end
 
-    Agent->>Redis: SET session:{sessionId} TTL=1800s
-    Agent->>GO: resposta bruta
-    GO->>GO: grounding · mascara PII · bloqueia invenção
-    GO-->>APIGW: resposta validada
-    APIGW-->>App: {resposta, botão de redirecionamento}
+    Agent->>Mem: persiste contexto atualizado
+    Agent->>ValOut: resposta gerada
+    ValOut->>ValOut: reduz PII, verifica grounding, remove tokens
+    ValOut-->>Chat: resposta validada
+    Chat-->>APIGW: {resposta, fontes, botão}
+    APIGW-->>App: HTTPS response
 ```
 
 ---
 
-## Componentes — Tecnologia e Justificativa
+## Componentes
 
-### 1. API Gateway
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Amazon API Gateway (HTTP API) |
-| **Função** | Endpoint HTTPS único para o bot; recebe a mensagem e cookies da webview |
-| **Por que** | Serverless, escala automática, integra nativamente com Lambda, suporte a CORS para webview |
-| **Alternativa descartada** | ALB — desnecessário para um endpoint único sem roteamento complexo |
+### 1. App Meu Alelo (externo)
 
----
+- WebView no app nativo (mobile e web)
+- Cookie ou JWT da sessão do usuário autenticado
+- Nenhuma credencial técnica da API no cliente
+- Comunicação HTTPS com API Gateway
 
-### 2. Lambda Auth
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | AWS Lambda (Python 3.12) |
-| **Função** | Extrai cookies da request, chama `GET /profile`, valida perfil, monta contexto para o Agent |
-| **Por que** | Execução pontual sem servidor, tempo médio < 500ms, custo quase zero em baixo volume |
-| **Runtime** | Python — SDK Boto3 nativo para Bedrock |
+### 2. Edge e Autenticação
 
----
-
-### 3. Bedrock Agent
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Amazon Bedrock Agents |
-| **Função** | Orquestração principal — decide quando usar RAG, quando chamar Action Groups, mantém o fluxo de conversa |
-| **Modelo principal** | **Claude Sonnet** (respostas complexas, RAG + API combinados) |
-| **Modelo de triagem** | **Claude Haiku** (classificação de intenção, respostas simples) |
-| **Por que Bedrock Agents** | Orquestração nativa sem código de grafo, integração direta com Knowledge Bases e Guardrails, disponível em sa-east-1 |
-| **Alternativa avaliada** | LangGraph — mais controle de fluxo, mas exige infra própria e mais complexidade para o MVP |
-
----
-
-### 4. Bedrock Knowledge Bases + OpenSearch Serverless
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Bedrock Knowledge Bases + Amazon OpenSearch Serverless (vector store) |
-| **Função** | Indexa e faz busca semântica nos 22 arquivos `.md` da pasta `docs/kb` |
-| **Modelo de embedding** | Amazon Titan Embeddings v2 |
-| **Fonte dos documentos** | Bucket S3 com os 22 `.md` |
-| **Por que** | RAG gerenciado — sem necessidade de pipeline de indexação manual; re-indexação automática ao atualizar S3 |
-| **Cache semântico** | Nativo no Bedrock Knowledge Bases — evita chamadas repetidas para perguntas similares (substitui Elastic Cache do bot anterior) |
-
----
-
-### 5. Bedrock Guardrails
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Amazon Bedrock Guardrails |
-| **Função entrada** | Bloqueia jailbreak, prompt injection, tópicos fora do escopo |
-| **Função saída** | Grounding (impede invenção), mascaramento de PII (CPF, tokens), filtro de conteúdo |
-| **Por que** | Gerenciado, disponível em sa-east-1, configurável sem código, auditável |
-
----
-
-### 6. Action Groups — Lambda
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | AWS Lambda (Python 3.12) — uma função por grupo de endpoints |
-| **Função** | Executa as chamadas GET para a API HRM da Alelo com os headers de autenticação |
-| **Grupos** | Profile/Companies · Orders · Beneficiaries · Tracking · Auxiliares (benefits, products, places) |
-| **Credenciais** | Lidas do Secrets Manager a cada invocação — nunca em variável de ambiente |
-| **Por que Lambda** | Integração nativa com Bedrock Agents como Action Groups, serverless, isolamento por grupo |
-
----
-
-### 7. ElastiCache Redis
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Amazon ElastiCache for Redis (Serverless) |
-| **Função** | Persistir contexto da conversa dentro de uma sessão (histórico de mensagens, empresa selecionada, último colaborador mencionado) |
-| **TTL** | 1800s (30 min de inatividade encerra a sessão) |
-| **Por que** | AgentCore Memory indisponível em sa-east-1 — Redis é a alternativa mais simples e de menor latência |
-| **Alternativa** | DynamoDB — mais barato em baixo volume, porém latência maior; avaliar após MVP |
-
----
-
-### 8. Secrets Manager
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | AWS Secrets Manager |
-| **Função** | Armazena `CLIENT_ID`, `CLIENT_SECRET` e demais credenciais da API Alelo |
-| **Por que** | Rotação automática de segredos, integração nativa com Lambda, auditoria via CloudTrail |
-
----
-
-### 9. S3
-| Item | Detalhe |
-|---|---|
-| **Tecnologia** | Amazon S3 |
-| **Função** | Repositório dos 22 arquivos `.md` que alimentam o Knowledge Base |
-| **Atualização** | Upload de novo `.md` → Bedrock re-indexa automaticamente |
-| **Custo** | Desprezível (< $0,01/mês para 22 arquivos pequenos) |
-
----
-
-### 10. Observabilidade
-| Item | Detalhe |
-|---|---|
-| **AgentCore Observability** | Traces do agente, latência por etapa, custo por sessão, perguntas sem resposta |
-| **CloudWatch Logs** | Logs de Lambda (Auth + Action Groups) |
-| **CloudWatch Métricas** | Erros de API, latência de resposta, tokens consumidos |
-| **CloudWatch Alarms** | Alerta se custo/hora ultrapassar threshold definido |
-
----
-
-## Estimativa de Custos
-
-> Cenário base: **500 usuários/dia · 5 mensagens/sessão · 20 dias úteis/mês = 50.000 interações/mês**
-
-### Custo por Interação
-
-```mermaid
-pie title Composição de Custo por Interação (estimativa)
-    "Claude Sonnet (LLM)" : 55
-    "Knowledge Base + Embedding" : 20
-    "OpenSearch Serverless" : 12
-    "Lambda + ElastiCache" : 8
-    "API Gateway + outros" : 5
-```
-
-### Tabela de Custos Mensais (50k interações)
-
-| Serviço | Unidade | Volume est. | Preço unit. | Custo/mês |
-|---|---|---|---|---|
-| **Claude Haiku** (triagem) | 1K tokens input | 25.000K | $0,00025 | ~$6 |
-| **Claude Haiku** (triagem) | 1K tokens output | 5.000K | $0,00125 | ~$6 |
-| **Claude Sonnet** (respostas) | 1K tokens input | 15.000K | $0,003 | ~$45 |
-| **Claude Sonnet** (respostas) | 1K tokens output | 7.500K | $0,015 | ~$113 |
-| **Bedrock Knowledge Bases** | 1K queries | 50K | $0,10 | ~$5 |
-| **Titan Embeddings v2** | 1K tokens | 5.000K | $0,00002 | ~$0,10 |
-| **OpenSearch Serverless** | OCU/hora | 2 OCU × 730h | $0,24 | ~$350 |
-| **ElastiCache Redis Serverless** | GB-hora | ~10GB × 730h | $0,125 | ~$9 |
-| **Lambda** (todas as funções) | Invocações | 250.000 | $0,0000002 | ~$0,05 |
-| **API Gateway** | Requisições | 50.000 | $0,0000035 | ~$0,18 |
-| **Secrets Manager** | API calls | 250.000 | $0,00001 | ~$0,03 |
-| **S3** | Storage + requests | Negligível | — | ~$0,01 |
-| **CloudWatch** | Logs + métricas | — | — | ~$5 |
-| **Bedrock Guardrails** | Unidades de texto | 50.000 | $0,0075 | ~$4 |
-| | | | **TOTAL** | **~$543/mês** |
-
-> ⚠️ **O maior custo é o OpenSearch Serverless** (~65% do total) — mínimo de 2 OCUs sempre ativos. Avaliar desligamento fora do horário comercial pode reduzir para ~$180/mês.
-
-### Cenários de Volume
-
-| Cenário | Interações/mês | Custo estimado |
+| Componente | Tecnologia | Responsabilidade |
 |---|---|---|
-| **MVP lançamento** (200 users/dia) | 20.000 | ~$220/mês |
-| **Base** (500 users/dia) | 50.000 | ~$543/mês |
-| **Crescimento** (2.000 users/dia) | 200.000 | ~$1.400/mês |
-| **Escala** (10.000 users/dia) | 1.000.000 | ~$5.200/mês |
+| **API Gateway** | Amazon API Gateway (HTTP API) | Endpoint HTTPS `/chat`; CORS restritivo; rate limiting |
+| **Lambda Authorizer** | AWS Lambda (Python) | Valida cookie/JWT; retorna claims mínimos: `user_id`, `company_id`, `roles`, `scopes` |
+| **Lambda Chat Handler** | AWS Lambda (Python) | Recebe `sessionId` + mensagem + claims; orquestra chamada ao AgentCore; retorna resposta |
 
-> A partir de ~200k interações/mês, avaliar **Provisioned Throughput** para Claude — reduz custo por token em até 50% com volume previsível.
+**Separação de responsabilidades:**
+- Autenticação da pessoa usuária → Authorizer
+- Autorização para acessar recursos → AgentCore + HRM API Adapter
+- Autenticação técnica na API HRM → Token Provider (client_credentials)
 
----
+**Regra crítica:** O cookie/JWT bruto nunca é enviado ao modelo. Apenas os claims mínimos entram no contexto do agente.
 
-## Estratégia de Redução de Custo vs. Bot Anterior
+### 3. Validação de Entrada
 
-```mermaid
-flowchart LR
-    subgraph ANTES["❌ Bot Anterior"]
-        A1[Modelo caro\npara todas as perguntas]
-        A2[Cache semântico\nexterno Elastic]
-        A3[Custo alto\nsem visibilidade por interação]
-    end
+Componente lógico (implementado no Chat Handler ou como middleware) responsável por:
 
-    subgraph DEPOIS["✅ MVP Novo"]
-        D1[Haiku para triagem\nSonnet só quando necessário]
-        D2[Cache nativo\nBedrock Knowledge Bases]
-        D3[AgentCore Observability\ncusto por sessão visível]
-    end
+- Validar que a mensagem está dentro do escopo do bot
+- Aplicar regras da aplicação (tamanho máximo, formato)
+- Mitigar prompt injection (detecção de padrões maliciosos)
+- Rejeitar solicitações fora do escopo antes de enviar ao modelo
+- Reduzir os dados enviados ao modelo (apenas o necessário)
 
-    A1 -->|substituído por| D1
-    A2 -->|substituído por| D2
-    A3 -->|substituído por| D3
+> ⚠️ Esta camada **reduz o risco** de ataques mas não os elimina totalmente. É um controle de mitigação, não uma garantia absoluta.
+
+### 4. IA e Orquestração
+
+| Componente | Tecnologia | Responsabilidade |
+|---|---|---|
+| **AgentCore Runtime** | Amazon Bedrock AgentCore | Orquestração principal; decide RAG vs API vs híbrido; mantém fluxo conversacional |
+| **Modelo LLM** | Modelo Bedrock in-region (a definir) | Geração de respostas; classificação de intenção |
+| **AgentCore Memory** | Amazon Bedrock AgentCore Memory | Contexto da sessão: histórico, empresa selecionada, último recurso mencionado |
+| **AgentCore Gateway** | Amazon Bedrock AgentCore Gateway | Catálogo de ferramentas; contratos; scopes; roteamento de tool calls |
+
+**Modelo LLM:** A definir com base na disponibilidade in-region em sa-east-1. Candidatos: Claude (Haiku/Sonnet), Amazon Nova. Pendente de validação de quais versões específicas estão disponíveis.
+
+### 5. RAG — Knowledge Base
+
+#### Runtime (consulta)
+
+```
+AgentCore Runtime
+    → Bedrock Knowledge Base (retrieve query)
+        → Amazon S3 Vectors (busca vetorial)
+        ← chunks + scores + metadados
+    ← contexto recuperado + fontes
+→ Modelo gera resposta com base no contexto
+→ Validação de saída
 ```
 
+- A Knowledge Base **recupera contexto** — não produz a resposta final
+- O modelo **gera a resposta** com base nos chunks recuperados
+- Fontes e metadados são preservados para citação na resposta
+- Embedding: Amazon Titan Embeddings V2 (confirmado in-region)
+- Vector Store: Amazon S3 Vectors (custo até 90% menor que OpenSearch)
+
+#### Ingestão documental
+
+```
+S3 (documentos .md versionados)
+    → evento de publicação (S3 Event Notification)
+        → Lambda de Ingestão
+            → StartIngestionJob (Bedrock API)
+                → Knowledge Base processa e indexa
+                    → S3 Vectors (armazena embeddings)
+```
+
+- A ingestão **não é automática** apenas por upload no S3 — requer trigger configurado
+- 22 documentos `.md` da pasta `docs/kb/` como fonte única
+- Re-indexação acionada pelo pipeline de deploy ou manualmente
+
+### 6. Memória de Sessão (AgentCore Memory)
+
+| Item | Detalhe |
+|---|---|
+| **Tecnologia** | Amazon Bedrock AgentCore Memory |
+| **Disponibilidade** | ✅ Confirmada em sa-east-1 (Mar 2026) |
+| **Função** | Histórico da sessão, empresa selecionada, último recurso mencionado |
+| **Retenção** | TTL configurável (ex: 30 min de inatividade) |
+
+**Não armazenar em memória:**
+- Access tokens
+- Client secrets
+- Cookies brutos
+- Dados desnecessários da API HRM
+- PII além do mínimo necessário para contexto
+
+### 7. Ferramentas e Integração (HRM API Adapter)
+
+```
+AgentCore Runtime
+    → AgentCore Gateway (tool call)
+        → HRM API Adapter (Lambda)
+            → valida user_id, company_id, roles, scopes
+            → Token Provider (obtém Bearer)
+            → Saída controlada (NAT/proxy)
+                → API HRM Alelo (GET + Bearer)
+            ← resposta JSON
+            → sanitiza campos sensíveis
+            → limita dados devolvidos ao modelo
+        ← resultado sanitizado
+    ← tool result para o agente
+```
+
+**Responsabilidades do HRM API Adapter:**
+- Valida novamente `user_id`, `company_id`, `roles`, `scopes` — não confia apenas no modelo
+- Mapeia operações: profile, companies, orders, beneficiaries, tracking, auxiliares
+- Usa timeouts explícitos
+- Trata erros HTTP (4xx, 5xx)
+- Aplica retries somente quando seguros (GET idempotente)
+- Sanitiza respostas antes de devolver ao agente
+- Limita campos devolvidos (apenas o necessário para a resposta)
+- Nunca devolve tokens ou segredos ao agente
+
+**Decisão de design:** Uma única Lambda modular com várias operações (não 5 Lambdas separadas). Justificativa: simplifica deploy, reduz cold starts, mantém lógica de token centralizada.
+
+### 8. Token Provider (fluxo OAuth)
+
+```
+HRM API Adapter
+    → Token Provider: get_valid_token()
+        → verifica cache local (token + expiration)
+        → se cache válido: retorna token
+        → se cache expirado ou vazio:
+            → Secrets Manager: lê CLIENT_ID + CLIENT_SECRET
+            → POST /oauth/token (via Saída controlada)
+                grant_type=client_credentials
+            ← access_token + expires_in
+            → armazena em cache com margem de expiração
+        ← Bearer token
+    → chamada HRM com Authorization: Bearer <token>
+```
+
+**Regras do Token Provider:**
+- Obtém `CLIENT_ID` e `CLIENT_SECRET` do Secrets Manager
+- Cache do segredo quando apropriado (evita chamadas repetidas ao SM)
+- Solicita token com `client_credentials`
+- Armazena access token somente em memória (nunca persiste)
+- Calcula expiração com margem (renova antes de expirar)
+- Invalida cache após HTTP 401 — permite **um único retry**
+- Não renova após HTTP 403 — retorna erro de autorização
+- Impede token e segredo em logs, prompts, traces e respostas
+
+### 9. Saída Controlada (Egress)
+
+Componente lógico de egress para tráfego externo (OAuth e HRM API).
+
+**Opções (decisão pendente):**
+- NAT Gateway (custo ~$32/mês + dados)
+- Proxy de egress (controle fino de URLs permitidas)
+- Conectividade privada corporativa (VPN / Direct Connect)
+- Transit Gateway
+
+**A definir:** depende da topologia de rede da Alelo e de como o endpoint OAuth/HRM é acessível (internet pública ou rede privada).
+
+### 10. Validação de Saída
+
+Componente lógico posterior ao modelo, responsável por:
+
+- Redação ou mascaramento de PII (CPF parcial, e-mail oculto)
+- Remoção de dados sensíveis da resposta (tokens, segredos)
+- Validação de formato (resposta bem estruturada)
+- Verificação de fontes (citação dos docs quando aplicável)
+- Avaliação de grounding (reduz risco de respostas inventadas)
+- Aplicação de políticas da resposta (tom, idioma, limites)
+
+> Implementação: pode usar Bedrock Guardrails (saída) e/ou lógica no Chat Handler.
+> Termos responsáveis: "reduz o risco", "verifica grounding", "aplica controles" — não "elimina" nem "garante".
+
 ---
 
-## Ambientes
+## Observabilidade (camada transversal)
 
-| Ambiente | Uso | OpenSearch | Modelos | Custo est. |
-|---|---|---|---|---|
-| **dev** | Desenvolvimento do time | 1 OCU (mínimo) | Haiku only | ~$100/mês |
-| **hml** | Homologação / testes de integração | 1 OCU | Haiku + Sonnet | ~$150/mês |
-| **prd** | Produção | 2 OCU | Haiku + Sonnet | ~$543/mês |
+Todos os componentes enviam telemetria. Não há seta individual por componente — é uma camada horizontal.
+
+| Ferramenta | Função |
+|---|---|
+| **AgentCore Observability** | Traces do agente, latência por etapa, custo por sessão, tokens consumidos |
+| **CloudWatch Logs** | Logs estruturados de todas as Lambdas |
+| **CloudWatch Metrics** | Erros por integração, latência P50/P95/P99, invocações |
+| **CloudWatch Alarms** | Alertas de custo, erro rate, latência alta |
+
+**Requisitos:**
+- Correlation ID de ponta a ponta (gerado no API Gateway, propagado em todos os componentes)
+- Redação de PII e segredos **antes** de registrar telemetria
+- Nunca logar: tokens, secrets, CPF completo, resposta integral com PII
+- Monitorar: perguntas sem resposta (fallback), taxa de 401, custo por sessão
 
 ---
 
 ## Segurança
 
-```mermaid
-flowchart TD
-    subgraph IAM["🔐 IAM — Princípio do Mínimo Privilégio"]
-        R1[Role: Lambda Auth\nPermissões: Secrets Manager read\nBedrock InvokeAgent]
-        R2[Role: Lambda Action Groups\nPermissões: Secrets Manager read\nHTTPS externo apenas]
-        R3[Role: Bedrock Agent\nPermissões: InvokeModel\nKnowledge Base Retrieve\nGuardrails Apply]
-    end
+### Princípios
 
-    subgraph NET["🌐 Rede"]
-        VPC[VPC Privada\nLambdas sem acesso público]
-        EP[VPC Endpoints\nS3 · Secrets Manager · Bedrock\nsem tráfego pela internet]
-    end
+- IAM com menor privilégio
+- Roles separadas por responsabilidade
+- KMS para criptografia em repouso
+- TLS para todos os dados em trânsito
+- Tokens nunca em logs, prompts ou respostas
+- Dados da API HRM descartados após a resposta (LGPD)
+- Cookie bruto nunca entra no contexto do modelo
 
-    subgraph DATA["📋 Dados"]
-        ENC[Criptografia em repouso\nS3 · ElastiCache · OpenSearch\nKMS gerenciado]
-        PII[PII\nCPF e tokens nunca\npersistidos em logs]
-        LGPD[Dados da API\ndescartados após a resposta\nnão armazenados]
-    end
-```
+### Matriz de Permissões IAM
+
+| Componente | Ações permitidas | Recurso | Não conceder |
+|---|---|---|---|
+| Lambda Authorizer | — | — | Secrets Manager, Bedrock, S3 |
+| Lambda Chat Handler | `bedrock-agentcore:InvokeAgent` | ARN do agente | Secrets Manager, S3 write |
+| AgentCore Runtime | `bedrock:InvokeModel`, `bedrock:Retrieve` | Modelos e KB específicos | Secrets Manager, Lambda invoke |
+| AgentCore Gateway | `lambda:InvokeFunction` | ARN do HRM Adapter | Secrets Manager direto |
+| HRM API Adapter | `secretsmanager:GetSecretValue` | ARN do segredo HRM | Bedrock, S3, DynamoDB |
+| Lambda Ingestão | `bedrock:StartIngestionJob`, `s3:GetObject` | KB e bucket de docs | Secrets Manager, Bedrock Invoke |
+
+### Controles adicionais
+
+- Rate limiting no API Gateway (protege contra abuso)
+- WAF (opcional — avaliar necessidade com base no perfil de tráfego)
+- CORS restritivo (apenas domínio do app Meu Alelo)
+- Limites de tamanho de request (body máximo)
+- CloudTrail para auditoria de acesso a segredos
+- Retenção de logs conforme política de segurança
+- Rotação de segredos no Secrets Manager
+
+---
+
+## Custos (pendente de recálculo)
+
+> ⚠️ A tabela de custos anterior era baseada em OpenSearch Serverless (~$350/mês) e ElastiCache Redis. Com a migração para S3 Vectors e AgentCore Memory, os custos mudam significativamente.
+
+### Componentes a precificar
+
+| Serviço | Unidade de cobrança | Fonte de preço | Status |
+|---|---|---|---|
+| AgentCore Runtime | Por invocação + tokens | AWS Pricing (sa-east-1) | Pendente consulta |
+| AgentCore Gateway | Por invocação | AWS Pricing (sa-east-1) | Pendente consulta |
+| AgentCore Memory | Por sessão ou armazenamento | AWS Pricing (sa-east-1) | Pendente consulta |
+| AgentCore Observability | Por traces/métricas | AWS Pricing (sa-east-1) | Pendente consulta |
+| Bedrock Knowledge Base | Por query | ~$0.10/1K queries | Verificar sa-east-1 |
+| S3 Vectors | Por armazenamento + queries | Até 90% menor que OpenSearch | Verificar sa-east-1 |
+| Titan Embeddings V2 | Por 1K tokens | ~$0.00002/1K tokens | Verificar sa-east-1 |
+| Modelo LLM (a definir) | Por 1K tokens in/out | Depende do modelo | Pendente seleção |
+| API Gateway | Por requisição | ~$3.50/1M requests | Confirmado |
+| Lambda (todas) | Por invocação + duração | ~$0.20/1M invocações | Confirmado |
+| Secrets Manager | Por API call | ~$0.05/10K calls | Confirmado |
+| S3 (docs) | Armazenamento | Negligível | Confirmado |
+| CloudWatch | Logs + métricas | ~$5-10/mês | Confirmado |
+| NAT Gateway (se usado) | Por hora + GB | ~$32/mês fixo + dados | Condicional |
+
+### Cenários (estimativas a refinar)
+
+| Cenário | Interações/mês | Custo estimado |
+|---|---|---|
+| **Dev** | 1.000 | A calcular |
+| **HML** | 5.000 | A calcular |
+| **MVP produção** (200 users/dia) | 20.000 | A calcular |
+| **Base** (500 users/dia) | 50.000 | A calcular |
+| **Crescimento** (2.000 users/dia) | 200.000 | A calcular |
+
+> **Ação:** Levantar pricing atualizado de AgentCore e S3 Vectors em sa-east-1 antes de estimar.
+> **Expectativa:** Custo total deve ser significativamente menor que os ~$543/mês da arquitetura anterior, dado que OpenSearch Serverless (mínimo 2 OCU = ~$350/mês) foi eliminado.
+
+---
+
+## Ambientes e Implantação
+
+| Ambiente | Uso | Isolamento | Modelo LLM |
+|---|---|---|---|
+| **dev** | Desenvolvimento do time | Recursos separados por prefixo/tag | Modelo mais barato disponível |
+| **hml** | Testes de integração + token HML | Recursos dedicados | Mesmo modelo de produção |
+| **prd** | Produção | Conta separada (recomendado) | Modelo principal |
+
+### Pipeline de implantação (a definir)
+
+- IaC: CDK, SAM ou Terraform (decisão pendente)
+- CI/CD: CodePipeline, GitHub Actions ou equivalente
+- Deploy dos docs: upload S3 + trigger de ingestão
+- Rollback: versionamento de Lambda + aliases
+- Smoke tests pós-deploy: chamada ao `/profile` com token de serviço
+- Alarmes pós-deploy: erro rate, latência, custo
 
 ---
 
 ## Decisões Pendentes
 
-| Decisão | Opções | Impacto |
-|---|---|---|
-| Desligar OpenSearch fora do horário comercial | Sim (economiza ~$180/mês) / Não (disponibilidade 24h) | Custo vs. disponibilidade |
-| ElastiCache vs. DynamoDB para sessão | Redis (baixa latência) / DynamoDB (mais barato) | Latência de resposta |
-| Provisioned Throughput Claude | Quando atingir ~200k interações/mês | Redução de custo em escala |
-| Ambiente de homologação separado | Compartilhado com dev / Dedicado | Custo vs. fidelidade dos testes |
+| # | Decisão | Opções | Impacto | Responsável |
+|---|---|---|---|---|
+| 1 | Modelo LLM específico in-region | Claude Haiku/Sonnet, Amazon Nova | Custo e qualidade das respostas | Time técnico |
+| 2 | Egress: NAT, proxy ou privado | NAT Gateway / proxy / VPN | Custo + segurança de rede | Time + infra Alelo |
+| 3 | URL do endpoint OAuth | A confirmar com Alelo | Bloqueador para Token Provider | Carlos (Alelo) |
+| 4 | `client_credentials` server-to-server | Confirmação de que funciona sem app | Bloqueador para automação | Carlos (Alelo) |
+| 5 | IaC (CDK vs SAM vs Terraform) | Preferência do time | Pipeline e manutenção | Time técnico |
+| 6 | Conta AWS separada por ambiente | Sim (mais seguro) / Não (mais simples) | Isolamento + custo | Time + cliente |
+| 7 | WAF necessário? | Depende do perfil de tráfego | Custo (~$5/mês + regras) | Time |
+| 8 | Validação entrada: Guardrails ou código | Bedrock Guardrails / lógica no Handler | Flexibilidade vs simplicidade | Time |
