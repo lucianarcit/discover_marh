@@ -1,0 +1,162 @@
+[
+  {
+    "operation_name": "Consulta de Pedidos",
+    "possible_user_intents": [
+      "Listar pedidos",
+      "Ver status do pedido",
+      "Quanto devo pagar",
+      "Pedidos pendentes",
+      "Histórico de pedidos"
+    ],
+    "useful_response_fields": [
+      "total",
+      "content[].orders[].orderNumber",
+      "content[].orders[].status",
+      "content[].orders[].totalOrder",
+      "content[].orders[].orderDate",
+      "content[].orders[].paymentMethod",
+      "content[].orders[].steps[]",
+      "content[].orders[].productInfo.productName",
+      "pageable"
+    ],
+    "restricted_fields": [
+      "content[].billingDocumentNumber",
+      "content[].orders[].contractNumber",
+      "content[].orders[].idLegalPersonBilling"
+    ],
+    "pii_fields": ["billingDocumentNumber"],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_SOMENTE_COM_TOOL_CALL",
+    "notes": "Não filtra por data. Paginação obrigatória."
+  },
+  {
+    "operation_name": "Consulta dos Produtos",
+    "possible_user_intents": [
+      "Quais produtos posso pedir",
+      "O que é Alelo Pod",
+      "Catálogo de produtos"
+    ],
+    "useful_response_fields": ["total", "content[].productCode", "content[].productName"],
+    "restricted_fields": [],
+    "pii_fields": [],
+    "requires_real_time_call": false,
+    "rag_candidate": true,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_PARA_MODELO",
+    "notes": "Catálogo estável. Pode ser cacheado em RAG."
+  },
+  {
+    "operation_name": "Consulta dos Benefícios",
+    "possible_user_intents": [
+      "Quais benefícios posso incluir no pedido",
+      "Regras de pedido",
+      "Lista de benefícios disponíveis"
+    ],
+    "useful_response_fields": ["benefits[].name", "benefits[].code", "orderRules"],
+    "restricted_fields": [],
+    "pii_fields": [],
+    "requires_real_time_call": false,
+    "rag_candidate": true,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_PARA_MODELO",
+    "notes": "Dados de catálogo. Estáveis."
+  },
+  {
+    "operation_name": "Consulta dos Dias para Crédito",
+    "possible_user_intents": [
+      "Quando posso agendar o crédito",
+      "Datas disponíveis",
+      "Próximos dias úteis para crédito"
+    ],
+    "useful_response_fields": ["minDate", "maxDate", "holidaysList"],
+    "restricted_fields": [],
+    "pii_fields": [],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_PARA_MODELO",
+    "notes": "Datas mudam mas não contêm PII."
+  },
+  {
+    "operation_name": "Download da Nota Fiscal",
+    "possible_user_intents": [
+      "Preciso da nota fiscal",
+      "Link da NF do pedido"
+    ],
+    "useful_response_fields": ["rpsLink"],
+    "restricted_fields": ["rpsLink (contém CNPJ na URL)"],
+    "pii_fields": ["CNPJ na URL da NF"],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_COM_SANITIZACAO",
+    "notes": "422 quando pedido não tem NF. URL contém CNPJ do emitente."
+  },
+  {
+    "operation_name": "Consulta dos Colaboradores do Pedido",
+    "possible_user_intents": [
+      "Quem está no pedido",
+      "Colaboradores incluídos",
+      "Quanto cada um recebe"
+    ],
+    "useful_response_fields": [
+      "total",
+      "content[].name",
+      "content[].benefits[].benefitName",
+      "content[].benefits[].creditedValue",
+      "content[].placeName"
+    ],
+    "restricted_fields": [
+      "content[].documentNumber",
+      "content[].address",
+      "content[].homeAddress"
+    ],
+    "pii_fields": ["documentNumber", "address", "homeAddress"],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_SOMENTE_COM_TOOL_CALL",
+    "notes": "Contém CPF e endereço. Sanitizar antes de exibir."
+  },
+  {
+    "operation_name": "Consulta dos Detalhes de um Pedido",
+    "possible_user_intents": [
+      "Detalhes do pedido X",
+      "Status completo do pedido",
+      "Informações do pedido"
+    ],
+    "useful_response_fields": [
+      "orderNumber",
+      "orderDate",
+      "status",
+      "totalOrder",
+      "steps[]",
+      "productInfo"
+    ],
+    "restricted_fields": ["contractNumber", "collectNumber"],
+    "pii_fields": [],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_SOMENTE_COM_TOOL_CALL",
+    "notes": "IDs internos devem ser removidos."
+  },
+  {
+    "operation_name": "Visualizar Boleto",
+    "possible_user_intents": [
+      "Preciso do boleto",
+      "Linha digitável do boleto",
+      "Baixar boleto do pedido"
+    ],
+    "useful_response_fields": ["fileName", "barCodeLine"],
+    "restricted_fields": ["content (base64 do PDF)"],
+    "pii_fields": ["CNPJ e valores no boleto"],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "recommendation": "APTO_SOMENTE_COM_TOOL_CALL",
+    "notes": "barCodeLine é útil para copiar. content é o PDF inteiro em base64."
+  }
+]
