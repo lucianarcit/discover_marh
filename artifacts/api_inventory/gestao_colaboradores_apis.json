@@ -1,0 +1,341 @@
+[
+  {
+    "operation_name": "Consulta dos colaboradores",
+    "description": "",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/beneficiaries",
+    "full_url": "",
+    "path_parameters": [],
+    "query_parameters": [
+      {
+        "name": "nameOrCpf",
+        "description": "Nome ou CPF do colaborador"
+      },
+      {
+        "name": "page",
+        "description": "Número da página"
+      }
+    ],
+    "required_headers": [
+      "Authorization",
+      "APP_VERSION",
+      "client_id",
+      "FNP",
+      "PLATFORM",
+      "Content-Type",
+      "X-BASIC-AUTHORIZATION",
+      "USER_ID"
+    ],
+    "optional_headers": [],
+    "request_body_example": null,
+    "documented_status_codes": [
+      {
+        "code": "204",
+        "description": "No Content"
+      },
+      {
+        "code": "200",
+        "description": "Sucesso"
+      },
+      {
+        "code": "403",
+        "description": "Sem permissão, ou FNP, ou prova de vida NOK"
+      },
+      {
+        "code": "422",
+        "description": "ID da empresa inválido"
+      }
+    ],
+    "documented_response_example": {
+      "total": 8,
+      "content": [
+        {
+          "beneficiaryId": "xpto",
+          "beneficiaryIdEncrypted": "asdfasdfadsfasdfasdfsafafs",
+          "name": "Colaborador Dois no Posto de Trabalho",
+          "motherName": "Mãe do Colaborador",
+          "documentNumber": "89815071041",
+          "birthDate": "1980-01-01",
+          "placeName": "Posto 01",
+          "isHomeDelivery": false,
+          "email": "rveck@alelo.com.br",
+          "phoneNumber": "15996309669",
+          "subtype": "WORKPLACE",
+          "shippingAddressName": "Posto 01",
+          "shippingAddressWorkplaceCode": "PT01",
+          "products": []
+        },
+        {
+          "beneficiaryId": "xpto",
+          "beneficiaryIdEncrypted": "asdfasdfadsfasdfasdfsafafs",
+          "name": "Colaborador Tres no Em Residencia",
+          "motherName": "Mãe do Colaborador",
+          "documentNumber": "51265501017",
+          "birthDate": "1980-01-01",
+          "isHomeDelivery": true,
+          "address": {
+            "street": "Rua Oswaldo Mezadri",
+            "city": "Votorantim",
+            "neighborhood": "Jardim Mirante dos Ovnis",
+            "number": "S/N",
+            "postalCode": "18116385",
+            "state": "SP",
+            "complement": "Apartamento"
+          },
+          "email": "rveck@alelo.com.br",
+          "phoneNumber": "15996309669",
+          "subtype": "HOME_DELIVERY",
+          "shippingAddressWorkplaceCode": "",
+          "products": []
+        },
+        {
+          "beneficiaryId": "xpto",
+          "beneficiaryIdEncrypted": "asdfasdfadsfasdfasdfsafafs",
+          "name": "Colaborador Um na Filial",
+          "motherName": "Mãe do Colaborador",
+          "documentNumber": "17776445002",
+          "birthDate": "1980-01-01",
+          "placeName": "Empresa MARH",
+          "isHomeDelivery": false,
+          "email": "rveck@alelo.com.br",
+          "phoneNumber": "15996309669",
+          "subtype": "BRANCH",
+          "shippingAddressName": "Empresa MARH",
+          "shippingAddressDocumentNumber": "48235092000115",
+          "shippingAddressWorkplaceCode": "",
+          "products": []
+        }
+      ],
+      "pageable": {
+        "page": 0,
+        "size": 10
+      }
+    },
+    "source_section": "Gestão-de-Colaboradores.md · seção 1",
+    "safe_to_execute": true,
+    "safety_reason": "Operação de consulta (GET) segura para execução."
+  },
+  {
+    "operation_name": "Cadastro de colaborador",
+    "description": "",
+    "method": "POST",
+    "path": "/v1/beneficiaries",
+    "full_url": "",
+    "path_parameters": [],
+    "query_parameters": [],
+    "required_headers": [
+      "Authorization",
+      "APP_VERSION",
+      "client_id",
+      "FNP",
+      "PLATFORM",
+      "Content-Type",
+      "X-BASIC-AUTHORIZATION",
+      "USER_ID"
+    ],
+    "optional_headers": [],
+    "request_body_example": {
+      "origin": "REGISTER",
+      "placeType": "BRANCH",
+      "placeDocumentNumber": "48235092000115",
+      "name": "Colaborador Um na Filial",
+      "motherName": "Mãe do Colaborador",
+      "documentNumber": "17776445002",
+      "birthDate": "1980-01-01",
+      "email": "rveck@alelo.com.br",
+      "phoneNumber": "15996309669",
+      "isHomeDelivery": false,
+      "placeCode": "PT01",
+      "address": {
+        "postalCode": "18116123",
+        "street": "Rua Zero",
+        "city": "Sorocaba",
+        "state": "SP",
+        "neighborhood": "Jardim Mirante",
+        "number": "S/N",
+        "complement": "Apartamento"
+      }
+    },
+    "documented_status_codes": [
+      {
+        "code": "201",
+        "description": "Criado"
+      },
+      {
+        "code": "400",
+        "description": "Erro de preenchimento"
+      },
+      {
+        "code": "403",
+        "description": "Sem permissão, ou FNP ou prova de vida NOK"
+      },
+      {
+        "code": "422",
+        "description": "ID da empresa inválido"
+      }
+    ],
+    "documented_response_example": {
+      "contracteeDocumentType": "CNPJ",
+      "contracteeDocumentNumber": "48235092000115",
+      "placeType": "BRANCH",
+      "placeDocumentNumber": "48235092000115",
+      "name": "Colaborador Um na Filial",
+      "motherName": "Mãe do Colaborador",
+      "documentNumber": "17776445002",
+      "birthDate": "1980-01-01",
+      "email": "rveck@alelo.com.br",
+      "phoneNumber": "15996309669",
+      "origin": "REGISTER",
+      "isHomeDelivery": false,
+      "spokesmanDocumentNumber": "63052598015",
+      "validateDocumentNumberIp": false,
+      "placeCode": "PT01",
+      "address": {
+        "postalCode": "18116123",
+        "street": "Rua Zero",
+        "city": "Sorocaba",
+        "state": "SP",
+        "neighborhood": "Jardim Mirante",
+        "number": "S/N",
+        "complement": "Apartamento"
+      }
+    },
+    "source_section": "Gestão-de-Colaboradores.md · seção 2",
+    "safe_to_execute": false,
+    "safety_reason": "Método POST pode alterar dados. Requer análise manual antes da execução."
+  },
+  {
+    "operation_name": "Atualização de colaborador",
+    "description": "",
+    "method": "PUT",
+    "path": "/v1/beneficiaries/{beneficiaryId}",
+    "full_url": "",
+    "path_parameters": [
+      "beneficiaryId"
+    ],
+    "query_parameters": [],
+    "required_headers": [
+      "Authorization",
+      "APP_VERSION",
+      "client_id",
+      "FNP",
+      "PLATFORM",
+      "Content-Type",
+      "X-BASIC-AUTHORIZATION",
+      "USER_ID"
+    ],
+    "optional_headers": [],
+    "request_body_example": {
+      "origin": "REGISTER",
+      "placeType": "BRANCH",
+      "placeDocumentNumber": "48235092000115",
+      "name": "Colaborador Um na Filial",
+      "motherName": "Mãe do Colaborador",
+      "birthDate": "1980-01-01",
+      "email": "rveck@alelo.com.br",
+      "phoneNumber": "15996309669",
+      "isHomeDelivery": false,
+      "placeCode": "PT01",
+      "address": {
+        "postalCode": "18116123",
+        "street": "Rua Zero",
+        "city": "Sorocaba",
+        "state": "SP",
+        "neighborhood": "Jardim Mirante",
+        "number": "S/N",
+        "complement": "Apartamento"
+      }
+    },
+    "documented_status_codes": [
+      {
+        "code": "204",
+        "description": "No Content"
+      },
+      {
+        "code": "400",
+        "description": "Erro de preenchimento"
+      },
+      {
+        "code": "403",
+        "description": "Sem permissão, ou FNP ou prova de vida NOK"
+      },
+      {
+        "code": "422",
+        "description": "ID da empresa inválido"
+      }
+    ],
+    "documented_response_example": {
+      "contracteeDocumentType": "CNPJ",
+      "contracteeDocumentNumber": "48235092000115",
+      "placeType": "BRANCH",
+      "placeDocumentNumber": "48235092000115",
+      "name": "Colaborador Um na Filial",
+      "motherName": "Mãe do Colaborador",
+      "birthDate": "1980-01-01",
+      "email": "rveck@alelo.com.br",
+      "phoneNumber": "15996309669",
+      "origin": "REGISTER",
+      "isHomeDelivery": false,
+      "spokesmanDocumentNumber": "63052598015",
+      "validateDocumentNumberIp": false,
+      "placeCode": "PT01",
+      "address": {
+        "postalCode": "18116123",
+        "street": "Rua Zero",
+        "city": "Sorocaba",
+        "state": "SP",
+        "neighborhood": "Jardim Mirante",
+        "number": "S/N",
+        "complement": "Apartamento"
+      }
+    },
+    "source_section": "Gestão-de-Colaboradores.md · seção 3",
+    "safe_to_execute": false,
+    "safety_reason": "Método PUT pode alterar dados. Requer análise manual antes da execução."
+  },
+  {
+    "operation_name": "Exclusão de colaborador",
+    "description": "",
+    "method": "DELETE",
+    "path": "/v1/beneficiaries/{beneficiaryId}",
+    "full_url": "",
+    "path_parameters": [
+      "beneficiaryId"
+    ],
+    "query_parameters": [],
+    "required_headers": [
+      "Authorization",
+      "APP_VERSION",
+      "client_id",
+      "FNP",
+      "PLATFORM",
+      "Content-Type",
+      "X-BASIC-AUTHORIZATION",
+      "USER_ID"
+    ],
+    "optional_headers": [],
+    "request_body_example": null,
+    "documented_status_codes": [
+      {
+        "code": "204",
+        "description": "No Content"
+      },
+      {
+        "code": "400",
+        "description": "Erro de preenchimento"
+      },
+      {
+        "code": "403",
+        "description": "Sem permissão"
+      },
+      {
+        "code": "422",
+        "description": "ID da empresa inválido"
+      }
+    ],
+    "documented_response_example": null,
+    "source_section": "Gestão-de-Colaboradores.md · seção 4",
+    "safe_to_execute": false,
+    "safety_reason": "Método DELETE pode alterar dados. Requer análise manual antes da execução."
+  }
+]

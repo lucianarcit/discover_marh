@@ -1,29 +1,45 @@
-
-# Projeto local usado apenas como refer�ncia pelo Claude
-/_referencia_alelo_faq_ciandt/
-
-# Configura��o pessoal do Claude Code
-.claude/settings.local.json
-.claude/
-
-# C�digo usado apenas como refer�ncia
-/docs/_referencia_alelo_faq_ciandt/
-
-# Arquivos de exemplo locais
-/docs/sample/
-
-# Variáveis de ambiente com credenciais (nunca commitar com valores reais)
+# ─── Variáveis de ambiente (credenciais) ─────────────────────────────────────
 .env
 .env.local
-docs/tests/.env.example
+.env.*
+!.env.example
 
-# Arquivos de teste com tokens e respostas reais
+# ─── Diretório local (dados sensíveis e temporários) ─────────────────────────
+.local/
+
+# ─── Artefatos de execução com respostas reais ───────────────────────────────
+artifacts/api_runs/
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+coverage.xml
+htmlcov/
+.coverage
+
+# ─── IDE ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Claude/Kiro ─────────────────────────────────────────────────────────────
+.claude/
+
+# ─── Projeto de referência (não é código do projeto) ─────────────────────────
+docs/_referencia_alelo_faq_ciandt/
+
+# ─── Arquivos legados com credenciais (já no .gitignore original) ─────────────
 docs/tests/request.json
 docs/tests/response.json
+docs/tests/request_sample.txt
+docs/sample/
 
-# Virtual environment
-.venv/
-
-#testes apis
-/tests/request.json
-/tests/response.json
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

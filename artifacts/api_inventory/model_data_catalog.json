@@ -1,0 +1,170 @@
+[
+  {
+    "operation_name": "Consulta dos colaboradores",
+    "possible_user_intents": [
+      "Listar colaboradores da empresa",
+      "Verificar se colaborador está cadastrado",
+      "Consultar local de entrega do colaborador",
+      "Ver quantidade total de colaboradores"
+    ],
+    "useful_response_fields": [
+      "total",
+      "content[].name",
+      "content[].placeName",
+      "content[].subtype",
+      "content[].isHomeDelivery",
+      "content[].shippingAddressName",
+      "pageable"
+    ],
+    "restricted_fields": [
+      "content[].documentNumber",
+      "content[].email",
+      "content[].phoneNumber",
+      "content[].motherName",
+      "content[].beneficiaryId",
+      "content[].beneficiaryIdEncrypted",
+      "content[].address"
+    ],
+    "pii_fields": [
+      "documentNumber",
+      "email",
+      "phoneNumber",
+      "motherName",
+      "beneficiaryId",
+      "address.postalCode"
+    ],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "required_transformations": [
+      "Remover campos PII antes de apresentar ao usuário",
+      "Paginar resultados",
+      "Filtrar por nome quando solicitado"
+    ],
+    "authorization_requirements": [
+      "Token OAuth2 válido",
+      "FNP (device fingerprint) ativo",
+      "Prova de vida OK",
+      "Usuário deve ser interlocutor da empresa"
+    ],
+    "recommendation": "APTO_SOMENTE_COM_TOOL_CALL",
+    "notes": "Operação segura de consulta. Dados pessoais devem ser sanitizados antes de exibir."
+  },
+  {
+    "operation_name": "Cadastro de colaborador",
+    "possible_user_intents": [
+      "Cadastrar novo colaborador",
+      "Adicionar beneficiário na empresa"
+    ],
+    "useful_response_fields": [
+      "status_code"
+    ],
+    "restricted_fields": [
+      "documentNumber",
+      "motherName",
+      "email",
+      "phoneNumber",
+      "birthDate",
+      "address"
+    ],
+    "pii_fields": [
+      "documentNumber",
+      "motherName",
+      "email",
+      "phoneNumber",
+      "birthDate",
+      "name",
+      "address.postalCode",
+      "address.street"
+    ],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "required_transformations": [
+      "Validar dados antes de enviar",
+      "Confirmar com o usuário antes de executar"
+    ],
+    "authorization_requirements": [
+      "Token OAuth2 válido",
+      "FNP ativo",
+      "Prova de vida OK",
+      "Permissão de interlocutor"
+    ],
+    "recommendation": "NECESSITA_VALIDACAO_DO_CLIENTE",
+    "notes": "Operação de criação. Alto risco de PII. Requer confirmação explícita do usuário."
+  },
+  {
+    "operation_name": "Atualização de colaborador",
+    "possible_user_intents": [
+      "Atualizar dados do colaborador",
+      "Mudar local de entrega",
+      "Corrigir informações cadastrais"
+    ],
+    "useful_response_fields": [
+      "status_code"
+    ],
+    "restricted_fields": [
+      "documentNumber",
+      "motherName",
+      "email",
+      "phoneNumber",
+      "birthDate",
+      "address",
+      "beneficiaryId"
+    ],
+    "pii_fields": [
+      "documentNumber",
+      "motherName",
+      "email",
+      "phoneNumber",
+      "birthDate",
+      "name"
+    ],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": true,
+    "required_transformations": [
+      "Identificar campo a atualizar",
+      "Confirmar alteração com o usuário"
+    ],
+    "authorization_requirements": [
+      "Token OAuth2 válido",
+      "FNP ativo",
+      "Prova de vida OK",
+      "Permissão de interlocutor"
+    ],
+    "recommendation": "NECESSITA_VALIDACAO_DO_CLIENTE",
+    "notes": "Operação de atualização. Requer beneficiaryId de consulta prévia."
+  },
+  {
+    "operation_name": "Exclusão de colaborador",
+    "possible_user_intents": [
+      "Remover colaborador da empresa",
+      "Excluir cadastro de beneficiário"
+    ],
+    "useful_response_fields": [
+      "status_code"
+    ],
+    "restricted_fields": [
+      "beneficiaryId"
+    ],
+    "pii_fields": [
+      "beneficiaryId"
+    ],
+    "requires_real_time_call": true,
+    "rag_candidate": false,
+    "tool_call_candidate": false,
+    "required_transformations": [
+      "Confirmar exclusão múltiplas vezes",
+      "Verificar se colaborador não tem pedidos pendentes"
+    ],
+    "authorization_requirements": [
+      "Token OAuth2 válido",
+      "FNP ativo",
+      "Prova de vida OK",
+      "Permissão de interlocutor"
+    ],
+    "recommendation": "NAO_APTO",
+    "notes": "Operação de exclusão irreversível. NÃO deve ser acessível pelo modelo sem supervisão humana."
+  }
+]
