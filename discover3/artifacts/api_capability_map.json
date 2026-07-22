@@ -1,0 +1,330 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-22",
+    "project": "Agente Consultivo MARH",
+    "description": "Mapa de capacidades das APIs inventariadas, mapeado às intenções do agente e suas restrições de dados.",
+    "base_api": "cardholders-hr-management/v1",
+    "gateway": "Sensedia",
+    "intermediary": "ma-hr-orch (orquestrador — camada entre o agente e as APIs)"
+  },
+  "required_headers": [
+    "Authorization (Bearer token OAuth2)",
+    "APP_VERSION",
+    "client_id",
+    "FNP (fingerprint)",
+    "PLATFORM",
+    "Content-Type",
+    "X-BASIC-AUTHORIZATION",
+    "USER_ID"
+  ],
+  "http_error_codes": {
+    "403": "Sem permissão de interlocutor, FNP inválido, ou prova de vida NOK",
+    "422": "ID da empresa inválido",
+    "404": "Recurso não encontrado (pedido, colaborador)"
+  },
+  "capabilities": [
+    {
+      "cap_id": "CAP-001",
+      "endpoint": "GET /v1/beneficiaries",
+      "description": "Lista paginada de colaboradores da empresa selecionada, filtrável por nome ou CPF",
+      "query_params": {
+        "nameOrCpf": "string — nome completo, parcial ou CPF do colaborador",
+        "page": "integer — número da página (zero-based)"
+      },
+      "response_fields_useful": [
+        "total",
+        "content[].name",
+        "content[].placeName",
+        "content[].subtype",
+        "content[].isHomeDelivery",
+        "content[].products[]"
+      ],
+      "response_fields_restricted": [
+        "content[].documentNumber (CPF — PII)",
+        "content[].email (PII)",
+        "content[].phoneNumber (PII)",
+        "content[].motherName (PII)",
+        "content[].beneficiaryId",
+        "content[].address (PII)"
+      ],
+      "subtypes": {
+        "WORKPLACE": "Posto de trabalho",
+        "HOME_DELIVERY": "Residência",
+        "BRANCH": "Filial"
+      },
+      "intents_served": ["INT-001", "INT-002"],
+      "test_result": "HTTP 200 em 2026-07-22 (3275ms)",
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-001",
+      "sanitization_required": true,
+      "sanitization_note": "CPF, email, telefone, nome da mãe e endereço devem ser filtrados antes de ir ao modelo (TEC-017)"
+    },
+    {
+      "cap_id": "CAP-002",
+      "endpoint": "GET /v1/orders",
+      "description": "Lista paginada de pedidos da empresa selecionada",
+      "query_params": {
+        "page": "integer — número da página",
+        "size": "integer — tamanho da página",
+        "orderNumber": "string — filtrar por número de pedido específico"
+      },
+      "response_fields_useful": [
+        "total",
+        "content[].status",
+        "content[].orderDate",
+        "content[].totalOrder",
+        "content[].productInfo.productName",
+        "content[].paymentMethod"
+      ],
+      "response_fields_restricted": [
+        "content[].billingDocumentNumber",
+        "content[].contractNumber",
+        "content[].idLegalPersonBilling"
+      ],
+      "limitations": [
+        "Sem filtro por data — TEC-003",
+        "Sem filtro por status no endpoint — filtro deve ser feito na camada de orquestração",
+        "Ordenação padrão não garante 'último pedido' cronológico"
+      ],
+      "intents_served": ["INT-004", "INT-005"],
+      "test_result": "HTTP 200 em 2026-07-22 (782ms)",
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-002, TEC-003",
+      "sanitization_required": true,
+      "sanitization_note": "billingDocumentNumber, contractNumber e idLegalPersonBilling devem ser filtrados (TEC-019)"
+    },
+    {
+      "cap_id": "CAP-003",
+      "endpoint": "GET /v1/orders/{orderNumber}",
+      "description": "Detalhes completos de um pedido específico",
+      "path_params": {
+        "orderNumber": "string — número do pedido"
+      },
+      "response_fields_useful": [
+        "orderNumber",
+        "status",
+        "orderDate",
+        "totalOrder",
+        "productInfo.productName",
+        "paymentMethod",
+        "steps[]"
+      ],
+      "response_fields_restricted": [
+        "billingDocumentNumber",
+        "contractNumber",
+        "idLegalPersonBilling"
+      ],
+      "status_values": [
+        "IN_PROCESSING", "PENDING", "PAID", "CREDITED", "CANCELLED",
+        "REJECTED", "RELEASED", "IN_BILLING_PROCESSING", "REFUNDED", "PARTIAL_REFUNDED"
+      ],
+      "intents_served": ["INT-003"],
+      "test_result": "HTTP 200 em 2026-07-22",
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-004",
+      "sanitization_required": true,
+      "sanitization_note": "Campos fiscais restritos devem ser filtrados (TEC-019)"
+    },
+    {
+      "cap_id": "CAP-004",
+      "endpoint": "GET /v1/orders/{orderNumber}/beneficiaries",
+      "description": "Colaboradores associados a um pedido específico — fornece total de colaboradores e cartões",
+      "path_params": {
+        "orderNumber": "string — número do pedido"
+      },
+      "response_fields_useful": [
+        "total",
+        "content[].name",
+        "content[].benefits[].benefitName",
+        "content[].benefits[].creditedValue",
+        "content[].placeName",
+        "content[].placeType"
+      ],
+      "response_fields_restricted": [
+        "content[].documentNumber (CPF — PII)",
+        "content[].address (PII)",
+        "content[].homeAddress (PII)"
+      ],
+      "intents_served": ["INT-003"],
+      "note": "Necessário para obter qtd. de colaboradores e cartões do pedido (LAC-009)",
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-006, TEC-018",
+      "sanitization_required": true
+    },
+    {
+      "cap_id": "CAP-005",
+      "endpoint": "GET /v1/orders/{orderNumber}/invoice",
+      "description": "Nota Fiscal do pedido — retorna link (rpsLink) quando disponível",
+      "path_params": {
+        "orderNumber": "string — número do pedido"
+      },
+      "response_fields_useful": [
+        "rpsLink"
+      ],
+      "special_behavior": "Retorna HTTP 422 quando o pedido não possui NF emitida — comportamento esperado, não erro",
+      "intents_served": ["INT-003"],
+      "test_result": "HTTP 422 em 2026-07-22 (esperado — pedido sem NF emitida)",
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-007, TEC-008, TEC-009",
+      "sanitization_required": true,
+      "sanitization_note": "rpsLink pode conter CNPJ na URL — sanitização necessária antes de exibir (TEC-009, LAC-010)"
+    },
+    {
+      "cap_id": "CAP-006",
+      "endpoint": "GET /v1/orders/{orderNumber}/bank-ticket",
+      "description": "Boleto do pedido — retorna linha digitável e PDF em base64",
+      "path_params": {
+        "orderNumber": "string — número do pedido"
+      },
+      "response_fields_useful": [
+        "fileName",
+        "barCodeLine"
+      ],
+      "response_fields_restricted": [
+        "content (PDF em base64 — não deve ir ao modelo)"
+      ],
+      "intents_served": ["INT-003"],
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-010, TEC-011",
+      "sanitization_required": true,
+      "sanitization_note": "Campo 'content' (base64 do PDF) não deve ser enviado ao modelo de linguagem (TEC-011)"
+    },
+    {
+      "cap_id": "CAP-007",
+      "endpoint": "GET /v1/products",
+      "description": "Catálogo de produtos disponíveis — sem PII, candidato a RAG",
+      "response_fields_useful": ["all"],
+      "rag_candidate": true,
+      "intents_served": ["INT-008", "INT-009"],
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-012",
+      "sanitization_required": false
+    },
+    {
+      "cap_id": "CAP-008",
+      "endpoint": "GET /v1/benefits",
+      "description": "Benefícios disponíveis e regras de pedido (orderRules) — sem PII, candidato a RAG",
+      "response_fields_useful": ["all"],
+      "rag_candidate": true,
+      "intents_served": ["INT-008", "INT-009"],
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-013",
+      "sanitization_required": false
+    },
+    {
+      "cap_id": "CAP-009",
+      "endpoint": "GET /v1/availability-dates-for-credit",
+      "description": "Datas disponíveis para disponibilização de crédito — dado em tempo real",
+      "response_fields_useful": [
+        "minDate",
+        "maxDate",
+        "holidaysList"
+      ],
+      "rag_candidate": false,
+      "note": "Dado em tempo real — não pode ser cacheado em RAG",
+      "intents_served": [],
+      "status": "CONFIRMED",
+      "tec_ref": "TEC-014",
+      "sanitization_required": false
+    },
+    {
+      "cap_id": "CAP-010",
+      "endpoint": "Endpoint de rastreamento por CPF (ma-hr-orch)",
+      "description": "Rastreamento de cartão por CPF do colaborador — endpoint não confirmado",
+      "intents_served": ["INT-006"],
+      "status": "NOT_VALIDATED",
+      "tec_ref": "TEC-027, AMB-001, LAC-002",
+      "action_required": "Validar com time técnico da ma-hr-orch se endpoint existe e obter schema"
+    },
+    {
+      "cap_id": "CAP-011",
+      "endpoint": "Endpoint de rastreamento por orderNumber (ma-hr-orch)",
+      "description": "Rastreamento de cartão por número do pedido — endpoint mencionado na spec mas não inventariado nos testes",
+      "expected_fields": [
+        "status do rastreio",
+        "data da última atualização",
+        "endereço de entrega (PII — sanitizar)",
+        "código de rastreio"
+      ],
+      "intents_served": ["INT-007"],
+      "status": "NOT_VALIDATED",
+      "tec_ref": "TEC-027, LAC-001",
+      "action_required": "Inventariar endpoint junto ao time da ma-hr-orch — bloqueador do MVP",
+      "sanitization_required": true,
+      "sanitization_note": "Endereço de entrega é PII"
+    }
+  ],
+  "skipped_endpoints": [
+    {
+      "endpoint": "POST /v1/beneficiaries",
+      "reason": "SKIPPED_SAFETY — não testado por segurança em ambiente compartilhado",
+      "agent_scope": "FORA_DO_ESCOPO — criação de colaborador proibida (FORA-004)",
+      "tec_ref": "TEC-021"
+    },
+    {
+      "endpoint": "PUT /v1/beneficiaries/{id}",
+      "reason": "SKIPPED_SAFETY",
+      "agent_scope": "FORA_DO_ESCOPO — edição de colaborador proibida (FORA-004)",
+      "tec_ref": "TEC-021"
+    },
+    {
+      "endpoint": "DELETE /v1/beneficiaries/{id}",
+      "reason": "SKIPPED_SAFETY",
+      "agent_scope": "FORA_DO_ESCOPO — exclusão de colaborador proibida (FORA-005)",
+      "tec_ref": "TEC-021"
+    },
+    {
+      "endpoint": "POST /v1/orders",
+      "reason": "SKIPPED_SAFETY",
+      "agent_scope": "FORA_DO_ESCOPO — criação de pedido proibida (FORA-001)",
+      "tec_ref": "TEC-020"
+    },
+    {
+      "endpoint": "POST /v1/orders/simulate",
+      "reason": "SKIPPED_SAFETY",
+      "agent_scope": "FORA_DO_ESCOPO",
+      "tec_ref": "TEC-020"
+    },
+    {
+      "endpoint": "DELETE /v1/orders/{id}/cancel",
+      "reason": "SKIPPED_SAFETY",
+      "agent_scope": "FORA_DO_ESCOPO — cancelamento de pedido proibido (FORA-002)",
+      "tec_ref": "TEC-020"
+    }
+  ],
+  "status_mapping": {
+    "description": "Mapeamento entre status da API (inglês) e labels em português para exibição ao usuário. CF-001: conflito entre API (10 status) e KB (6 status).",
+    "api_to_portuguese": {
+      "IN_PROCESSING": "Em processamento",
+      "PENDING": "Aguardando pagamento",
+      "PAID": "Pagamento confirmado",
+      "CREDITED": "Pedido creditado",
+      "CANCELLED": "Cancelado",
+      "REJECTED": "Rejeitado (validar label com cliente)",
+      "RELEASED": "Liberado (validar label com cliente)",
+      "IN_BILLING_PROCESSING": "Em processamento de faturamento (validar label com cliente)",
+      "REFUNDED": "Estornado (validar label com cliente)",
+      "PARTIAL_REFUNDED": "Parcialmente estornado (validar label com cliente)"
+    },
+    "conflict_note": "CF-001 — KB documenta 6 status: Aguardando pagamento, Pagamento confirmado, Nota Fiscal Emitida, Aguardando Disponibilização, Pedido creditado, Cancelado. Status 'Nota Fiscal Emitida' e 'Aguardando Disponibilização' não têm correspondência clara na API. Labels de REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED e PARTIAL_REFUNDED não foram validados com o cliente.",
+    "action_required": "LAC-008 — criar mapeamento completo validado com o cliente"
+  },
+  "performance_observations": {
+    "GET /v1/beneficiaries": "3275ms em teste real (2026-07-22) — latência alta; avaliar impacto na UX",
+    "GET /v1/orders": "782ms em teste real (2026-07-22) — aceitável"
+  },
+  "summary": {
+    "total_capabilities": 11,
+    "by_status": {
+      "CONFIRMED": 9,
+      "NOT_VALIDATED": 2
+    },
+    "by_agent_scope": {
+      "in_scope": 9,
+      "out_of_scope": 6
+    },
+    "blocking_gaps": ["CAP-010 (LAC-002)", "CAP-011 (LAC-001)"],
+    "requires_sanitization": ["CAP-001", "CAP-003", "CAP-004", "CAP-005", "CAP-006", "CAP-011"]
+  }
+}

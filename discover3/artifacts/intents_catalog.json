@@ -1,0 +1,490 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-22",
+    "project": "Agente Consultivo MARH",
+    "description": "Catálogo completo de intenções extraídas do documento do cliente, com exemplos, variações e comportamentos esperados.",
+    "source": "docs/cliente/00_Agente_Consultivo_MARH.html"
+  },
+  "intent_types": {
+    "CONSULTIVA": "Usuário deseja consultar dados da empresa selecionada via ma-hr-orch",
+    "INFORMATIVA_MARH": "Usuário pergunta sobre o que o agente faz, como funciona ou suas limitações",
+    "FORA_DO_ESCOPO": "Usuário pede ação transacional que o agente não pode executar"
+  },
+  "groups": {
+    "A": "Intenções Consultivas — exigem chamada à ma-hr-orch",
+    "B": "Intenções Informativas sobre a feature MARH — respondidas via markdown",
+    "C": "Intenções Fora do Escopo — redirecionamento ao Espaço RH"
+  },
+  "intents": [
+    {
+      "intent_id": "INT-001",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Consultar colaborador por nome",
+      "section": "8.1",
+      "examples": [
+        "Consultar colaborador Wesley Fabrete."
+      ],
+      "implicit_variations": [
+        "Me mostra os dados do colaborador João Silva.",
+        "Quem é João Silva?"
+      ],
+      "required_user_data": ["nome do colaborador (completo ou parcial)"],
+      "endpoint": "GET /v1/beneficiaries?nameOrCpf={nome}",
+      "expected_behavior": [
+        "Buscar colaborador na empresa selecionada via ma-hr-orch",
+        "Exibir dados principais disponíveis",
+        "Se múltiplos resultados, pedir para o usuário escolher",
+        "Se não encontrar, informar com ERR-002"
+      ],
+      "error_messages": {
+        "not_found": "ERR-002",
+        "no_permission": "ERR-005",
+        "security_validation": "ERR-006",
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-002",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Consultar colaborador por CPF",
+      "section": "8.1",
+      "examples": [
+        "Consultar colaborador 123.456.789-00."
+      ],
+      "implicit_variations": [
+        "Qual o colaborador com CPF 123.456.789-00?"
+      ],
+      "required_user_data": ["CPF do colaborador"],
+      "endpoint": "GET /v1/beneficiaries?nameOrCpf={cpf}",
+      "expected_behavior": [
+        "Buscar colaborador na empresa selecionada via ma-hr-orch",
+        "Exibir dados principais disponíveis",
+        "Se não encontrar, informar com ERR-002"
+      ],
+      "error_messages": {
+        "not_found": "ERR-002",
+        "no_permission": "ERR-005",
+        "security_validation": "ERR-006",
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-003",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Consultar pedido por número",
+      "section": "8.2",
+      "examples": [
+        "Consultar pedido 342671."
+      ],
+      "implicit_variations": [
+        "Qual o status do pedido 342671?",
+        "Me mostra o pedido 342671."
+      ],
+      "required_user_data": ["número do pedido"],
+      "endpoint": "GET /v1/orders/{orderNumber}",
+      "auxiliary_endpoints": ["GET /v1/orders/{orderNumber}/beneficiaries"],
+      "fields_to_display": [
+        "status (traduzido para português)",
+        "orderDate",
+        "productInfo.productName",
+        "totalOrder",
+        "quantidade de colaboradores",
+        "quantidade de cartões",
+        "steps[]"
+      ],
+      "prohibited_actions": ["cancelar pedido", "pagar pedido", "alterar pedido"],
+      "expected_behavior": [
+        "Buscar informações do pedido via ma-hr-orch",
+        "Exibir campos disponíveis",
+        "Não permitir ações transacionais",
+        "Quando disponível, retornar elemento [list_navigation] para tela do pedido"
+      ],
+      "error_messages": {
+        "not_found": "ERR-003",
+        "no_permission": "ERR-005",
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-004",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Consultar último pedido",
+      "section": "8.3",
+      "examples": [
+        "Qual foi o último pedido?"
+      ],
+      "implicit_variations": [
+        "Qual o pedido mais recente?",
+        "Mostra o último pedido feito."
+      ],
+      "required_user_data": [],
+      "endpoint": "GET /v1/orders",
+      "expected_behavior": [
+        "Consultar pedidos da empresa selecionada via ma-hr-orch",
+        "Retornar pedido mais recente disponível",
+        "Se ordenação incerta, avisar: 'Estou exibindo o pedido mais recente retornado pela consulta.'",
+        "Quando disponível, retornar elemento [list_navigation] para tela do pedido"
+      ],
+      "mandatory_warning": "Se não houver ordenação confiável nos dados, informar que está exibindo o pedido mais recente retornado pela consulta.",
+      "error_messages": {
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-005",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Consultar pedidos por status",
+      "section": "8.4",
+      "examples": [
+        "Quais são os últimos pedidos com status pago?"
+      ],
+      "explicit_variations_from_client": [
+        "Quais são os últimos pedidos pendentes?",
+        "Mostre os últimos pedidos cancelados.",
+        "Quais pedidos estão em processamento?"
+      ],
+      "required_user_data": ["status desejado"],
+      "endpoint": "GET /v1/orders",
+      "recognized_status_api_values": [
+        "IN_PROCESSING", "PENDING", "PAID", "CREDITED", "CANCELLED",
+        "REJECTED", "RELEASED", "IN_BILLING_PROCESSING", "REFUNDED", "PARTIAL_REFUNDED"
+      ],
+      "expected_behavior": [
+        "Identificar o status informado pelo usuário",
+        "Consultar pedidos da empresa selecionada via ma-hr-orch",
+        "Listar últimos pedidos com aquele status",
+        "Se status não reconhecido, pedir esclarecimento",
+        "Se não houver pedidos no status, responder amigavelmente",
+        "Quando disponível, retornar elemento [list_navigation] para lista filtrada"
+      ],
+      "error_messages": {
+        "status_not_recognized": "ERR-004",
+        "no_permission": "ERR-005",
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-006",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Rastrear cartão por CPF do colaborador",
+      "section": "8.5",
+      "examples": [
+        "Rastrear cartão do colaborador 123.456.789-00."
+      ],
+      "required_user_data": ["CPF do colaborador"],
+      "endpoint": "Endpoint de rastreamento por CPF — NÃO CONFIRMADO",
+      "expected_behavior": [
+        "Avaliar com time técnico se ma-hr-orch disponibiliza rastreamento por CPF",
+        "Se não disponível, solicitar número do pedido (fallback INT-007)",
+        "Se disponível, exibir: status, data última atualização, endereço de entrega, código de rastreio",
+        "Não inventar prazo, transportadora ou status"
+      ],
+      "fallback_response": "Ainda não consigo rastrear o cartão diretamente apenas pelo CPF do colaborador. Informe o número do pedido para eu consultar as informações disponíveis de rastreamento.",
+      "error_messages": {
+        "cpf_insufficient": "ERR-010"
+      },
+      "priority": "MUST",
+      "status": "AMBIGUOUS",
+      "note": "Depende de validação técnica — AMB-001. Fallback INT-007 é suficiente para POC."
+    },
+    {
+      "intent_id": "INT-007",
+      "group": "A",
+      "type": "CONSULTIVA",
+      "label": "Rastrear cartão por número do pedido",
+      "section": "8.5",
+      "examples": [
+        "Rastrear cartão do pedido 342671."
+      ],
+      "required_user_data": ["número do pedido"],
+      "endpoint": "Endpoint de rastreamento por orderNumber via ma-hr-orch — contrato não inventariado",
+      "fields_to_display": [
+        "status do rastreio",
+        "data da última atualização",
+        "endereço de entrega",
+        "código de rastreio"
+      ],
+      "prohibited_data": ["prazo", "transportadora", "status inventado"],
+      "expected_behavior": [
+        "Buscar rastreamento do cartão via ma-hr-orch",
+        "Exibir campos disponíveis",
+        "Não inventar prazo, transportadora ou status",
+        "Quando disponível, retornar elemento [list_navigation] para tela de rastreamento"
+      ],
+      "example_response": "Encontrei informações de rastreamento para o pedido 342671.\n\nStatus: Entrega em andamento\nÚltima atualização: dd/mm/aaaa\nCódigo de rastreio: 123456789",
+      "error_messages": {
+        "unavailable": "ERR-007"
+      },
+      "priority": "MUST",
+      "status": "CONFIRMED",
+      "note": "Rota confirmada para rastreamento. Endpoint precisa ser inventariado (LAC-001)."
+    },
+    {
+      "intent_id": "INT-008",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "O que posso fazer?",
+      "section": "6",
+      "examples": ["O que posso fazer?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-009",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Quais informações posso consultar?",
+      "section": "6",
+      "examples": ["Quais informações posso consultar?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-010",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Como faço para fazer um pedido?",
+      "section": "6",
+      "examples": ["Como faço para fazer um pedido?"],
+      "source": "MARKDOWN",
+      "note": "Resposta informativa — agente não executa a ação",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-011",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Como faço para consultar um pedido?",
+      "section": "6",
+      "examples": ["Como faço para consultar um pedido?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-012",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Como faço para consultar um colaborador?",
+      "section": "6",
+      "examples": ["Como faço para consultar um colaborador?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-013",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Consigo rastrear cartões?",
+      "section": "6",
+      "examples": ["Consigo rastrear cartões?"],
+      "source": "MARKDOWN",
+      "note": "Resposta deve incluir aviso sobre limitação de rastreamento por CPF",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-014",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Você consegue cancelar pedido?",
+      "section": "6",
+      "examples": ["Você consegue cancelar pedido?"],
+      "source": "MARKDOWN",
+      "expected_answer": "Não — apenas consulta. Acessar Espaço RH para cancelar.",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-015",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Você consegue alterar dados de um colaborador?",
+      "section": "6",
+      "examples": ["Você consegue alterar dados de um colaborador?"],
+      "source": "MARKDOWN",
+      "expected_answer": "Não — apenas consulta. Acessar Espaço RH para editar.",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-016",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Você consulta dados de qualquer empresa?",
+      "section": "6",
+      "examples": ["Você consulta dados de qualquer empresa?"],
+      "source": "MARKDOWN",
+      "expected_answer": "Não — apenas a empresa selecionada no app.",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-017",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Preciso selecionar uma empresa para usar o agente?",
+      "section": "6",
+      "examples": ["Preciso selecionar uma empresa para usar o agente?"],
+      "source": "MARKDOWN",
+      "expected_answer": "Sim — a empresa selecionada é o contexto obrigatório.",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-018",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "O agente substitui o portal web?",
+      "section": "6",
+      "examples": ["O agente substitui o portal web?"],
+      "source": "MARKDOWN",
+      "expected_answer": "Não — apenas consultas. Para ações, usar o portal.",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-019",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "O que é o MARH?",
+      "section": "6",
+      "examples": ["O que é o MARH?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-020",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "O que é o Espaço RH?",
+      "section": "6",
+      "examples": ["O que é o Espaço RH?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-021",
+      "group": "B",
+      "type": "INFORMATIVA_MARH",
+      "label": "Quais tipos de pergunta posso fazer?",
+      "section": "6",
+      "examples": ["Quais tipos de pergunta posso fazer?", "Quais perguntas posso fazer?"],
+      "source": "MARKDOWN",
+      "priority": "MUST",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-022",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Cancela o pedido",
+      "section": "7.3",
+      "examples": ["Cancela o pedido 342671."],
+      "prohibited_action": "FORA-002",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-023",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Altera o endereço do colaborador",
+      "section": "7.3",
+      "examples": ["Altera o endereço do colaborador."],
+      "prohibited_action": "FORA-006",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-024",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Cria um novo pedido",
+      "section": "7.3",
+      "examples": ["Cria um novo pedido."],
+      "prohibited_action": "FORA-001",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-025",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Remove esse colaborador",
+      "section": "7.3",
+      "examples": ["Remove esse colaborador."],
+      "prohibited_action": "FORA-005",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-026",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Paga o pedido",
+      "section": "7.3",
+      "examples": ["Paga o pedido."],
+      "prohibited_action": "FORA-010",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    },
+    {
+      "intent_id": "INT-027",
+      "group": "C",
+      "type": "FORA_DO_ESCOPO",
+      "label": "Emite um novo cartão",
+      "section": "7.3",
+      "examples": ["Emite um novo cartão."],
+      "prohibited_action": "FORA-007",
+      "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+      "priority": "NOT_APPLICABLE",
+      "status": "CONFIRMED"
+    }
+  ],
+  "summary": {
+    "total": 27,
+    "by_group": {
+      "A_CONSULTIVA": 7,
+      "B_INFORMATIVA_MARH": 14,
+      "C_FORA_DO_ESCOPO": 6
+    },
+    "by_status": {
+      "CONFIRMED": 25,
+      "AMBIGUOUS": 1,
+      "NOT_VALIDATED": 1
+    },
+    "by_priority": {
+      "MUST": 21,
+      "NOT_APPLICABLE": 6
+    }
+  }
+}

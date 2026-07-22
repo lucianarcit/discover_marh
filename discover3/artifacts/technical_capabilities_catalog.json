@@ -1,0 +1,256 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-22",
+    "project": "Agente Consultivo MARH",
+    "description": "Catálogo de capacidades e restrições técnicas das APIs, extraído de Gestao_de_Colaboradores.html, Gestao_de_Pedidos.html, artifacts/api_inventory e docs/reports. Este conteúdo NÃO representa requisitos do cliente.",
+    "total": 27
+  },
+  "type_enum": ["API_CAPABILITY", "API_LIMITATION", "API_DEPENDENCY", "SECURITY_CONSTRAINT", "DATA_CONSTRAINT", "NOT_VALIDATED", "OBSERVED_BEHAVIOR", "DOCUMENTED_BEHAVIOR", "CONFLICT"],
+  "status_enum": ["CONFIRMED", "AMBIGUOUS", "NOT_VALIDATED", "CONFLICTING"],
+  "capabilities": [
+    {
+      "id": "TEC-001",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/beneficiaries retorna lista paginada de colaboradores filtrável por nome ou CPF (nameOrCpf), com suporte a paginação (page).",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "Query params: nameOrCpf, page. Resposta: { total, content[], pageable }",
+      "impact_on_agent": "O agente pode consultar colaboradores por nome ou CPF usando este endpoint.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-002",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/orders retorna lista paginada de pedidos com suporte a paginação (page, size) e filtro por número de pedido (orderNumber).",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Query params: page, size, orderNumber. Resposta: { total, content[], pageable }",
+      "impact_on_agent": "O agente pode consultar pedidos e filtrar por número.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-003",
+      "type": "API_LIMITATION",
+      "description": "GET /v1/orders não permite filtrar por data. Não há parâmetro de período (últimos 30, 60 ou 90 dias).",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "A API de consulta de pedidos do GBA não permite filtrar os pedidos por data, por isso o frontend não conseguirá filtrar por pedidos dos últimos 30, 60, 90 dias.",
+      "impact_on_agent": "O agente não pode responder consultas do tipo 'pedidos dos últimos 30 dias'. Deve informar esta limitação se perguntado.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-004",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/orders/{orderNumber} retorna detalhes completos de um pedido: status, datas, valores, produto, etapas (steps[]), forma de pagamento e histórico de status.",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Resposta inclui: orderNumber, status, totalOrder, orderDate, steps[], productInfo, paymentMethod, statusHistory[]",
+      "impact_on_agent": "O agente pode exibir detalhes completos de um pedido pelo número.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-005",
+      "type": "API_DEPENDENCY",
+      "description": "Os endpoints /v1/orders/{orderNumber}, /v1/orders/{orderNumber}/beneficiaries, /v1/orders/{orderNumber}/invoice e /v1/orders/{orderNumber}/bank-ticket dependem do orderNumber, que deve ser extraído de uma consulta prévia ao /v1/orders.",
+      "source_file": "docs\\reports\\api_inventory_pedidos.md",
+      "evidence": "orderNumber 356145 usado nos testes — extraído de /v1/orders.",
+      "impact_on_agent": "Para consultas de detalhe, o agente precisa de um orderNumber válido. Se o usuário não informar, o agente deve buscar via /v1/orders primeiro.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-006",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/orders/{orderNumber}/beneficiaries retorna colaboradores associados a um pedido: nome, benefícios creditados, local de entrega, endereços.",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Resposta: { total, content[{ name, benefits[], placeName, placeType, address, homeAddress }], pageable }",
+      "impact_on_agent": "O agente pode listar colaboradores de um pedido específico.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-007",
+      "type": "OBSERVED_BEHAVIOR",
+      "description": "GET /v1/orders/{orderNumber}/invoice retorna HTTP 422 quando o pedido não possui Nota Fiscal emitida. Comportamento esperado, não erro de implementação.",
+      "source_file": "docs\\reports\\api_test_report_pedidos.md",
+      "evidence": "Nota Fiscal: 422 (esperado) — pedido sem NF emitida.",
+      "impact_on_agent": "O agente deve tratar 422 neste endpoint como 'NF ainda não disponível para este pedido', não como erro genérico.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-008",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/orders/{orderNumber}/invoice retorna, quando disponível, um link (rpsLink) para acesso à Nota Fiscal.",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Resposta: { rpsLink: 'URL da NF' }",
+      "impact_on_agent": "O agente pode retornar o link da NF ao usuário quando disponível.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-009",
+      "type": "DATA_CONSTRAINT",
+      "description": "O campo rpsLink do endpoint de Nota Fiscal pode conter dados fiscais da empresa no contexto da URL. A camada de orquestração deve garantir que a URL seja adequada para exibição.",
+      "source_file": "docs\\reports\\model_consumption_assessment_pedidos.md",
+      "evidence": "APTO_COM_SANITIZACAO — CNPJ embutido no contexto da URL.",
+      "impact_on_agent": "O agente exibe o link da NF, mas a ma-hr-orch deve garantir sanitização adequada.",
+      "status": "NEEDS_VALIDATION"
+    },
+    {
+      "id": "TEC-010",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/orders/{orderNumber}/bank-ticket retorna o boleto com fileName, barCodeLine (linha digitável) e content (PDF em base64).",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Resposta: { fileName, content, barCodeLine }",
+      "impact_on_agent": "O agente pode retornar a linha digitável do boleto ao usuário. O conteúdo base64 não deve ser enviado ao modelo.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-011",
+      "type": "DATA_CONSTRAINT",
+      "description": "O campo content do endpoint de boleto contém o PDF em base64. Este campo não deve ser enviado ao modelo de linguagem — é binário grande sem valor para geração de texto.",
+      "source_file": "docs\\reports\\model_consumption_assessment_pedidos.md",
+      "evidence": "Restrito: content (base64 completo do PDF) não deve ir ao modelo.",
+      "impact_on_agent": "A integração deve extrair apenas fileName e barCodeLine para o contexto do agente.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-012",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/products retorna catálogo de produtos disponíveis. Não contém PII. Candidato a RAG (dado raramente muda).",
+      "source_file": "docs\\reports\\model_consumption_assessment_pedidos.md",
+      "evidence": "APTO_PARA_MODELO (candidato a RAG) — sem PII.",
+      "impact_on_agent": "O agente pode usar dados cacheados em RAG para responder sobre produtos, evitando chamadas desnecessárias.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-013",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/benefits retorna benefícios disponíveis e regras de pedido (orderRules). Não contém PII. Candidato a RAG.",
+      "source_file": "docs\\reports\\model_consumption_assessment_pedidos.md",
+      "evidence": "APTO_PARA_MODELO (candidato a RAG) — sem PII.",
+      "impact_on_agent": "O agente pode usar dados cacheados em RAG para responder sobre benefícios.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-014",
+      "type": "API_CAPABILITY",
+      "description": "GET /v1/availability-dates-for-credit retorna datas disponíveis para disponibilização de crédito: minDate, maxDate e lista de feriados (holidaysList). Requer dado em tempo real.",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Resposta: { minDate, maxDate, holidaysList }",
+      "impact_on_agent": "Se o agente precisar informar datas de disponibilização, deve consultar este endpoint em tempo real — não pode usar dados cacheados.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-015",
+      "type": "SECURITY_CONSTRAINT",
+      "description": "Todos os endpoints de cardholders-hr-management/v1 exigem os headers: Authorization (Bearer token OAuth2), APP_VERSION, client_id, FNP (fingerprint), PLATFORM, Content-Type, X-BASIC-AUTHORIZATION, USER_ID.",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "Headers obrigatórios documentados em todos os endpoints.",
+      "impact_on_agent": "O agente (via ma-hr-orch) depende desses headers em toda requisição. Ausência de qualquer um resulta em falha de autenticação.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-016",
+      "type": "SECURITY_CONSTRAINT",
+      "description": "Todos os endpoints retornam HTTP 403 (sem permissão, FNP inválido ou prova de vida NOK) e HTTP 422 (ID da empresa inválido).",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "403 — Sem permissão, ou FNP, ou prova de vida NOK. 422 — ID da empresa inválido.",
+      "impact_on_agent": "O agente deve tratar esses códigos com mensagens amigáveis (ERR-005 e ERR-006 do requirements_catalog.json).",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-017",
+      "type": "DATA_CONSTRAINT",
+      "description": "Resposta de GET /v1/beneficiaries contém PII: documentNumber (CPF), email, phoneNumber, motherName, beneficiaryId, address. Esses campos não devem ser enviados ao modelo sem sanitização.",
+      "source_file": "docs\\reports\\model_consumption_assessment.md",
+      "evidence": "APTO_SOMENTE_COM_TOOL_CALL — Contém PII (CPF, email, telefone, nome da mãe).",
+      "impact_on_agent": "A integração deve filtrar PII antes de enviar ao agente. Campos seguros: name, placeName, subtype, isHomeDelivery, products.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-018",
+      "type": "DATA_CONSTRAINT",
+      "description": "Resposta de GET /v1/orders/{orderNumber}/beneficiaries contém PII: documentNumber, address, homeAddress.",
+      "source_file": "docs\\artifacts\\api_inventory\\model_data_catalog_pedidos.json",
+      "evidence": "APTO_SOMENTE_COM_TOOL_CALL — CPF e endereço.",
+      "impact_on_agent": "A integração deve filtrar PII. Campos seguros: name, benefits[].benefitName, benefits[].creditedValue, placeName.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-019",
+      "type": "DATA_CONSTRAINT",
+      "description": "Resposta de GET /v1/orders contém campos restritos: billingDocumentNumber, contractNumber, idLegalPersonBilling.",
+      "source_file": "docs\\artifacts\\api_inventory\\model_data_catalog_pedidos.json",
+      "evidence": "Restritos: billingDocumentNumber, contractNumber, idLegalPersonBilling.",
+      "impact_on_agent": "A integração deve filtrar esses campos. Campos seguros: status, totalOrder, orderDate, paymentMethod, steps[], productInfo.productName.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-020",
+      "type": "NOT_VALIDATED",
+      "description": "Os endpoints POST (criar pedido), PUT (simular pedido) e DELETE (cancelar pedido) de Gestão de Pedidos existem na documentação, mas não foram testados por política de segurança.",
+      "source_file": "docs\\reports\\api_inventory_pedidos.md",
+      "evidence": "3 POSTs ignorados por segurança — simulate-order, orders, orders/{id}/cancel.",
+      "impact_on_agent": "Esses endpoints estão fora do escopo consultivo do agente. Existência documentada; comportamento real não validado.",
+      "status": "NOT_VALIDATED"
+    },
+    {
+      "id": "TEC-021",
+      "type": "NOT_VALIDATED",
+      "description": "Os endpoints POST (criar colaborador), PUT (atualizar) e DELETE (excluir) de Gestão de Colaboradores existem na documentação, mas não foram testados por política de segurança.",
+      "source_file": "docs\\reports\\api_inventory.md",
+      "evidence": "POST/PUT/DELETE: SKIPPED_SAFETY — não executados.",
+      "impact_on_agent": "Esses endpoints estão fora do escopo consultivo do agente.",
+      "status": "NOT_VALIDATED"
+    },
+    {
+      "id": "TEC-022",
+      "type": "DOCUMENTED_BEHAVIOR",
+      "description": "Status internos de pedido possíveis nas respostas: IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED.",
+      "source_file": "docs\\cliente\\Gestao_de_Pedidos.html",
+      "evidence": "Lista de status documentada na seção de Consulta de Pedidos.",
+      "impact_on_agent": "O agente deve reconhecer e traduzir esses status ao responder sobre pedidos.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-023",
+      "type": "DOCUMENTED_BEHAVIOR",
+      "description": "Subtipos de local de entrega de colaborador: WORKPLACE (posto de trabalho), HOME_DELIVERY (residência), BRANCH (filial).",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "Valores observados no campo subtype das respostas.",
+      "impact_on_agent": "O agente deve usar nomes amigáveis ao exibir o local de entrega de um colaborador.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-024",
+      "type": "OBSERVED_BEHAVIOR",
+      "description": "Em teste real em 2026-07-22 (ambiente homologação UAT): GET /v1/beneficiaries retornou HTTP 200 em 3.275ms; GET /v1/orders retornou HTTP 200 em 782ms.",
+      "source_file": "docs\\reports\\api_test_report.md",
+      "evidence": "Integração real GET /v1/beneficiaries: HTTP 200, duração 3275ms. GET /v1/orders: HTTP 200, 782ms.",
+      "impact_on_agent": "Tempo de resposta elevado no endpoint de beneficiários pode impactar a latência percebida pelo usuário.",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "TEC-025",
+      "type": "CONFLICT",
+      "description": "A API benefits-order-management não possui endpoint para cadastro individual de colaborador (somente em lote). Atualmente usa endpoint de gba-beneficiaries-orch. Débito técnico a ser resolvido futuramente.",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "A API benefits-order-management não possui o endpoint para cadastro de um único colaborador, apenas em lote. Será preciso incluir um novo endpoint nessa API futuramente.",
+      "impact_on_agent": "Não impacta o agente diretamente (escopo consultivo), mas indica débito técnico na infraestrutura de cadastro.",
+      "status": "AMBIGUOUS"
+    },
+    {
+      "id": "TEC-026",
+      "type": "CONFLICT",
+      "description": "A API benefits-order-management não possui endpoint para exclusão de colaborador. Atualmente usa endpoint de gba-beneficiaries-orch. Débito técnico a ser resolvido futuramente.",
+      "source_file": "docs\\cliente\\Gestao_de_Colaboradores.html",
+      "evidence": "A API benefits-order-management não possui o endpoint para exclusão de colaborador. Será preciso incluir um novo endpoint na API do GBA futuramente.",
+      "impact_on_agent": "Não impacta o agente diretamente (escopo consultivo).",
+      "status": "AMBIGUOUS"
+    },
+    {
+      "id": "TEC-027",
+      "type": "NOT_VALIDATED",
+      "description": "Não há evidência técnica de que a ma-hr-orch possui endpoint de rastreamento de cartão acessível por CPF do colaborador. A especificação menciona 'avaliar com o time técnico'. Nenhum teste real realizado para este endpoint.",
+      "source_file": "docs\\cliente\\00_Agente_Consultivo_MARH.html",
+      "evidence": "Avaliar, junto ao time técnico, se a ma-hr-orch consegue disponibilizar uma consulta de rastreamento por CPF do colaborador.",
+      "impact_on_agent": "O agente não pode assumir que este caminho existe. A fallback para solicitar orderNumber é a única rota confirmada atualmente.",
+      "status": "NOT_VALIDATED"
+    }
+  ]
+}

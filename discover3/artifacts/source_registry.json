@@ -1,0 +1,373 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-22",
+    "project": "Agente Consultivo MARH",
+    "description": "Registro de todas as fontes documentais analisadas nesta etapa de discovery."
+  },
+  "sources": [
+    {
+      "id": "F01",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "title": "Agente Consultivo MARH — Especificação Técnica",
+      "type": "cliente",
+      "format": "HTML",
+      "author": "Documento fornecido pelo cliente",
+      "date": "2026-07-21",
+      "sections": 14,
+      "readable": true,
+      "notes": "Arquivo de 3.5MB. Lido em partes (offsets de 2000 linhas). Contém 14 seções: Objetivo, Referências, Disponibilização, Responsabilidades ma-hr-orch, Contexto obrigatório, Markdown, Classificação de intenção, Escopo MVP, Navegação frontend, Perguntas suportadas, Segurança, Fora de escopo, Tratamento de erros, Critérios de aceite."
+    },
+    {
+      "id": "F02",
+      "path": "docs/cliente/Gestao_de_Colaboradores.html",
+      "title": "Gestão de Colaboradores — Documentação Técnica",
+      "type": "cliente",
+      "format": "HTML",
+      "author": "Rafael Veck dos Santos",
+      "date": "2026-06-11",
+      "sections": 4,
+      "readable": true,
+      "notes": "Arquivo de 3.5MB. Lido em partes. API Sensedia cardholders-hr-management/v1. 4 jornadas: Consulta, Cadastro, Atualização, Exclusão de colaborador. Contém diagramas de sequência mermaid e exemplos de request/response."
+    },
+    {
+      "id": "F03",
+      "path": "docs/cliente/Gestao_de_Pedidos.html",
+      "title": "Gestão de Pedidos — Documentação Técnica",
+      "type": "cliente",
+      "format": "HTML",
+      "author": "Rafael Veck dos Santos",
+      "date": "2026-05-26",
+      "sections": 11,
+      "readable": true,
+      "notes": "Arquivo de 3.6MB. Lido em partes. 11 documentos: NF, Colaboradores do Pedido, Consulta de Pedidos, Detalhes do Pedido, Produtos, Benefícios, Dias para Crédito, Simulação, Criação, Boleto, Cancelamento. Contém limitação explícita sobre filtro por data."
+    },
+    {
+      "id": "F04",
+      "path": "docs/kb/1CONFIG_BENE_1.md",
+      "title": "Configuração de Benefícios",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Perfis permitidos, modalidades, botões PULAR/SALVAR."
+    },
+    {
+      "id": "F05",
+      "path": "docs/kb/1CONFIG_BENE_REDES.md",
+      "title": "Redes de Aceitação",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Redes por modalidade: Alimentação, Refeição, Benefícios."
+    },
+    {
+      "id": "F06",
+      "path": "docs/kb/2CADASTRO_INTERLO_EDITAR.md",
+      "title": "Cadastro e Edição de Interlocutores",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Fluxo em 2 etapas, restrições por perfil."
+    },
+    {
+      "id": "F07",
+      "path": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
+      "title": "Perfis de Interlocutores",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "4 perfis: Decisão, Gerenciamento, Operação, Financeiro. Permissões por perfil."
+    },
+    {
+      "id": "F08",
+      "path": "docs/kb/3CADASTRO_COLAB_PLANILHA.md",
+      "title": "Cadastro de Colaboradores via Planilha",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Campos obrigatórios, regra de atualização por CPF."
+    },
+    {
+      "id": "F09",
+      "path": "docs/kb/3CADASTRO_COLAB_TAGS.md",
+      "title": "Tags de Produto dos Colaboradores",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Tag atribuída somente quando colaborador entra em pedido."
+    },
+    {
+      "id": "F10",
+      "path": "docs/kb/3CADASTRO_COLAB_TELA.md",
+      "title": "Cadastro de Colaboradores via Tela",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Campos obrigatórios, restrição de CPF imutável."
+    },
+    {
+      "id": "F11",
+      "path": "docs/kb/4PEDIDO_PLANILHA.md",
+      "title": "Pedido via Planilha",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "5 etapas do pedido via planilha."
+    },
+    {
+      "id": "F12",
+      "path": "docs/kb/4PEDIDO_TELA.md",
+      "title": "Pedido via Tela",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Mesmo fluxo de 5 etapas, seleção manual de colaboradores."
+    },
+    {
+      "id": "F13",
+      "path": "docs/kb/5PAG_DISPO.md",
+      "title": "Forma de Pagamento e Disponibilização de Créditos",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Único método: boleto bancário. Tipos: Automática e Agendada."
+    },
+    {
+      "id": "F14",
+      "path": "docs/kb/5PAG_DISPO_BOLETO.md",
+      "title": "Concluir e Gerar Boleto",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Etapas 4 e 5 do pedido. Prazo de compensação de até 2 dias úteis."
+    },
+    {
+      "id": "F15",
+      "path": "docs/kb/5PAG_DISPO_MODELO_COBRANCA.md",
+      "title": "Modelo de Cobrança",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Tarifas do pedido atual cobradas no próximo boleto (exceto 1º pedido)."
+    },
+    {
+      "id": "F16",
+      "path": "docs/kb/6ACOMPA_PEDIDO_ALTERAR_DATA_CREDITOS.md",
+      "title": "Alterar Data de Disponibilização de Créditos",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Apenas para pedidos já pagos. Sem cobrança de tarifa."
+    },
+    {
+      "id": "F17",
+      "path": "docs/kb/6ACOMPA_PEDIDO_BOLETO_NF.md",
+      "title": "Boleto e Nota Fiscal",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "NF emitida somente após disponibilização dos créditos."
+    },
+    {
+      "id": "F18",
+      "path": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
+      "title": "Status de Pedidos",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "6 status documentados. Cancelamento automático em 30 dias sem pagamento."
+    },
+    {
+      "id": "F19",
+      "path": "docs/kb/7RELATORIOS.md",
+      "title": "Relatórios",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "4 tipos: Sintético de Cobrança, Analítico de Cobrança, Disponibilização, Espelho de Pedidos."
+    },
+    {
+      "id": "F20",
+      "path": "docs/kb/8RASTREIO_CARTOES.md",
+      "title": "Rastreio de Cartões",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Busca por CPF, status de rastreio, detalhe de entrega."
+    },
+    {
+      "id": "F21",
+      "path": "docs/kb/9VISUALIZAR_CONTRATOS.md",
+      "title": "Visualizar Contratos",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Dados do contrato, tarifas, restrição de alteração de Decisão."
+    },
+    {
+      "id": "F22",
+      "path": "docs/kb/10CADASTRO_FILIAIS_TELA.md",
+      "title": "Cadastro de Filiais via Tela",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "3 etapas: dados cadastrais, responsável pelos cartões, responsável pela NF."
+    },
+    {
+      "id": "F23",
+      "path": "docs/kb/10CADASTRO_POSTO_DE_TRABALHO_PLANILHA.md",
+      "title": "Cadastro de Posto de Trabalho via Planilha",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Formato .xls/.xlsx até 15MB. Reimportar atualiza dados existentes."
+    },
+    {
+      "id": "F24",
+      "path": "docs/kb/faturamento-descentralizado.md",
+      "title": "Faturamento Descentralizado",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Mesma raiz CNPJ obrigatória. Todos os boletos devem ser pagos para disponibilização integral."
+    },
+    {
+      "id": "F25",
+      "path": "docs/kb/manual-emissao-2via.md",
+      "title": "Emissão de 2ª Via de Cartões",
+      "type": "kb",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Motivos: Perda ou Roubo. Reemissão irreversível. Cancela cartões ativos."
+    },
+    {
+      "id": "F26",
+      "path": "docs/reports/api_inventory.md",
+      "title": "Inventário de APIs — Gestão de Colaboradores",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "4 operacoes: GET (seguro), POST/PUT/DELETE (SKIPPED_SAFETY). Headers obrigatórios documentados."
+    },
+    {
+      "id": "F27",
+      "path": "docs/reports/api_inventory_pedidos.md",
+      "title": "Inventário de APIs — Gestão de Pedidos",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "8 GETs inventariados. 3 POSTs ignorados por segurança. Limitação de filtro por data documentada."
+    },
+    {
+      "id": "F28",
+      "path": "docs/reports/api_test_report.md",
+      "title": "Relatório de Testes — Gestão de Colaboradores",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 1 integração real GET /v1/beneficiaries: HTTP 200 (3275ms). POST/PUT/DELETE não executados."
+    },
+    {
+      "id": "F29",
+      "path": "docs/reports/api_test_report_pedidos.md",
+      "title": "Relatório de Testes — Gestão de Pedidos",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 7/8 GETs com HTTP 200. 1 com 422 esperado (NF não emitida). orderNumber 356145 usado nos testes."
+    },
+    {
+      "id": "F30",
+      "path": "docs/reports/model_consumption_assessment.md",
+      "title": "Avaliação de Consumo pelo Modelo — Colaboradores",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Recomendações: GET=APTO_SOMENTE_COM_TOOL_CALL, POST/PUT=NECESSITA_VALIDACAO, DELETE=NAO_APTO. Campos PII identificados."
+    },
+    {
+      "id": "F31",
+      "path": "docs/reports/model_consumption_assessment_pedidos.md",
+      "title": "Avaliação de Consumo pelo Modelo — Pedidos",
+      "type": "report",
+      "format": "Markdown",
+      "readable": true,
+      "notes": "Recomendações por endpoint. /v1/products e /v1/benefits candidatos a RAG. Campos restritos identificados em /v1/orders."
+    },
+    {
+      "id": "F32",
+      "path": "artifacts/api_inventory/gestao_colaboradores_apis.json",
+      "title": "Schema das APIs de Colaboradores",
+      "type": "artifact",
+      "format": "JSON",
+      "readable": true,
+      "notes": "4 operações com exemplos de request/response. Subtypes: WORKPLACE, HOME_DELIVERY, BRANCH. 8 headers obrigatórios documentados."
+    },
+    {
+      "id": "F33",
+      "path": "artifacts/api_inventory/gestao_pedidos_apis.json",
+      "title": "Schema das APIs de Pedidos",
+      "type": "artifact",
+      "format": "JSON",
+      "readable": true,
+      "notes": "8 operações GET documentadas com schemas. Endpoint de boleto retorna barCodeLine e content (base64)."
+    },
+    {
+      "id": "F34",
+      "path": "artifacts/api_inventory/model_data_catalog.json",
+      "title": "Catálogo de Dados — Colaboradores",
+      "type": "artifact",
+      "format": "JSON",
+      "readable": true,
+      "notes": "Campos úteis vs. restritos (PII) por operação. Campos uteis GET: name, placeName, subtype, isHomeDelivery."
+    },
+    {
+      "id": "F35",
+      "path": "artifacts/api_inventory/model_data_catalog_pedidos.json",
+      "title": "Catálogo de Dados — Pedidos",
+      "type": "artifact",
+      "format": "JSON",
+      "readable": true,
+      "notes": "Campos úteis vs. restritos por endpoint. barCodeLine útil; content (base64 do PDF) não vai ao modelo. billingDocumentNumber restrito."
+    },
+    {
+      "id": "F36",
+      "path": "artifacts/api_inventory/cardholders-hr-management",
+      "title": "Pasta cardholders-hr-management",
+      "type": "artifact",
+      "format": "diretório",
+      "readable": false,
+      "notes": "Pasta sem extensão de arquivo visível nos resultados do Glob. Não foi possível determinar o conteúdo sem listagem interna."
+    }
+  ],
+  "summary": {
+    "total_sources": 36,
+    "readable": 35,
+    "not_readable": 1,
+    "by_type": {
+      "cliente": 3,
+      "kb": 22,
+      "report": 6,
+      "artifact": 5
+    },
+    "sources_with_ambiguities": ["F01", "F02", "F03"],
+    "sources_with_limitations": [
+      {
+        "id": "F01",
+        "limitation": "Arquivo de 3.5MB — lido em partes; seções identificadas pelo HTML data-search e pelo conteúdo do markdown embutido"
+      },
+      {
+        "id": "F02",
+        "limitation": "Arquivo de 3.5MB — lido em partes; conteúdo completo extraído nas primeiras 2000 linhas (documento tem 4 seções curtas)"
+      },
+      {
+        "id": "F03",
+        "limitation": "Arquivo de 3.6MB — lido em partes; seções 4 a 11 não foram lidas diretamente mas inventariadas via F27 e F33"
+      },
+      {
+        "id": "F36",
+        "limitation": "Pasta sem extensão — conteúdo interno não determinado"
+      }
+    ]
+  }
+}

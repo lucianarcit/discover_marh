@@ -1,0 +1,982 @@
+[
+  {
+    "intent_id": "INT-001",
+    "intent_name": "Consultar colaborador por nome",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "GET /v1/beneficiaries?nameOrCpf={nome}",
+      "validation_status": "API_TESTED"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/3CADASTRO_COLAB_TELA.md",
+        "section": "Descrição e campos"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/3CADASTRO_COLAB_PLANILHA.md",
+        "section": "Campos obrigatórios"
+      }
+    ],
+    "api_operations": [
+      {
+        "operation": "GET /v1/beneficiaries",
+        "params": [
+          "nameOrCpf",
+          "page"
+        ],
+        "context_params": [
+          "empresa_selecionada"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "tested_at": "2026-07-22",
+        "latency_ms": 3275
+      }
+    ],
+    "required_parameters": [
+      "nameOrCpf"
+    ],
+    "allowed_fields": [
+      "name",
+      "placeName",
+      "subtype",
+      "isHomeDelivery",
+      "products"
+    ],
+    "restricted_fields": [
+      "documentNumber",
+      "email",
+      "phoneNumber",
+      "motherName",
+      "beneficiaryId",
+      "address"
+    ],
+    "sanitization_rules": [
+      "Remover documentNumber (CPF) antes de enviar ao modelo",
+      "Remover email antes de enviar ao modelo",
+      "Remover phoneNumber antes de enviar ao modelo",
+      "Remover motherName antes de enviar ao modelo",
+      "Remover address antes de enviar ao modelo"
+    ],
+    "requires_real_time": true,
+    "fallback": "ERR-002 se total=0; ERR-005 se HTTP 403 permissão; ERR-006 se HTTP 403 FNP/prova de vida; ERR-001 se HTTP 422",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
+    ],
+    "notes": "Se total > 1, apresentar lista e solicitar escolha ao usuário (RF-011)."
+  },
+  {
+    "intent_id": "INT-002",
+    "intent_name": "Consultar colaborador por CPF",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "GET /v1/beneficiaries?nameOrCpf={cpf}",
+      "validation_status": "API_TESTED"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/3CADASTRO_COLAB_TELA.md",
+        "section": "CPF imutável"
+      }
+    ],
+    "api_operations": [
+      {
+        "operation": "GET /v1/beneficiaries",
+        "params": [
+          "nameOrCpf"
+        ],
+        "context_params": [
+          "empresa_selecionada"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "tested_at": "2026-07-22"
+      }
+    ],
+    "required_parameters": [
+      "nameOrCpf (CPF do colaborador)"
+    ],
+    "allowed_fields": [
+      "name",
+      "placeName",
+      "subtype",
+      "isHomeDelivery",
+      "products"
+    ],
+    "restricted_fields": [
+      "documentNumber",
+      "email",
+      "phoneNumber",
+      "motherName",
+      "beneficiaryId",
+      "address"
+    ],
+    "sanitization_rules": [
+      "Remover documentNumber, email, phoneNumber, motherName, address antes de enviar ao modelo"
+    ],
+    "requires_real_time": true,
+    "fallback": "ERR-002 se total=0; ERR-005/ERR-006 se HTTP 403",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
+    ],
+    "notes": "Mesmo endpoint que INT-001. Parâmetro nameOrCpf aceita CPF."
+  },
+  {
+    "intent_id": "INT-003",
+    "intent_name": "Consultar pedido por número",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "GET /v1/orders/{orderNumber}",
+      "validation_status": "API_TESTED"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
+        "section": "Status dos pedidos"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/6ACOMPA_PEDIDO_BOLETO_NF.md",
+        "section": "Boleto e NF"
+      }
+    ],
+    "api_operations": [
+      {
+        "operation": "GET /v1/orders/{orderNumber}",
+        "params": [
+          "orderNumber"
+        ],
+        "context_params": [
+          "empresa_selecionada"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "notes": "orderNumber deve vir do usuário — nunca inventado pelo modelo"
+      },
+      {
+        "operation": "GET /v1/orders/{orderNumber}/beneficiaries",
+        "params": [
+          "orderNumber"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "notes": "Chamada adicional para obter qtd. colaboradores/cartões (LAC-009)"
+      }
+    ],
+    "required_parameters": [
+      "orderNumber (fornecido pelo usuário)"
+    ],
+    "allowed_fields": [
+      "status",
+      "orderDate",
+      "totalOrder",
+      "productInfo.productName",
+      "paymentMethod",
+      "steps"
+    ],
+    "restricted_fields": [
+      "billingDocumentNumber",
+      "contractNumber",
+      "idLegalPersonBilling"
+    ],
+    "sanitization_rules": [
+      "Remover billingDocumentNumber antes de enviar ao modelo",
+      "Remover contractNumber antes de enviar ao modelo",
+      "Remover idLegalPersonBilling antes de enviar ao modelo",
+      "Traduzir status da API (inglês) para português — mapeamento validado parcialmente (CF-KB-001)"
+    ],
+    "requires_real_time": true,
+    "fallback": "ERR-003 se HTTP 404; ERR-005/ERR-006 se HTTP 403; ERR-007 se indisponível",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-009 — qtd. cartões requer chamada adicional",
+      "CF-KB-001 — 4 status sem mapeamento validado",
+      "LAC-006 — sanitização não confirmada"
+    ],
+    "notes": "Não permitir ações sobre o pedido. rpsLink da NF requer sanitização adicional (LAC-010)."
+  },
+  {
+    "intent_id": "INT-004",
+    "intent_name": "Consultar último pedido",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "GET /v1/orders?page=0&size=1",
+      "validation_status": "API_TESTED"
+    },
+    "provenance_sources": [],
+    "api_operations": [
+      {
+        "operation": "GET /v1/orders",
+        "params": [
+          "page=0",
+          "size=1"
+        ],
+        "context_params": [
+          "empresa_selecionada"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "notes": "Sem garantia de ordenação por data — LAC-005"
+      }
+    ],
+    "required_parameters": [],
+    "allowed_fields": [
+      "status",
+      "orderDate",
+      "totalOrder",
+      "productInfo.productName"
+    ],
+    "restricted_fields": [
+      "billingDocumentNumber",
+      "contractNumber",
+      "idLegalPersonBilling"
+    ],
+    "sanitization_rules": [
+      "Remover campos fiscais restritos antes de enviar ao modelo"
+    ],
+    "requires_real_time": true,
+    "fallback": "Aviso obrigatório de ordenação incerta (RF-013); ERR-007 se indisponível",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-005 — ordenação por data não garantida pela API",
+      "LAC-006 — sanitização não confirmada"
+    ],
+    "notes": "Se a ordenação não for confiável, informar: 'Estou exibindo o pedido mais recente retornado pela consulta.'"
+  },
+  {
+    "intent_id": "INT-005",
+    "intent_name": "Consultar pedidos por status",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "GET /v1/orders (filtro de status na camada de orquestração)",
+      "validation_status": "API_TESTED"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
+        "section": "Status dos pedidos"
+      }
+    ],
+    "api_operations": [
+      {
+        "operation": "GET /v1/orders",
+        "params": [
+          "page",
+          "size"
+        ],
+        "context_params": [
+          "empresa_selecionada"
+        ],
+        "technical_status": "TESTED_SUCCESS",
+        "notes": "Sem parâmetro de filtro por status no endpoint — filtro client-side (LAC-004)"
+      }
+    ],
+    "required_parameters": [
+      "status (informado pelo usuário — validar antes de chamar a API)"
+    ],
+    "allowed_fields": [
+      "status",
+      "orderDate",
+      "totalOrder",
+      "productInfo.productName"
+    ],
+    "restricted_fields": [
+      "billingDocumentNumber",
+      "contractNumber",
+      "idLegalPersonBilling"
+    ],
+    "sanitization_rules": [
+      "Remover campos fiscais restritos",
+      "Traduzir status — mapeamento parcial (CF-KB-001)"
+    ],
+    "requires_real_time": true,
+    "fallback": "ERR-004 se status não reconhecido; resposta amigável se lista vazia após filtro",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-004 — filtro de status não disponível no endpoint",
+      "LAC-008 — mapeamento de status incompleto",
+      "CF-KB-001"
+    ],
+    "notes": "Status reconhecidos pela API: IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED."
+  },
+  {
+    "intent_id": "INT-006",
+    "intent_name": "Rastrear cartão por CPF do colaborador",
+    "intent_group": "A",
+    "response_strategy": "REQUIRES_CLARIFICATION",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seção 8.5 — fallback confirmado",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [
+      {
+        "operation": "Endpoint de rastreamento por CPF via ma-hr-orch",
+        "technical_status": "NOT_AVAILABLE",
+        "notes": "Não encontrado no inventário de APIs (TEC-027). Aguardando validação técnica (AMB-001, DP-002)."
+      }
+    ],
+    "required_parameters": [
+      "CPF do colaborador (recebido do usuário)"
+    ],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-010: 'Ainda não consigo rastrear o cartão diretamente apenas pelo CPF do colaborador. Informe o número do pedido para eu consultar as informações disponíveis de rastreamento.'",
+    "coverage": "NOT_VALIDATED",
+    "gaps": [
+      "LAC-002 — endpoint não confirmado",
+      "AMB-001"
+    ],
+    "notes": "O único caminho confirmado para rastreamento é pelo número do pedido (INT-007). Esta intenção não bloqueia o MVP pois o fallback está definido."
+  },
+  {
+    "intent_id": "INT-007",
+    "intent_name": "Rastrear cartão por número do pedido",
+    "intent_group": "A",
+    "response_strategy": "API_ONLY",
+    "primary_source": {
+      "type": "MARH_API",
+      "path": "ma-hr-orch",
+      "section": "Endpoint de rastreamento por orderNumber — contrato não inventariado",
+      "validation_status": "API_NOT_FOUND"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/8RASTREIO_CARTOES.md",
+        "section": "Status de rastreamento (portal web — apenas informativo)"
+      }
+    ],
+    "api_operations": [
+      {
+        "operation": "Endpoint de rastreamento por orderNumber via ma-hr-orch",
+        "params": [
+          "orderNumber"
+        ],
+        "technical_status": "NOT_AVAILABLE",
+        "notes": "Contrato não inventariado. Bloqueador do MVP (LAC-001, DP-001)."
+      }
+    ],
+    "required_parameters": [
+      "orderNumber (fornecido pelo usuário — nunca inventado)"
+    ],
+    "allowed_fields": [
+      "status_rastreio",
+      "data_ultima_atualizacao",
+      "codigo_rastreio"
+    ],
+    "restricted_fields": [
+      "endereco_entrega (PII)"
+    ],
+    "sanitization_rules": [
+      "Filtrar endereço de entrega antes de enviar ao modelo"
+    ],
+    "requires_real_time": true,
+    "fallback": "ERR-007 se indisponível. Nunca inventar prazo, transportadora ou status (RN-003).",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-001 — endpoint não inventariado",
+      "DP-001 — aguardando confirmação da ma-hr-orch"
+    ],
+    "notes": "A KB descreve rastreamento no portal web — não é fonte de dados em tempo real para esta intenção."
+  },
+  {
+    "intent_id": "INT-008",
+    "intent_name": "O que posso fazer?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 2 — O que o Agente Consultivo MARH pode fazer",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/1CONFIG_BENE_1.md",
+        "section": "Descrição"
+      },
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seções 1, 7.3, 12"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Responde com as 5 consultas disponíveis e o que o agente não faz."
+  },
+  {
+    "intent_id": "INT-009",
+    "intent_name": "Quais informações posso consultar?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seções 2 e 3 — O que pode fazer + Como usar",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seções 8.1–8.5, 10"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  },
+  {
+    "intent_id": "INT-010",
+    "intent_name": "Como faço para fazer um pedido?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 7 — Pedidos",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/4PEDIDO_PLANILHA.md",
+        "section": "Etapas do Pedido"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/4PEDIDO_TELA.md",
+        "section": "Etapas do Pedido via Tela"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/5PAG_DISPO.md",
+        "section": "Forma de Pagamento"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Agente informa o processo (informativo), mas não executa a criação do pedido."
+  },
+  {
+    "intent_id": "INT-011",
+    "intent_name": "Como faço para consultar um pedido?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 3 — Como usar o agente",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 8.2"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Instrução: informar o número do pedido no chat."
+  },
+  {
+    "intent_id": "INT-012",
+    "intent_name": "Como faço para consultar um colaborador?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 3 — Como usar o agente",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 8.1"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Instrução: informar nome ou CPF no chat."
+  },
+  {
+    "intent_id": "INT-013",
+    "intent_name": "Consigo rastrear cartões?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 12 — Rastreamento de cartões",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/8RASTREIO_CARTOES.md",
+        "section": "Status possíveis dos pedidos"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/manual-emissao-2via.md",
+        "section": "Rastreio após reemissão"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta informativa coberta na seção 12 do markdown. Para dados de rastreamento em tempo real, usar INT-007 (API_ONLY). CF-KB-002 documentado na validação do markdown."
+  },
+  {
+    "intent_id": "INT-014",
+    "intent_name": "Você consegue cancelar pedido?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 2 — O que o agente não faz",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 12 (FORA-002)"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta: não — o agente não cancela pedidos. Para cancelar, acessar o Espaço RH."
+  },
+  {
+    "intent_id": "INT-015",
+    "intent_name": "Você consegue alterar dados de um colaborador?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 2 — O que o agente não faz",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 12 (FORA-004)"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta: não — o agente não edita colaboradores."
+  },
+  {
+    "intent_id": "INT-016",
+    "intent_name": "Você consulta dados de qualquer empresa?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 3 — Como usar o agente",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 5 (RF-007)"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta: não — apenas a empresa selecionada no app."
+  },
+  {
+    "intent_id": "INT-017",
+    "intent_name": "Preciso selecionar uma empresa para usar o agente?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 3 — Como usar o agente",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 5"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta: sim — o contexto da empresa é obrigatório."
+  },
+  {
+    "intent_id": "INT-018",
+    "intent_name": "O agente substitui o portal web?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 2 — O que o agente não faz",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 1 (RN-001)"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Resposta: não — o agente faz apenas consultas. Para ações, usar o portal."
+  },
+  {
+    "intent_id": "INT-019",
+    "intent_name": "O que é o MARH?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 1 — O que é o MARH e o Espaço RH",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/1CONFIG_BENE_1.md",
+        "section": "Descrição (contexto implícito)"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
+        "section": "Descrição (contexto implícito)"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-MD-001 — definição formal de MARH ausente na KB. Conteúdo construído por contexto implícito."
+    ],
+    "notes": "Requer validação do cliente (VC-001)."
+  },
+  {
+    "intent_id": "INT-020",
+    "intent_name": "O que é o Espaço RH?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seção 1 — O que é o MARH e o Espaço RH",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/1CONFIG_BENE_1.md",
+        "section": "Contexto implícito"
+      },
+      {
+        "type": "ORIGINAL_KB_FILE",
+        "path": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
+        "section": "Contexto implícito"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "PARTIALLY_COVERED",
+    "gaps": [
+      "LAC-MD-001 — definição formal de Espaço RH ausente na KB"
+    ],
+    "notes": "Requer validação do cliente (VC-001)."
+  },
+  {
+    "intent_id": "INT-021",
+    "intent_name": "Quais tipos de pergunta posso fazer?",
+    "intent_group": "B",
+    "response_strategy": "RAG_ONLY",
+    "primary_source": {
+      "type": "CONSOLIDATED_MARKDOWN",
+      "path": "discover3/knowledge/markdown_conhecimento_marh.md",
+      "section": "Seções 2 e 3 — O que pode fazer + Como usar",
+      "validation_status": "PENDING_CLIENT_APPROVAL"
+    },
+    "provenance_sources": [
+      {
+        "type": "CLIENT_STATIC_RULE",
+        "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+        "section": "Seção 10"
+      }
+    ],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "ERR-008",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Lista explícita das 5 consultas disponíveis e exemplos de perguntas."
+  },
+  {
+    "intent_id": "INT-022",
+    "intent_name": "Cancela o pedido 342671.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-002)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": "Elemento [list_navigation] desejável mas depende de AMB-002 (DP-003)."
+  },
+  {
+    "intent_id": "INT-023",
+    "intent_name": "Altera o endereço do colaborador.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-006)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  },
+  {
+    "intent_id": "INT-024",
+    "intent_name": "Cria um novo pedido.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-001)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  },
+  {
+    "intent_id": "INT-025",
+    "intent_name": "Remove esse colaborador.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-005)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  },
+  {
+    "intent_id": "INT-026",
+    "intent_name": "Paga o pedido.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-010)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  },
+  {
+    "intent_id": "INT-027",
+    "intent_name": "Emite um novo cartão.",
+    "intent_group": "C",
+    "response_strategy": "REDIRECT_TO_OFFICIAL_JOURNEY",
+    "primary_source": {
+      "type": "CLIENT_STATIC_RULE",
+      "path": "docs/cliente/00_Agente_Consultivo_MARH.html",
+      "section": "Seções 7.3 e 12 (FORA-007, FORA-008)",
+      "validation_status": "STATIC_CLIENT_DEFINED"
+    },
+    "provenance_sources": [],
+    "api_operations": [],
+    "required_parameters": [],
+    "allowed_fields": [],
+    "restricted_fields": [],
+    "sanitization_rules": [],
+    "requires_real_time": false,
+    "fallback": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
+    "coverage": "COVERED",
+    "gaps": [],
+    "notes": ""
+  }
+]
