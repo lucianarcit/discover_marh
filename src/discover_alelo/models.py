@@ -1,4 +1,22 @@
-"""Modelos de dados para resultados de execução de API."""
+"""Modelos de dados para resultados de execução de API.
+
+Status de execução possíveis:
+- SUCCESS: chamada real executada e resposta válida recebida
+- AUTH_TOKEN_EXPIRED: resposta explícita de token expirado
+- AUTH_TOKEN_INVALID: resposta explícita de token/credencial inválida
+- AUTH_REFRESH_TOKEN_INVALID: refresh token rejeitado
+- AUTH_CONFIGURATION_ERROR: variáveis ausentes ou malformadas
+- AUTH_GATEWAY_TIMEOUT: HTTP 504 do gateway de auth
+- AUTH_SERVICE_UNAVAILABLE: HTTP 502/503 do gateway de auth
+- AUTH_ERROR: outro erro de auth não classificável
+- BLOCKED_BY_AUTH: a API não foi chamada porque a auth falhou
+- HTTP_ERROR: erro HTTP da API (4xx exceto 401, ou outro)
+- TIMEOUT: timeout de conexão ou leitura
+- CONNECTION_ERROR: falha de rede / DNS / TCP
+- INVALID_DOCUMENTATION: URL inválida ou fora de homologação
+- SKIPPED_SAFETY: operação mutável não executada por segurança
+- SKIPPED_NO_SAMPLE: sem exemplo para executar
+"""
 
 from __future__ import annotations
 
@@ -94,6 +112,7 @@ class ExecutionSummary:
     total_operations: int = 0
     successes: int = 0
     failures: int = 0
+    blocked_by_auth: int = 0
     skipped_safety: int = 0
     skipped_no_sample: int = 0
     status_codes_found: list[int] = field(default_factory=list)
@@ -106,6 +125,7 @@ class ExecutionSummary:
             "total_operations": self.total_operations,
             "successes": self.successes,
             "failures": self.failures,
+            "blocked_by_auth": self.blocked_by_auth,
             "skipped_safety": self.skipped_safety,
             "skipped_no_sample": self.skipped_no_sample,
             "status_codes_found": sorted(set(self.status_codes_found)),

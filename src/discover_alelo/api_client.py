@@ -1,7 +1,7 @@
 """Cliente HTTP reutilizável para as APIs Alelo.
 
-Gerencia autenticação, headers comuns, retry em 401, e captura
-métricas de cada chamada.
+Gerencia autenticação, headers comuns, retry para erros transitórios,
+e captura métricas de cada chamada.
 """
 
 from __future__ import annotations
@@ -12,10 +12,15 @@ from typing import Any
 
 import requests
 
-from .auth import AuthenticationError, get_access_token
-from .config import get_all_config, is_homologacao_url
+from .auth import AuthResult, AuthenticationError, authenticate, get_access_token
+from .config import get_all_config, get_timeout_tuple, is_homologacao_url
 from .models import ApiResult
 from .sanitization import sanitize_url
+
+# Status HTTP transitórios que permitem retry (apenas para GET)
+_TRANSIENT_STATUS_CODES = {502, 503, 504}
+_MAX_RETRIES = 2
+_RETRY_BACKOFF_SECONDS = 2
 
 
 class AleloApiClient:
@@ -26,11 +31,24 @@ class AleloApiClient:
         self._session = requests.Session()
         self._token: str | None = None
         self._token_refreshed: bool = False
+        self._auth_result: AuthResult | None = None
+
+    @property
+    def auth_result(self) -> AuthResult | None:
+        """Resultado da última tentativa de autenticação."""
+        return self._auth_result
 
     def _ensure_token(self) -> str:
         """Garante que há um token válido disponível."""
         if not self._token:
-            self._token = get_access_token()
+            self._auth_result = authenticate()
+            if not self._auth_result.success:
+                raise AuthenticationError(
+                    message=self._auth_result.error_detail,
+                    status=self._auth_result.execution_status,
+                    status_code=self._auth_result.status_code,
+                )
+            self._token = self._auth_result.access_token
             self._token_refreshed = False
         return self._token
 
@@ -61,20 +79,7 @@ class AleloApiClient:
         data: Any = None,
         extra_headers: dict[str, str] | None = None,
     ) -> ApiResult:
-        """Executa uma chamada de API e retorna o resultado estruturado.
-
-        Args:
-            operation_name: Nome da operação para registro.
-            method: Método HTTP (GET, POST, PUT, PATCH, DELETE).
-            url: URL completa do endpoint.
-            params: Query parameters.
-            json_body: Body JSON (para POST/PUT/PATCH).
-            data: Body form-data.
-            extra_headers: Headers adicionais específicos desta operação.
-
-        Returns:
-            ApiResult com todos os detalhes da execução.
-        """
+        """Executa uma chamada de API e retorna o resultado estruturado."""
         result = ApiResult(
             operation_name=operation_name,
             method=method.upper(),
@@ -91,12 +96,13 @@ class AleloApiClient:
             )
             return result
 
-        # Monta headers
+        # Monta headers — pode falhar na autenticação
         try:
             headers = self._build_common_headers()
         except AuthenticationError as e:
-            result.execution_status = "AUTH_ERROR"
-            result.error_type = "AuthenticationError"
+            # Propaga o status detalhado do auth
+            result.execution_status = f"BLOCKED_BY_AUTH"
+            result.error_type = e.status
             result.error_message = str(e)
             return result
 
@@ -104,11 +110,12 @@ class AleloApiClient:
             headers.update(extra_headers)
 
         # Prepara request kwargs
+        timeout = get_timeout_tuple(self._config)
         request_kwargs: dict[str, Any] = {
             "method": method.upper(),
             "url": url,
             "headers": headers,
-            "timeout": self._config["timeout"],
+            "timeout": timeout,
             "verify": self._config["verify_ssl"],
         }
 
@@ -129,33 +136,78 @@ class AleloApiClient:
             "body_keys": list(json_body.keys()) if json_body else [],
         }
 
-        # Executa a chamada
-        start = time.time()
-        try:
-            response = self._session.request(**request_kwargs)
-        except requests.exceptions.Timeout:
-            result.duration_ms = int((time.time() - start) * 1000)
-            result.execution_status = "TIMEOUT"
-            result.error_type = "Timeout"
-            result.error_message = (
-                f"Timeout após {result.duration_ms}ms "
-                f"(limite: {self._config['timeout']}s)"
-            )
-            return result
-        except requests.exceptions.ConnectionError as e:
-            result.duration_ms = int((time.time() - start) * 1000)
-            result.execution_status = "CONNECTION_ERROR"
-            result.error_type = "ConnectionError"
-            result.error_message = str(type(e).__name__)
-            return result
-        except requests.exceptions.RequestException as e:
-            result.duration_ms = int((time.time() - start) * 1000)
-            result.execution_status = "HTTP_ERROR"
-            result.error_type = type(e).__name__
-            result.error_message = str(e)[:200]
-            return result
+        # Executa com retry para erros transitórios (apenas GET)
+        is_safe_method = method.upper() in ("GET", "HEAD", "OPTIONS")
+        max_attempts = _MAX_RETRIES if is_safe_method else 1
 
-        result.duration_ms = int((time.time() - start) * 1000)
+        total_start = time.time()
+        response = None
+
+        for attempt in range(1, max_attempts + 1):
+            start = time.time()
+            try:
+                response = self._session.request(**request_kwargs)
+            except requests.exceptions.ConnectTimeout:
+                result.duration_ms = int((time.time() - total_start) * 1000)
+                if attempt < max_attempts:
+                    time.sleep(_RETRY_BACKOFF_SECONDS)
+                    continue
+                result.execution_status = "TIMEOUT"
+                result.error_type = "ConnectTimeout"
+                result.error_message = (
+                    f"Connect timeout após {result.duration_ms}ms "
+                    f"({attempt} tentativas)"
+                )
+                return result
+
+            except requests.exceptions.ReadTimeout:
+                result.duration_ms = int((time.time() - total_start) * 1000)
+                if attempt < max_attempts:
+                    time.sleep(_RETRY_BACKOFF_SECONDS)
+                    continue
+                result.execution_status = "TIMEOUT"
+                result.error_type = "ReadTimeout"
+                result.error_message = (
+                    f"Read timeout após {result.duration_ms}ms "
+                    f"({attempt} tentativas)"
+                )
+                return result
+
+            except requests.exceptions.Timeout:
+                result.duration_ms = int((time.time() - total_start) * 1000)
+                if attempt < max_attempts:
+                    time.sleep(_RETRY_BACKOFF_SECONDS)
+                    continue
+                result.execution_status = "TIMEOUT"
+                result.error_type = "Timeout"
+                result.error_message = f"Timeout ({attempt} tentativas)"
+                return result
+
+            except requests.exceptions.ConnectionError as e:
+                result.duration_ms = int((time.time() - total_start) * 1000)
+                if attempt < max_attempts:
+                    time.sleep(_RETRY_BACKOFF_SECONDS)
+                    continue
+                result.execution_status = "CONNECTION_ERROR"
+                result.error_type = "ConnectionError"
+                result.error_message = f"{type(e).__name__} ({attempt} tentativas)"
+                return result
+
+            except requests.exceptions.RequestException as e:
+                result.duration_ms = int((time.time() - total_start) * 1000)
+                result.execution_status = "HTTP_ERROR"
+                result.error_type = type(e).__name__
+                result.error_message = str(e)[:200]
+                return result
+
+            # Retry para gateway errors transitórios
+            if response.status_code in _TRANSIENT_STATUS_CODES and attempt < max_attempts:
+                time.sleep(_RETRY_BACKOFF_SECONDS)
+                continue
+
+            break
+
+        result.duration_ms = int((time.time() - total_start) * 1000)
         result.status_code = response.status_code
         result.response_headers = dict(response.headers)
 
@@ -165,7 +217,6 @@ class AleloApiClient:
             self._token_refreshed = True
             try:
                 self._token = get_access_token()
-                # Repete a chamada com token novo
                 headers["Authorization"] = f"Bearer {self._token}"
                 request_kwargs["headers"] = headers
 
@@ -175,26 +226,13 @@ class AleloApiClient:
                 result.status_code = response.status_code
                 result.response_headers = dict(response.headers)
             except AuthenticationError as e:
-                result.execution_status = "AUTH_ERROR"
-                result.error_type = "AuthenticationError"
+                result.execution_status = "BLOCKED_BY_AUTH"
+                result.error_type = e.status
                 result.error_message = f"Retry de token falhou: {e}"
                 return result
 
-        # Processa resposta
-        if 200 <= response.status_code < 300:
-            result.success = True
-            result.execution_status = "SUCCESS"
-        else:
-            result.success = False
-            result.execution_status = "HTTP_ERROR"
-            result.error_type = f"HTTP_{response.status_code}"
-            result.error_message = response.text[:500] if response.text else ""
-
-        # Body da resposta
-        try:
-            result.response_body = response.json()
-        except (ValueError, requests.exceptions.JSONDecodeError):
-            result.response_body = response.text[:2000] if response.text else None
+        # Classifica resposta final
+        result = _classify_response(result, response)
 
         return result
 
@@ -207,3 +245,50 @@ class AleloApiClient:
 
     def __exit__(self, *args):
         self.close()
+
+
+def _classify_response(result: ApiResult, response: requests.Response) -> ApiResult:
+    """Classifica a resposta HTTP de forma granular."""
+    status = response.status_code
+
+    # Body da resposta
+    try:
+        result.response_body = response.json()
+    except (ValueError, requests.exceptions.JSONDecodeError):
+        result.response_body = response.text[:2000] if response.text else None
+
+    if 200 <= status < 300:
+        result.success = True
+        result.execution_status = "SUCCESS"
+    elif status == 401:
+        result.success = False
+        result.execution_status = "AUTH_TOKEN_INVALID"
+        result.error_type = "HTTP_401"
+        result.error_message = "Token rejeitado pelo endpoint"
+    elif status == 403:
+        result.success = False
+        result.execution_status = "HTTP_ERROR"
+        result.error_type = "HTTP_403"
+        result.error_message = "Sem permissão (FNP, prova de vida ou interlocutor)"
+    elif status == 502:
+        result.success = False
+        result.execution_status = "AUTH_SERVICE_UNAVAILABLE"
+        result.error_type = "HTTP_502"
+        result.error_message = "Bad Gateway"
+    elif status == 503:
+        result.success = False
+        result.execution_status = "AUTH_SERVICE_UNAVAILABLE"
+        result.error_type = "HTTP_503"
+        result.error_message = "Serviço indisponível"
+    elif status == 504:
+        result.success = False
+        result.execution_status = "AUTH_GATEWAY_TIMEOUT"
+        result.error_type = "HTTP_504"
+        result.error_message = "Gateway Timeout — backend não respondeu"
+    else:
+        result.success = False
+        result.execution_status = "HTTP_ERROR"
+        result.error_type = f"HTTP_{status}"
+        result.error_message = response.text[:500] if response.text else ""
+
+    return result

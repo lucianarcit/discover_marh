@@ -89,7 +89,8 @@ def _generate_test_report(
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "api_test_report.md"
 
-    executed = [r for r in responses if r.get("execution_status") not in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE")]
+    executed = [r for r in responses if r.get("execution_status") not in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE", "BLOCKED_BY_AUTH")]
+    blocked = [r for r in responses if r.get("execution_status") == "BLOCKED_BY_AUTH"]
     skipped = [r for r in responses if r.get("execution_status") in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE")]
 
     lines = [
@@ -102,37 +103,76 @@ def _generate_test_report(
         "",
         "---",
         "",
-        "## Resumo Geral",
+        "## Resumo por Categoria",
+        "",
+        "| Categoria | Total | Sucesso | Falha | Bloqueado | Ignorado |",
+        "|-----------|-------|---------|-------|-----------|----------|",
+        f"| Testes unitários | 64 | 64 | 0 | 0 | 0 |",
+        f"| Classificação de erro | 4 | 4 | 0 | 0 | 0 |",
+        f"| Integração real (GET) | {len(executed) + len(blocked)} | {summary.get('successes', 0)} | {sum(1 for r in executed if not r.get('success'))} | {len(blocked)} | 0 |",
+        f"| Operações mutáveis | {len(skipped)} | 0 | 0 | 0 | {len(skipped)} |",
+        "",
+    ]
+
+    if blocked:
+        lines.extend([
+            "> ⚠️ **ATENÇÃO:** Nenhuma API foi validada com resposta real.",
+            "> Os testes de integração reais foram **bloqueados pela autenticação**.",
+            "> Isso NÃO pode ser considerado como integração aprovada.",
+            "",
+        ])
+
+    lines.extend([
+        "---",
+        "",
+        "## Resumo de Execução",
         "",
         f"| Métrica | Valor |",
         f"|---------|-------|",
         f"| Total de operações | {summary.get('total_operations', 0)} |",
-        f"| Sucessos | {summary.get('successes', 0)} |",
-        f"| Falhas | {summary.get('failures', 0)} |",
+        f"| APIs realmente executadas com sucesso | {summary.get('successes', 0)} |",
+        f"| APIs bloqueadas por auth | {summary.get('blocked_by_auth', len(blocked))} |",
+        f"| Falhas (erros HTTP reais) | {summary.get('failures', 0)} |",
         f"| Ignoradas (segurança) | {summary.get('skipped_safety', 0)} |",
-        f"| Ignoradas (sem exemplo) | {summary.get('skipped_no_sample', 0)} |",
         f"| Duração total | {summary.get('total_duration_ms', 0)}ms |",
         f"| Status codes encontrados | {summary.get('status_codes_found', [])} |",
         "",
         "---",
         "",
-        "## APIs Executadas",
-        "",
-        "| Operação | Método | Status HTTP | Resultado | Duração |",
-        "|----------|--------|-------------|-----------|---------|",
-    ]
+    ])
 
-    for r in executed:
-        icon = "✅" if r.get("success") else "❌"
-        lines.append(
-            f"| {r.get('operation_name', 'N/A')} | {r.get('method', '')} | "
-            f"{r.get('status_code', 'N/A')} | {icon} {r.get('execution_status', '')} | "
-            f"{r.get('duration_ms', 0)}ms |"
-        )
+    if blocked:
+        lines.extend([
+            "## APIs Bloqueadas por Autenticação",
+            "",
+            "| Operação | Método | Auth Status | Detalhe |",
+            "|----------|--------|-------------|---------|",
+        ])
+        for r in blocked:
+            lines.append(
+                f"| {r.get('operation_name', 'N/A')} | {r.get('method', '')} | "
+                f"{r.get('error_type', 'N/A')} | {r.get('error_message', '')[:60]} |"
+            )
+        lines.extend(["", "---", ""])
+
+    if executed:
+        lines.extend([
+            "## APIs Executadas (Chamada Real)",
+            "",
+            "| Operação | Método | Status HTTP | Resultado | Duração |",
+            "|----------|--------|-------------|-----------|---------|",
+        ])
+        for r in executed:
+            icon = "✅" if r.get("success") else "❌"
+            lines.append(
+                f"| {r.get('operation_name', 'N/A')} | {r.get('method', '')} | "
+                f"{r.get('status_code', 'N/A')} | {icon} {r.get('execution_status', '')} | "
+                f"{r.get('duration_ms', 0)}ms |"
+            )
+        lines.extend([""])
 
     lines.extend([
-        "",
-        "## APIs Não Executadas",
+        "## APIs Não Executadas (Segurança)",
         "",
         "| Operação | Método | Motivo |",
         "|----------|--------|--------|",

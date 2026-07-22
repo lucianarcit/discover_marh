@@ -93,7 +93,12 @@ class ResponseRecorder:
                 1
                 for r in self._results
                 if not r.success
-                and r.execution_status not in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE")
+                and r.execution_status not in (
+                    "SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE", "BLOCKED_BY_AUTH"
+                )
+            ),
+            blocked_by_auth=sum(
+                1 for r in self._results if r.execution_status == "BLOCKED_BY_AUTH"
             ),
             skipped_safety=sum(
                 1 for r in self._results if r.execution_status == "SKIPPED_SAFETY"

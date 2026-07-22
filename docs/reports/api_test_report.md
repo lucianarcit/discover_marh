@@ -1,33 +1,50 @@
 # Relatório de Testes de API - Gestão de Colaboradores
 
-**Gerado em:** 2026-07-22 10:02:50
-**Execução:** `20260722_100229`
+**Gerado em:** 2026-07-22 10:35:48
+**Execução:** `20260722_103354`
 **Ambiente:** homologacao
 **Autenticação:** OAuth2 Bearer Token (refresh_token grant)
 
 ---
 
-## Resumo Geral
+## Resumo por Categoria
+
+| Categoria | Total | Sucesso | Falha | Bloqueado | Ignorado |
+|-----------|-------|---------|-------|-----------|----------|
+| Testes unitários | 64 | 64 | 0 | 0 | 0 |
+| Classificação de erro | 4 | 4 | 0 | 0 | 0 |
+| Integração real (GET) | 1 | 0 | 0 | 1 | 0 |
+| Operações mutáveis | 3 | 0 | 0 | 0 | 3 |
+
+> ⚠️ **ATENÇÃO:** Nenhuma API foi validada com resposta real.
+> Os testes de integração reais foram **bloqueados pela autenticação**.
+> Isso NÃO pode ser considerado como integração aprovada.
+
+---
+
+## Resumo de Execução
 
 | Métrica | Valor |
 |---------|-------|
 | Total de operações | 4 |
-| Sucessos | 0 |
-| Falhas | 1 |
+| APIs realmente executadas com sucesso | 0 |
+| APIs bloqueadas por auth | 1 |
+| Falhas (erros HTTP reais) | 0 |
 | Ignoradas (segurança) | 3 |
-| Ignoradas (sem exemplo) | 0 |
 | Duração total | 0ms |
 | Status codes encontrados | [] |
 
 ---
 
-## APIs Executadas
+## APIs Bloqueadas por Autenticação
 
-| Operação | Método | Status HTTP | Resultado | Duração |
-|----------|--------|-------------|-----------|---------|
-| Consulta dos colaboradores | GET | 0 | ❌ AUTH_ERROR | 0ms |
+| Operação | Método | Auth Status | Detalhe |
+|----------|--------|-------------|---------|
+| Consulta dos colaboradores | GET | AUTH_TOKEN_INVALID | HTTP 401. Código: ''. Detalhe: '' |
 
-## APIs Não Executadas
+---
+
+## APIs Não Executadas (Segurança)
 
 | Operação | Método | Motivo |
 |----------|--------|--------|
@@ -39,7 +56,7 @@
 
 ## Localização dos Artefatos
 
-- Resumo: `artifacts/api_runs/20260722_100229/execution_summary.json`
-- Respostas sanitizadas: `artifacts/api_runs/20260722_100229/sanitized_responses.json`
-- Schemas: `artifacts/api_runs/20260722_100229/schemas.json`
-- Individual: `artifacts/api_runs/20260722_100229/individual/`
+- Resumo: `artifacts/api_runs/20260722_103354/execution_summary.json`
+- Respostas sanitizadas: `artifacts/api_runs/20260722_103354/sanitized_responses.json`
+- Schemas: `artifacts/api_runs/20260722_103354/schemas.json`
+- Individual: `artifacts/api_runs/20260722_103354/individual/`

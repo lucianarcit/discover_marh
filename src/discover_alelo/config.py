@@ -42,6 +42,7 @@ REQUIRED_VARS = [
     "ALELO_FNP",
     "ALELO_USER_ID",
     "ALELO_IBM_CLIENT_ID",
+    "ALELO_REFRESH_TOKEN",
 ]
 
 
@@ -80,14 +81,21 @@ def get_all_config() -> dict[str, str]:
         "fnp": os.getenv("ALELO_FNP", ""),
         "user_id": os.getenv("ALELO_USER_ID", ""),
         "ibm_client_id": os.getenv("ALELO_IBM_CLIENT_ID", ""),
+        "refresh_token": os.getenv("ALELO_REFRESH_TOKEN", ""),
         # Aplicação
         "auth_type": os.getenv("ALELO_AUTH_TYPE", "IS-ALELO"),
         "app_version": os.getenv("ALELO_APP_VERSION", ""),
         "platform": os.getenv("ALELO_PLATFORM", "IOS"),
-        # Runtime
-        "timeout": int(os.getenv("ALELO_REQUEST_TIMEOUT", "60")),
+        # Runtime — timeouts separados
+        "connect_timeout": int(os.getenv("ALELO_CONNECT_TIMEOUT", "10")),
+        "read_timeout": int(os.getenv("ALELO_READ_TIMEOUT", "60")),
         "verify_ssl": os.getenv("ALELO_VERIFY_SSL", "true").lower() == "true",
     }
+
+
+def get_timeout_tuple(config: dict) -> tuple[int, int]:
+    """Retorna a tupla (connect_timeout, read_timeout) para requests."""
+    return (config["connect_timeout"], config["read_timeout"])
 
 
 def is_homologacao_url(url: str) -> bool:

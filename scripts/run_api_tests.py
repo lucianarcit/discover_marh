@@ -68,6 +68,13 @@ def main() -> None:
             status_icons = {
                 "SUCCESS": "✅",
                 "HTTP_ERROR": "❌",
+                "AUTH_TOKEN_EXPIRED": "🔑",
+                "AUTH_TOKEN_INVALID": "🔐",
+                "AUTH_REFRESH_TOKEN_INVALID": "🔑",
+                "AUTH_GATEWAY_TIMEOUT": "⏱️",
+                "AUTH_SERVICE_UNAVAILABLE": "🔌",
+                "AUTH_CONFIGURATION_ERROR": "⚙️",
+                "BLOCKED_BY_AUTH": "🚫",
                 "AUTH_ERROR": "🔐",
                 "TIMEOUT": "⏱️",
                 "CONNECTION_ERROR": "🔌",
@@ -81,6 +88,10 @@ def main() -> None:
                 print(f" (HTTP {result.status_code})", end="")
             if result.duration_ms:
                 print(f" [{result.duration_ms}ms]", end="")
+            if result.error_message:
+                # Trunca e não exibe dados sensíveis
+                safe_msg = result.error_message[:80]
+                print(f"\n      Detalhe: {safe_msg}", end="")
             print()
 
     print()
@@ -98,15 +109,21 @@ def main() -> None:
     successes = sum(1 for r in results if r.success)
     failures = sum(
         1 for r in results
-        if not r.success and r.execution_status not in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE")
+        if not r.success and r.execution_status not in (
+            "SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE", "BLOCKED_BY_AUTH"
+        )
     )
+    blocked = sum(1 for r in results if r.execution_status == "BLOCKED_BY_AUTH")
     skipped = sum(
         1 for r in results
         if r.execution_status in ("SKIPPED_SAFETY", "SKIPPED_NO_SAMPLE")
     )
 
     print("=" * 60)
-    print(f"  RESUMO: {successes} sucesso | {failures} falha | {skipped} ignoradas")
+    print(f"  RESUMO: {successes} sucesso | {failures} falha | {blocked} bloqueadas (auth) | {skipped} ignoradas (safety)")
+    if blocked > 0:
+        print(f"\n  ⚠️  {blocked} API(s) NÃO foram executadas porque a autenticação falhou.")
+        print(f"     Isso NÃO conta como teste aprovado.")
     print("=" * 60)
 
 
