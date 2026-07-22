@@ -1,0 +1,139 @@
+[
+  {
+    "operation_name": "Download da Nota Fiscal",
+    "description": "Retorna link da nota fiscal de um pedido",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/orders/{orderNumber}/invoice",
+    "path_parameters": ["orderNumber"],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success - retorna rpsLink"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 01",
+    "safe_to_execute": true,
+    "needs_path_param": true,
+    "notes": "Requer orderNumber válido obtido de /orders"
+  },
+  {
+    "operation_name": "Consulta dos Colaboradores do Pedido",
+    "description": "Lista colaboradores associados a um pedido específico",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/orders/{orderNumber}/beneficiaries",
+    "path_parameters": ["orderNumber"],
+    "query_parameters": [
+      {"name": "page", "description": "Número da página"},
+      {"name": "size", "description": "Tamanho da página"}
+    ],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "204", "description": "No Content"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 02",
+    "safe_to_execute": true,
+    "needs_path_param": true,
+    "notes": "Requer orderNumber válido obtido de /orders"
+  },
+  {
+    "operation_name": "Consulta de Pedidos",
+    "description": "Lista todos os pedidos do usuário com paginação",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/orders",
+    "path_parameters": [],
+    "query_parameters": [
+      {"name": "page", "description": "Número da página"},
+      {"name": "size", "description": "Tamanho da página"},
+      {"name": "orderNumber", "description": "Número do pedido (filtro)"}
+    ],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "204", "description": "No Content"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 03",
+    "safe_to_execute": true,
+    "needs_path_param": false,
+    "notes": "Endpoint principal. Não filtra por data."
+  },
+  {
+    "operation_name": "Consulta dos Detalhes de um Pedido",
+    "description": "Retorna detalhes de um pedido específico",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/orders/{orderNumber}",
+    "path_parameters": ["orderNumber"],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 04",
+    "safe_to_execute": true,
+    "needs_path_param": true,
+    "notes": "Requer orderNumber válido obtido de /orders"
+  },
+  {
+    "operation_name": "Consulta dos Produtos",
+    "description": "Lista produtos disponíveis para pedido",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/products",
+    "path_parameters": [],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 05",
+    "safe_to_execute": true,
+    "needs_path_param": false,
+    "notes": "Consulta de catálogo"
+  },
+  {
+    "operation_name": "Consulta dos Benefícios",
+    "description": "Lista benefícios disponíveis",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/benefits",
+    "path_parameters": [],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 06",
+    "safe_to_execute": true,
+    "needs_path_param": false,
+    "notes": "Consulta de catálogo"
+  },
+  {
+    "operation_name": "Consulta dos Dias para Crédito",
+    "description": "Lista datas disponíveis para disponibilização de crédito",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/availability-dates-for-credit",
+    "path_parameters": [],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 07",
+    "safe_to_execute": true,
+    "needs_path_param": false,
+    "notes": "Consulta de datas"
+  },
+  {
+    "operation_name": "Visualizar Boleto",
+    "description": "Retorna link do boleto de um pedido",
+    "method": "GET",
+    "path": "cardholders-hr-management/v1/orders/{orderNumber}/bank-ticket",
+    "path_parameters": ["orderNumber"],
+    "query_parameters": [],
+    "documented_status_codes": [
+      {"code": "200", "description": "Success"},
+      {"code": "403", "description": "FNP ou prova de vida NOK"}
+    ],
+    "source_section": "Seção 10",
+    "safe_to_execute": true,
+    "needs_path_param": true,
+    "notes": "Requer orderNumber válido obtido de /orders"
+  }
+]
