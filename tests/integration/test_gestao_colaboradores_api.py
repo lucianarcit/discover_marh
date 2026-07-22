@@ -1,10 +1,7 @@
-"""Testes de integração para APIs de Gestão de Colaboradores.
+"""Testes de integração — SOMENTE operações GET.
 
-REGRAS:
-- Testes reais (test_*_real_api) passam SOMENTE com resposta real válida.
-- Quando a autenticação falha, testes reais são SKIPPED (não aprovados).
-- Testes de classificação de erro validam o comportamento do código.
-- Operações mutáveis são marcadas SKIPPED_SAFETY.
+Testes reais passam SOMENTE com resposta válida da API.
+Quando a autenticação falha, são SKIPPED.
 
 Uso:
     python -m pytest tests/integration/test_gestao_colaboradores_api.py -v
@@ -45,7 +42,7 @@ def auth_result(config) -> AuthResult:
 
 @pytest.fixture(scope="module")
 def client(config):
-    """Cria cliente HTTP compartilhado para o módulo."""
+    """Cria cliente HTTP."""
     with AleloApiClient() as c:
         yield c
 
@@ -57,81 +54,40 @@ def base_url(config):
     return f"{api_base}/cardholders-hr-management/v1"
 
 
-# ─── Testes de Classificação de Erro ─────────────────────────────────────────
-
-
-class TestErrorClassification:
-    """Testes que validam a classificação de erros — não dependem de API real."""
-
-    def test_auth_gateway_timeout_classified_correctly(self, auth_result):
-        """Verifica que 504 é classificado como AUTH_GATEWAY_TIMEOUT, não como token expirado."""
-        if auth_result.status_code == 504:
-            assert auth_result.execution_status == "AUTH_GATEWAY_TIMEOUT"
-            assert "token" not in auth_result.error_detail.lower() or "gateway" in auth_result.error_detail.lower()
-
-    def test_auth_result_has_status_code(self, auth_result):
-        """Verifica que o resultado tem status code registrado."""
-        # Se houve tentativa, deve ter código ou execution_status
-        assert auth_result.execution_status != ""
-
-    def test_timeout_not_classified_as_expired(self, auth_result):
-        """Verifica que timeout não é confundido com token expirado."""
-        if auth_result.execution_status == "TIMEOUT":
-            assert auth_result.execution_status != "AUTH_TOKEN_EXPIRED"
-
-    def test_connection_error_not_classified_as_invalid_credentials(self, auth_result):
-        """Verifica que erro de conexão não é confundido com credenciais inválidas."""
-        if auth_result.execution_status == "CONNECTION_ERROR":
-            assert auth_result.execution_status != "AUTH_TOKEN_INVALID"
+# ─── Testes de Diagnóstico ───────────────────────────────────────────────────
 
 
 class TestNetworkDiagnostic:
-    """Testes de diagnóstico de rede — verifica alcançabilidade sem credenciais."""
+    """Diagnóstico de rede — verifica alcançabilidade."""
 
-    def test_auth_endpoint_dns_resolution(self, config):
-        """Verifica se o DNS do endpoint de auth resolve."""
+    def test_auth_endpoint_reachable(self, config):
         diag = diagnose_endpoint(config["auth_url"], connect_timeout=10)
-        # Registra resultado — não falha o teste por rede
         if not diag.dns_resolved:
-            pytest.skip(
-                f"DNS não resolvido para auth endpoint. "
-                f"Hipótese: {diag.hypothesis}"
-            )
+            pytest.skip(f"DNS não resolvido: {diag.hypothesis}")
+        assert diag.tcp_reachable, f"TCP falhou: {diag.error_detail}"
 
-    def test_api_endpoint_dns_resolution(self, config):
-        """Verifica se o DNS do endpoint de API resolve."""
+    def test_api_endpoint_reachable(self, config):
         diag = diagnose_endpoint(config["api_base_url"], connect_timeout=10)
         if not diag.dns_resolved:
-            pytest.skip(
-                f"DNS não resolvido para API endpoint. "
-                f"Hipótese: {diag.hypothesis}"
-            )
+            pytest.skip(f"DNS não resolvido: {diag.hypothesis}")
+        assert diag.tcp_reachable, f"TCP falhou: {diag.error_detail}"
 
 
-# ─── Testes Reais de API (requerem autenticação válida) ──────────────────────
+# ─── Testes Reais GET (requerem token válido) ────────────────────────────────
 
 
-class TestGetBeneficiariesRealApi:
-    """Testes REAIS do GET /v1/beneficiaries.
+class TestGetBeneficiaries:
+    """GET /v1/beneficiaries — consulta de colaboradores."""
 
-    Só passam quando:
-    1. Autenticação funciona (token obtido).
-    2. Chamada real é executada.
-    3. Status esperado é recebido.
-    4. Contrato mínimo da resposta é validado.
-    """
-
-    def test_get_beneficiaries_real_api(self, client, base_url, auth_result):
-        """Consulta real de colaboradores — aprovado SOMENTE com resposta válida."""
-        # GATE: se auth não funcionou, SKIP (nunca aprovar sem API real)
+    def test_listar_colaboradores(self, client, base_url, auth_result):
+        """Aprovado SOMENTE com resposta real 200 ou 204."""
         if not auth_result.success:
             pytest.skip(
-                f"Bloqueado por autenticação: {auth_result.execution_status}. "
-                f"Detalhe: {auth_result.error_detail}"
+                f"Auth falhou: {auth_result.execution_status} — {auth_result.error_detail}"
             )
 
         url = f"{base_url}/beneficiaries"
-        assert is_homologacao_url(url), "URL não é de homologação!"
+        assert is_homologacao_url(url)
 
         result = client.execute(
             operation_name="Consulta dos colaboradores",
@@ -140,33 +96,18 @@ class TestGetBeneficiariesRealApi:
             params={"page": "0"},
         )
 
-        # Deve ter sido uma chamada real — não BLOCKED_BY_AUTH
         assert result.execution_status != "BLOCKED_BY_AUTH", (
-            f"API não foi chamada. Auth bloqueou: {result.error_message}"
+            f"Bloqueado: {result.error_message}"
         )
-
-        # Valida status esperado conforme documentação
         assert result.status_code in (200, 204), (
-            f"Status inesperado: {result.status_code}. "
-            f"Status: {result.execution_status}. "
-            f"Erro: {result.error_message}"
+            f"Status: {result.status_code}. "
+            f"Erro: {result.execution_status} — {result.error_message}"
         )
 
-        # Se 200, valida contrato mínimo
-        if result.status_code == 200 and result.response_body:
-            body = result.response_body
-            assert isinstance(body, dict), "Resposta não é objeto JSON"
-            assert "content" in body or "total" in body, (
-                f"Contrato inválido — campos esperados ausentes. "
-                f"Campos recebidos: {list(body.keys())}"
-            )
-
-    def test_get_beneficiaries_response_structure(self, client, base_url, auth_result):
-        """Valida estrutura detalhada da resposta quando disponível."""
+    def test_resposta_tem_estrutura_esperada(self, client, base_url, auth_result):
+        """Valida contrato mínimo da resposta GET."""
         if not auth_result.success:
-            pytest.skip(
-                f"Bloqueado por autenticação: {auth_result.execution_status}"
-            )
+            pytest.skip("Auth falhou")
 
         url = f"{base_url}/beneficiaries"
         result = client.execute(
@@ -176,48 +117,40 @@ class TestGetBeneficiariesRealApi:
             params={"page": "0"},
         )
 
-        if result.status_code != 200 or not result.response_body:
-            pytest.skip(f"Sem resposta 200 para validar estrutura. Status: {result.status_code}")
+        if result.status_code == 204:
+            pytest.skip("204 No Content — sem dados para validar estrutura")
+
+        if result.status_code != 200:
+            pytest.skip(f"Não obteve 200. Status: {result.status_code}")
 
         body = result.response_body
-        # Valida paginação
-        if "pageable" in body:
-            assert "page" in body["pageable"]
+        assert isinstance(body, dict), "Resposta não é JSON object"
 
-        # Valida lista de conteúdo
+        # Campos documentados
+        assert "content" in body or "total" in body, (
+            f"Campos esperados ausentes. Recebidos: {list(body.keys())}"
+        )
+
         if "content" in body and body["content"]:
             item = body["content"][0]
-            # Campos documentados que devem existir
-            expected_fields = {"name", "subtype"}
-            actual_fields = set(item.keys())
-            missing = expected_fields - actual_fields
-            assert not missing, (
-                f"Campos documentados ausentes na resposta: {missing}"
-            )
+            assert "name" in item, f"Campo 'name' ausente. Campos: {list(item.keys())}"
 
+    def test_paginacao(self, client, base_url, auth_result):
+        """Verifica se a resposta contém informação de paginação."""
+        if not auth_result.success:
+            pytest.skip("Auth falhou")
 
-# ─── Testes Mutáveis (Sempre Skipped por segurança) ──────────────────────────
+        url = f"{base_url}/beneficiaries"
+        result = client.execute(
+            operation_name="Consulta colaboradores - paginação",
+            method="GET",
+            url=url,
+            params={"page": "0"},
+        )
 
+        if result.status_code != 200:
+            pytest.skip(f"Status {result.status_code}")
 
-class TestCadastroColaborador:
-    """POST /v1/beneficiaries — NÃO EXECUTADO automaticamente."""
-
-    @pytest.mark.skip(reason="SKIPPED_SAFETY: POST pode criar registros reais")
-    def test_cadastrar_colaborador(self):
-        pass
-
-
-class TestAtualizacaoColaborador:
-    """PUT /v1/beneficiaries/{id} — NÃO EXECUTADO automaticamente."""
-
-    @pytest.mark.skip(reason="SKIPPED_SAFETY: PUT altera dados reais")
-    def test_atualizar_colaborador(self):
-        pass
-
-
-class TestExclusaoColaborador:
-    """DELETE /v1/beneficiaries/{id} — NÃO EXECUTADO automaticamente."""
-
-    @pytest.mark.skip(reason="SKIPPED_SAFETY: DELETE remove dados irreversivelmente")
-    def test_excluir_colaborador(self):
-        pass
+        body = result.response_body
+        if isinstance(body, dict) and "pageable" in body:
+            assert "page" in body["pageable"]

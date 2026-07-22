@@ -238,13 +238,10 @@ def _extract_status_codes(op: ApiOperation, markdown_div) -> None:
 
 def _assess_safety(op: ApiOperation) -> None:
     """Determina se é seguro executar a operação automaticamente."""
-    unsafe_methods = {"POST", "PUT", "PATCH", "DELETE"}
-
-    if op.method in unsafe_methods:
+    if op.method != "GET":
         op.safe_to_execute = False
         op.safety_reason = (
-            f"Método {op.method} pode alterar dados. "
-            f"Requer análise manual antes da execução."
+            f"Método {op.method} removido do escopo. Somente GET é executado."
         )
     else:
         op.safe_to_execute = True

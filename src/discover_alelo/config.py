@@ -42,7 +42,6 @@ REQUIRED_VARS = [
     "ALELO_FNP",
     "ALELO_USER_ID",
     "ALELO_IBM_CLIENT_ID",
-    "ALELO_REFRESH_TOKEN",
 ]
 
 
@@ -82,6 +81,7 @@ def get_all_config() -> dict[str, str]:
         "user_id": os.getenv("ALELO_USER_ID", ""),
         "ibm_client_id": os.getenv("ALELO_IBM_CLIENT_ID", ""),
         "refresh_token": os.getenv("ALELO_REFRESH_TOKEN", ""),
+        "access_token": os.getenv("ALELO_ACCESS_TOKEN", ""),
         # Aplicação
         "auth_type": os.getenv("ALELO_AUTH_TYPE", "IS-ALELO"),
         "app_version": os.getenv("ALELO_APP_VERSION", ""),
