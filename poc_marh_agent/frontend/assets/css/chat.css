@@ -226,6 +226,35 @@
   padding: 0 var(--space-1);
 }
 
+/* ── Mensagem com card estruturado — envelope responsivo ── */
+/*
+ * Causa raiz: .message__content usa max-width sem width explícito.
+ * Flex items encolhem até a largura do conteúdo mais curto.
+ * O bubble herdava esse tamanho e o card ficava estreito.
+ *
+ * Solução: quando há presentation, o .message__content cresce para
+ * min(100%, 540px) e o bubble vira um pass-through transparente.
+ */
+.message--card .message__content {
+  width: min(100%, 540px);
+  max-width: min(100%, 540px);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.message__bubble--card {
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Garante que o nav-card também ocupe a largura do envelope */
+.message--card .nav-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* ── Componente de navegação (list_navigation) ── */
 .nav-card {
   margin-top: var(--space-2);
@@ -564,6 +593,11 @@
 
   .message__content {
     max-width: 65%;
+  }
+
+  /* Cards estruturados ignoram o max-width% — usam min() próprio */
+  .message--card .message__content {
+    max-width: min(100%, 540px);
   }
 
   .attach-menu {

@@ -6,6 +6,9 @@
 
 /* ── Card base ── */
 .agent-response-card {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: var(--color-white);
   border: 1.5px solid var(--color-line);
   border-radius: var(--radius-md);
@@ -113,12 +116,17 @@
 /* ── Campos (fields) ── */
 .agent-response-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3) var(--space-4);
 }
 
 .agent-response-field--full {
   grid-column: 1 / -1;
+}
+
+.agent-response-field {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .agent-response-field-label {
@@ -246,6 +254,9 @@
 /* ── Notice box (aviso) ── */
 .agent-response-notice {
   display: flex;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
@@ -326,6 +337,8 @@
 }
 
 /* ── Responsividade ── */
+
+/* Mobile — campos empilham em coluna única */
 @media (max-width: 480px) {
   .agent-response-fields {
     grid-template-columns: 1fr;
@@ -333,5 +346,22 @@
 
   .agent-response-field--full {
     grid-column: 1;
+  }
+
+  .agent-response-body {
+    padding: var(--space-3);
+  }
+
+  .agent-response-header {
+    padding: var(--space-3);
+  }
+}
+
+/* Tablet estreito — garante que campos não estourem */
+@media (max-width: 768px) {
+  .agent-response-card,
+  .agent-response-notice {
+    width: 100%;
+    min-width: 0;
   }
 }

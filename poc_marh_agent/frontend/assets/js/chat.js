@@ -175,8 +175,10 @@
   }
 
   function _appendAgentMessage(response) {
+    const hasCard = !!(response.presentation && response.presentation.variant);
+
     const wrap = document.createElement("div");
-    wrap.className = "message message--agent";
+    wrap.className = "message message--agent" + (hasCard ? " message--card" : "");
     wrap.setAttribute("role", "listitem");
 
     const avatar = document.createElement("span");
@@ -188,7 +190,7 @@
     content.className = "message__content";
 
     const bubble = document.createElement("div");
-    bubble.className = "message__bubble";
+    bubble.className = hasCard ? "message__bubble message__bubble--card" : "message__bubble";
 
     const rendered = MessageRenderer.renderMessage(response);
     bubble.appendChild(rendered);
