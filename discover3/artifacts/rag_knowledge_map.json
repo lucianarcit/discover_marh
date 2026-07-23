@@ -4,7 +4,10 @@
     "generated_at": "2026-07-22",
     "project": "Agente Consultivo MARH",
     "description": "Mapa de conhecimento RAG — relaciona itens da KB com as intenções que cada item responde, indicando status de disponibilidade e restrições.",
-    "source_directory": "docs/kb/"
+    "source_directory": "docs/kb/",
+    "lac_003_status": "RESOLVED_PENDING_CLIENT_APPROVAL",
+    "markdown_created": "discover3/knowledge/markdown_conhecimento_marh.md",
+    "feature_knowledge_created": "discover3/knowledge/marh_feature_knowledge.md"
   },
   "rag_status_legend": {
     "AVAILABLE_FOR_RAG": "Disponível — pode ser incluído no markdown de conhecimento",
@@ -19,7 +22,7 @@
       "theme": "Configuração de benefícios — perfis permitidos",
       "retrievable_info": "Somente interlocutores com perfil Decisão ou Gerenciamento podem configurar benefícios.",
       "source_file": "docs/kb/1CONFIG_BENE_1.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Permissões e perfis"
     },
@@ -28,7 +31,7 @@
       "theme": "Configuração de benefícios — modalidades disponíveis",
       "retrievable_info": "Modalidades disponíveis: Alimentação, Refeição e Benefícios, habilitadas individualmente. Se todas desabilitadas, não é possível fazer pedidos.",
       "source_file": "docs/kb/1CONFIG_BENE_1.md",
-      "intents_served": ["INT-008", "INT-009", "INT-018"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Funcionamento do MARH"
     },
@@ -37,7 +40,7 @@
       "theme": "Habilitar benefício não exibe no app do colaborador automaticamente",
       "retrievable_info": "Habilitar um benefício não exibe automaticamente no app do colaborador. É necessário também realizar um pedido com valor.",
       "source_file": "docs/kb/1CONFIG_BENE_1.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Funcionamento do MARH"
     },
@@ -46,7 +49,7 @@
       "theme": "Redes de aceitação — Alimentação",
       "retrievable_info": "Cartão Alimentação: supermercados, armazéns, açougues, padarias, hortimercados, frios e laticínios.",
       "source_file": "docs/kb/1CONFIG_BENE_REDES.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Redes de aceitação"
     },
@@ -55,7 +58,7 @@
       "theme": "Redes de aceitação — Refeição",
       "retrievable_info": "Cartão Refeição: restaurantes, lanchonetes, bares e padarias.",
       "source_file": "docs/kb/1CONFIG_BENE_REDES.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Redes de aceitação"
     },
@@ -64,7 +67,7 @@
       "theme": "Transferência entre contas proibida",
       "retrievable_info": "Não é permitida transferência entre Alimentação, Refeição e Benefícios.",
       "source_file": "docs/kb/1CONFIG_BENE_REDES.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Regras de uso"
     },
@@ -73,7 +76,7 @@
       "theme": "Perfil Decisão",
       "retrievable_info": "Perfil Decisão definido no contrato com a Alelo. Tem acesso total. Não pode ser atribuído pelo sistema.",
       "source_file": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Perfis de interlocutores"
     },
@@ -82,7 +85,7 @@
       "theme": "Perfil Gerenciamento",
       "retrievable_info": "Atribuído pelo interlocutor de Decisão. Acesso a todos os menus incluindo configuração de benefícios.",
       "source_file": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Perfis de interlocutores"
     },
@@ -91,7 +94,7 @@
       "theme": "Perfil Operação",
       "retrievable_info": "Acesso a todos os menus exceto configuração de benefícios.",
       "source_file": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Perfis de interlocutores"
     },
@@ -100,7 +103,7 @@
       "theme": "Perfil Financeiro",
       "retrievable_info": "Acesso somente ao menu financeiro (NFs, boletos, RPS, demonstrativo). Não realiza pedidos.",
       "source_file": "docs/kb/2CADASTRO_INTERLO_PERFIS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Perfis de interlocutores"
     },
@@ -109,7 +112,7 @@
       "theme": "Alteração do Interlocutor de Decisão",
       "retrievable_info": "Alterar o Interlocutor de Decisão requer contato com a Central de Atendimento. Não pode ser feito pelo sistema.",
       "source_file": "docs/kb/9VISUALIZAR_CONTRATOS.md",
-      "intents_served": ["INT-008", "INT-009", "INT-015"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Limitações e atendimento humano"
     },
@@ -118,7 +121,7 @@
       "theme": "Cadastro de colaborador — campos obrigatórios",
       "retrievable_info": "Nome, CPF, data de nascimento, nome da mãe e tipo de entrega são obrigatórios.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TELA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Cadastro de colaboradores (informativo)"
     },
@@ -127,7 +130,7 @@
       "theme": "CPF de colaborador imutável",
       "retrievable_info": "O CPF de um colaborador não pode ser alterado após o cadastro.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TELA.md",
-      "intents_served": ["INT-015"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Limitações de edição"
     },
@@ -136,7 +139,7 @@
       "theme": "Reimportação de planilha atualiza dados",
       "retrievable_info": "Reimportar planilha com CPF já cadastrado atualiza dados existentes — não cria duplicado.",
       "source_file": "docs/kb/3CADASTRO_COLAB_PLANILHA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Cadastro de colaboradores (informativo)"
     },
@@ -145,7 +148,7 @@
       "theme": "Formato de planilha de colaboradores",
       "retrievable_info": "Planilhas de colaboradores: formato .xls ou .xlsx.",
       "source_file": "docs/kb/3CADASTRO_COLAB_PLANILHA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Cadastro de colaboradores (informativo)"
     },
@@ -154,7 +157,7 @@
       "theme": "Tags de produto dos colaboradores",
       "retrievable_info": "Tag de produto atribuída ao colaborador apenas quando incluído em um pedido, não no pré-cadastro.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TAGS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Funcionamento do MARH"
     },
@@ -163,7 +166,9 @@
       "theme": "Pedido — formas de criação",
       "retrievable_info": "Pedido pode ser criado via planilha (.xls/.xlsx) ou via tela, ambas com fluxo de 5 etapas.",
       "source_file": "docs/kb/4PEDIDO_PLANILHA.md",
-      "intents_served": ["INT-010", "INT-018"],
+      "intents_served": [
+        "INT-010"
+      ],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Criação de pedidos (informativo — agente não executa)"
     },
@@ -172,7 +177,9 @@
       "theme": "Pedido — etapas do fluxo",
       "retrievable_info": "5 etapas: Forma do pedido > Colaboradores e benefícios > Forma de pagamento e crédito > Resumo > Pagamento.",
       "source_file": "docs/kb/4PEDIDO_PLANILHA.md",
-      "intents_served": ["INT-010", "INT-018"],
+      "intents_served": [
+        "INT-010"
+      ],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Criação de pedidos (informativo)"
     },
@@ -181,7 +188,7 @@
       "theme": "Pagamento — único método disponível",
       "retrievable_info": "A única forma de pagamento disponível é o boleto bancário.",
       "source_file": "docs/kb/5PAG_DISPO.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Pagamento e créditos"
     },
@@ -190,7 +197,7 @@
       "theme": "Disponibilização — tipos",
       "retrievable_info": "Disponibilização pode ser Automática (até 2 dias úteis após compensação) ou Agendada (data futura escolhida).",
       "source_file": "docs/kb/5PAG_DISPO.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Pagamento e créditos"
     },
@@ -199,7 +206,7 @@
       "theme": "Boleto — prazo de compensação",
       "retrievable_info": "Prazo de compensação do boleto: até 2 dias úteis após o pagamento.",
       "source_file": "docs/kb/5PAG_DISPO_BOLETO.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Pagamento e créditos"
     },
@@ -208,7 +215,7 @@
       "theme": "Modelo de cobrança — tarifas no próximo boleto",
       "retrievable_info": "Tarifas e taxas do pedido atual são cobradas no próximo boleto, exceto no primeiro pedido.",
       "source_file": "docs/kb/5PAG_DISPO_MODELO_COBRANCA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Faturamento e cobrança"
     },
@@ -217,7 +224,7 @@
       "theme": "Alterar data de disponibilização de créditos",
       "retrievable_info": "Possível alterar a data de disponibilização de um pedido já pago. Pedidos aguardando pagamento não permitem alteração. Sem cobrança de tarifa.",
       "source_file": "docs/kb/6ACOMPA_PEDIDO_ALTERAR_DATA_CREDITOS.md",
-      "intents_served": ["INT-008", "INT-009", "INT-018"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Acompanhamento de pedidos (informativo)"
     },
@@ -226,7 +233,7 @@
       "theme": "Nota Fiscal — quando é emitida",
       "retrievable_info": "Nota Fiscal emitida somente após a disponibilização dos créditos nos cartões.",
       "source_file": "docs/kb/6ACOMPA_PEDIDO_BOLETO_NF.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Nota Fiscal e boleto"
     },
@@ -235,7 +242,9 @@
       "theme": "Status de pedidos — lista da KB",
       "retrievable_info": "Status possíveis (KB): Aguardando pagamento, Pagamento confirmado, Nota Fiscal Emitida, Aguardando Disponibilização, Pedido creditado, Cancelado.",
       "source_file": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
-      "intents_served": ["INT-005", "INT-008", "INT-009"],
+      "intents_served": [
+        "INT-005"
+      ],
       "rag_status": "CONFLICTING",
       "conflict_note": "CF-001 — API retorna 10 status em inglês; KB documenta 6 em português. Mapeamento incompleto.",
       "markdown_section": "Status de pedidos"
@@ -245,7 +254,7 @@
       "theme": "Cancelamento automático por boleto vencido",
       "retrievable_info": "Pedidos com boleto não pago em até 30 dias após o vencimento são cancelados automaticamente.",
       "source_file": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Cancelamento e status"
     },
@@ -254,7 +263,7 @@
       "theme": "Relatórios disponíveis",
       "retrievable_info": "4 tipos: Sintético de Cobrança (PDF), Analítico de Cobrança (PDF), Disponibilização (PDF), Espelho de Pedidos (Excel).",
       "source_file": "docs/kb/7RELATORIOS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Relatórios"
     },
@@ -263,7 +272,9 @@
       "theme": "Rastreio de cartões — acesso e busca (portal web)",
       "retrievable_info": "Rastreio disponível em Menu Cartões > Rastreio de Cartões no portal. Busca por CPF do colaborador. Detalhe fica indisponível enquanto fabricação/entrega não foi iniciada.",
       "source_file": "docs/kb/8RASTREIO_CARTOES.md",
-      "intents_served": ["INT-013"],
+      "intents_served": [
+        "INT-013"
+      ],
       "rag_status": "CONFLICTING",
       "conflict_note": "CF-002 — KB descreve rastreamento no portal web. Para resposta consultiva em tempo real (INT-007), necessário endpoint de API não inventariado. Usar somente para resposta informativa (INT-013).",
       "markdown_section": "Rastreamento de cartões"
@@ -273,7 +284,9 @@
       "theme": "Rastreio de cartões — status possíveis",
       "retrievable_info": "Status de rastreio: Em processamento, Aguardando código de rastreio, Erro no processamento. Detalhe exibe: número de rastreamento, endereço, previsão de entrega, timeline de eventos.",
       "source_file": "docs/kb/8RASTREIO_CARTOES.md",
-      "intents_served": ["INT-013"],
+      "intents_served": [
+        "INT-013"
+      ],
       "rag_status": "AVAILABLE_FOR_RAG",
       "note": "Informativo sobre o portal — não usar como fonte de dados em tempo real",
       "markdown_section": "Rastreamento de cartões"
@@ -283,7 +296,7 @@
       "theme": "Visualizar contratos",
       "retrievable_info": "Contratos em Administração > Contratos. Exibem número, produto, filial, status, tarifas.",
       "source_file": "docs/kb/9VISUALIZAR_CONTRATOS.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Contratos"
     },
@@ -292,7 +305,7 @@
       "theme": "Cadastro de filiais — responsáveis",
       "retrievable_info": "Até 3 responsáveis por cartões e 3 por NF. Responsáveis não editados diretamente — remover e adicionar.",
       "source_file": "docs/kb/10CADASTRO_FILIAIS_TELA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Cadastro de filiais (informativo)"
     },
@@ -301,7 +314,7 @@
       "theme": "Posto de trabalho — reimportação atualiza dados",
       "retrievable_info": "Reimportar CNPJ de posto de trabalho já cadastrado atualiza dados. Raiz e Final do CNPJ não podem ser editados.",
       "source_file": "docs/kb/10CADASTRO_POSTO_DE_TRABALHO_PLANILHA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Postos de trabalho (informativo)"
     },
@@ -310,7 +323,7 @@
       "theme": "Posto de trabalho — formato da planilha",
       "retrievable_info": "Planilha de postos de trabalho: .xls ou .xlsx, máximo 15MB.",
       "source_file": "docs/kb/10CADASTRO_POSTO_DE_TRABALHO_PLANILHA.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Postos de trabalho (informativo)"
     },
@@ -319,7 +332,7 @@
       "theme": "Faturamento descentralizado — regra de CNPJ",
       "retrievable_info": "Somente filiais com mesma raiz de CNPJ podem ser cadastradas no faturamento descentralizado.",
       "source_file": "docs/kb/faturamento-descentralizado.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Faturamento descentralizado"
     },
@@ -328,7 +341,7 @@
       "theme": "Faturamento descentralizado — todos os boletos",
       "retrievable_info": "No faturamento descentralizado, todos os boletos de cada CNPJ devem ser pagos para disponibilização integral.",
       "source_file": "docs/kb/faturamento-descentralizado.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Faturamento descentralizado"
     },
@@ -337,7 +350,7 @@
       "theme": "Emissão de 2ª via — motivos válidos",
       "retrievable_info": "Somente Perda ou Roubo são aceitos para 2ª via pelo portal. Outros motivos: Central de Atendimento.",
       "source_file": "docs/kb/manual-emissao-2via.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Reemissão de cartão (informativo — agente não solicita)"
     },
@@ -346,7 +359,7 @@
       "theme": "Emissão de 2ª via — cancelamento automático",
       "retrievable_info": "Ao finalizar a reemissão, os cartões ativos são cancelados automaticamente. Reemissão é irreversível.",
       "source_file": "docs/kb/manual-emissao-2via.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Reemissão de cartão (informativo)"
     },
@@ -355,7 +368,9 @@
       "theme": "Emissão de 2ª via — prazo de entrega",
       "retrievable_info": "Prazo de entrega da 2ª via: 7 a 10 dias úteis após emissão. Rastreio disponível após encaminhamento para transportadora.",
       "source_file": "docs/kb/manual-emissao-2via.md",
-      "intents_served": ["INT-013"],
+      "intents_served": [
+        "INT-013"
+      ],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Rastreamento de cartões"
     },
@@ -364,7 +379,7 @@
       "theme": "Emissão de 2ª via — tarifas",
       "retrievable_info": "Taxas de reemissão aparecem no próximo pedido.",
       "source_file": "docs/kb/manual-emissao-2via.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "AVAILABLE_FOR_RAG",
       "markdown_section": "Faturamento e cobrança"
     },
@@ -373,7 +388,9 @@
       "theme": "Pedido — fluxo completo de criação e pagamento",
       "retrievable_info": "Informativo sobre como criar pedidos no portal.",
       "source_file": "docs/kb/4PEDIDO_PLANILHA.md",
-      "intents_served": ["INT-010", "INT-018"],
+      "intents_served": [
+        "INT-010"
+      ],
       "rag_status": "PARTIALLY_AVAILABLE",
       "note": "Agente não cria pedidos — pode informar como funciona o processo e redirecionar"
     },
@@ -382,7 +399,7 @@
       "theme": "Cancelamento de pedido",
       "retrievable_info": "Informativo — agente não cancela pedidos.",
       "source_file": "docs/kb/6ACOMPA_PEDIDO_STATUS.md",
-      "intents_served": ["INT-014"],
+      "intents_served": [],
       "rag_status": "OUT_OF_AGENT_SCOPE",
       "note": "Resposta: redirecionar ao Espaço RH"
     },
@@ -391,7 +408,7 @@
       "theme": "Cadastro de colaborador (criação)",
       "retrievable_info": "Informativo — agente não cadastra colaboradores.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TELA.md",
-      "intents_served": ["INT-008"],
+      "intents_served": [],
       "rag_status": "OUT_OF_AGENT_SCOPE"
     },
     {
@@ -399,7 +416,7 @@
       "theme": "Atualização de colaborador",
       "retrievable_info": "Informativo — agente não edita colaboradores.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TELA.md",
-      "intents_served": ["INT-015"],
+      "intents_served": [],
       "rag_status": "OUT_OF_AGENT_SCOPE"
     },
     {
@@ -407,7 +424,9 @@
       "theme": "Exclusão de colaborador",
       "retrievable_info": "Informativo — agente não exclui colaboradores.",
       "source_file": "docs/kb/3CADASTRO_COLAB_TELA.md",
-      "intents_served": ["INT-025"],
+      "intents_served": [
+        "INT-025"
+      ],
       "rag_status": "OUT_OF_AGENT_SCOPE"
     },
     {
@@ -415,7 +434,7 @@
       "theme": "Solicitação de 2ª via",
       "retrievable_info": "Informativo — agente não solicita 2ª via. Pode informar como o processo funciona.",
       "source_file": "docs/kb/manual-emissao-2via.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "PARTIALLY_AVAILABLE",
       "note": "Informar o processo; redirecionar para portal para solicitar"
     },
@@ -424,7 +443,7 @@
       "theme": "Cadastro de filiais e postos de trabalho",
       "retrievable_info": "Informativo — agente não cadastra locais de entrega.",
       "source_file": "docs/kb/10CADASTRO_FILIAIS_TELA.md",
-      "intents_served": ["INT-008"],
+      "intents_served": [],
       "rag_status": "OUT_OF_AGENT_SCOPE"
     },
     {
@@ -432,13 +451,13 @@
       "theme": "Configuração de benefícios (modificação)",
       "retrievable_info": "Informativo sobre permissões — agente não configura benefícios.",
       "source_file": "docs/kb/1CONFIG_BENE_1.md",
-      "intents_served": ["INT-008", "INT-009"],
+      "intents_served": [],
       "rag_status": "PARTIALLY_AVAILABLE",
       "note": "Informar quem tem permissão; redirecionar para portal para configurar"
     }
   ],
   "markdown_gaps": {
-    "description": "O arquivo markdown de conhecimento (RF-010, RNF-002) ainda não foi criado. Os itens AVAILABLE_FOR_RAG devem ser consolidados nele.",
+    "description": "Markdown de conhecimento criado em discover3/knowledge/markdown_conhecimento_marh.md (status PENDING_CLIENT_APPROVAL). Versao KB-only criada em discover3/knowledge/marh_feature_knowledge.md. INT-019 e INT-020 permanecem PARTIALLY_COVERED — definicao formal de MARH e Espaco RH nao encontrada explicitamente na KB; conteudo construido por contexto implicito.",
     "gap_id": "LAC-003",
     "items_available": 35,
     "items_conflicting": 2,
@@ -456,12 +475,15 @@
   "summary": {
     "total_kb_items": 47,
     "by_status": {
-      "AVAILABLE_FOR_RAG": 35,
-      "PARTIALLY_AVAILABLE": 3,
-      "OUT_OF_AGENT_SCOPE": 5,
+      "AVAILABLE_FOR_RAG": 37,
       "CONFLICTING": 2,
-      "NEEDS_VALIDATION": 0
+      "PARTIALLY_AVAILABLE": 3,
+      "OUT_OF_AGENT_SCOPE": 5
     },
-    "conflicts": ["CF-001", "CF-002"]
+    "conflicts": [
+      "CF-001",
+      "CF-002"
+    ],
+    "lac_003_status": "RESOLVED_PENDING_CLIENT_APPROVAL"
   }
 }

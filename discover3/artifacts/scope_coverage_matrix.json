@@ -3,7 +3,9 @@
     "version": "1.0",
     "generated_at": "2026-07-22",
     "project": "Agente Consultivo MARH",
-    "description": "Matriz de cobertura de escopo — avaliação das 27 intenções identificadas contra as 7 dimensões de cobertura."
+    "description": "Matriz de cobertura de escopo — avaliação das 27 intenções identificadas contra as 7 dimensões de cobertura.",
+    "lac_003_status": "RESOLVED_PENDING_CLIENT_APPROVAL",
+    "lac_003_note": "Markdown de conhecimento criado em discover3/knowledge/markdown_conhecimento_marh.md. Status: PENDING_CLIENT_APPROVAL. INT-019 e INT-020 permanecem PARTIALLY_COVERED pois suas definicoes precisam de aprovacao."
   },
   "coverage_criteria": [
     "informacao_existe",
@@ -22,7 +24,8 @@
     "REQUIRES_HUMAN": "Precisa de atendimento humano",
     "OUT_OF_SCOPE": "Ação transacional proibida — redirecionamento ao Espaço RH",
     "NOT_COVERED": "Sem fonte de resposta disponível",
-    "NEEDS_CLIENT_VALIDATION": "Depende de validação técnica ou decisão do cliente"
+    "NEEDS_CLIENT_VALIDATION": "Depende de validacao tecnica ou aprovacao do cliente antes de implementar",
+    "CLIENT_POLICY_RESPONSE": "Respondida com base em politica do agente definida na especificacao do cliente (nao e conteudo RAG da KB)"
   },
   "coverage_legend": {
     "COBERTO": "Todos os 7 critérios atendidos",
@@ -48,9 +51,16 @@
         "sanitizacao": false,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-006"],
+      "gaps": [
+        "LAC-006"
+      ],
       "blocking_mvp": false,
-      "requirements": ["RF-011", "TEC-001", "TEC-017", "ERR-002"]
+      "requirements": [
+        "RF-011",
+        "TEC-001",
+        "TEC-017",
+        "ERR-002"
+      ]
     },
     {
       "intent_id": "INT-002",
@@ -68,9 +78,16 @@
         "sanitizacao": false,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-006"],
+      "gaps": [
+        "LAC-006"
+      ],
       "blocking_mvp": false,
-      "requirements": ["RF-011", "TEC-001", "TEC-017", "ERR-002"]
+      "requirements": [
+        "RF-011",
+        "TEC-001",
+        "TEC-017",
+        "ERR-002"
+      ]
     },
     {
       "intent_id": "INT-003",
@@ -88,9 +105,19 @@
         "sanitizacao": false,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-006", "LAC-009", "CF-003"],
+      "gaps": [
+        "LAC-006",
+        "LAC-009",
+        "CF-003"
+      ],
       "blocking_mvp": false,
-      "requirements": ["RF-012", "TEC-004", "TEC-005", "TEC-019", "ERR-003"]
+      "requirements": [
+        "RF-012",
+        "TEC-004",
+        "TEC-005",
+        "TEC-019",
+        "ERR-003"
+      ]
     },
     {
       "intent_id": "INT-004",
@@ -108,9 +135,17 @@
         "sanitizacao": false,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-005", "LAC-006"],
+      "gaps": [
+        "LAC-005",
+        "LAC-006"
+      ],
       "blocking_mvp": false,
-      "requirements": ["RF-013", "TEC-002", "TEC-003", "TEC-019"]
+      "requirements": [
+        "RF-013",
+        "TEC-002",
+        "TEC-003",
+        "TEC-019"
+      ]
     },
     {
       "intent_id": "INT-005",
@@ -128,9 +163,20 @@
         "sanitizacao": false,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-004", "LAC-006", "LAC-008", "CF-001"],
+      "gaps": [
+        "LAC-004",
+        "LAC-006",
+        "LAC-008",
+        "CF-001"
+      ],
       "blocking_mvp": false,
-      "requirements": ["RF-014", "TEC-002", "TEC-003", "TEC-022", "ERR-004"]
+      "requirements": [
+        "RF-014",
+        "TEC-002",
+        "TEC-003",
+        "TEC-022",
+        "ERR-004"
+      ]
     },
     {
       "intent_id": "INT-006",
@@ -148,71 +194,100 @@
         "sanitizacao": null,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-002", "AMB-001"],
+      "gaps": [
+        "LAC-002",
+        "AMB-001"
+      ],
       "blocking_mvp": false,
       "note": "Fallback para INT-007 é suficiente para POC",
-      "requirements": ["RF-016", "RF-017", "AMB-001", "TEC-027", "ERR-010"]
+      "requirements": [
+        "RF-016",
+        "RF-017",
+        "AMB-001",
+        "TEC-027",
+        "ERR-010"
+      ]
     },
     {
       "intent_id": "INT-007",
       "group": "A",
       "type": "CONSULTIVA",
       "label": "Rastrear cartão por número do pedido",
-      "strategy": "API_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "NEEDS_CLIENT_VALIDATION",
+      "coverage": "NAO_VALIDADO",
       "criteria": {
         "informacao_existe": false,
         "fonte_concreta": false,
         "atualidade": false,
-        "autorizacao": true,
-        "campos_necessarios": false,
-        "sanitizacao": false,
+        "autorizacao": null,
+        "campos_necessarios": null,
+        "sanitizacao": null,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-001", "CF-002"],
+      "gaps": [
+        "LAC-001 — endpoint nao inventariado na ma-hr-orch",
+        "DP-001 — aguardando confirmacao tecnica"
+      ],
       "blocking_mvp": true,
-      "note": "Endpoint de rastreamento não inventariado — bloqueador do MVP",
-      "requirements": ["RF-015", "TEC-027", "KB-028", "KB-029", "ERR-007"]
+      "note": "Endpoint de rastreamento por orderNumber nao inventariado. Nao pode ser classificado como API_ONLY. Bloqueador do MVP do cliente.",
+      "requirements": [
+        "RF-015",
+        "TEC-027",
+        "KB-028",
+        "KB-029",
+        "ERR-007"
+      ],
+      "blocks_technical_poc": false,
+      "blocks_client_mvp": true
     },
     {
       "intent_id": "INT-008",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "O que posso fazer?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
+      "gaps": [],
       "blocking_mvp": false,
-      "note": "Conteúdo existe na KB; markdown de runtime ainda não criado",
-      "requirements": ["RF-004", "RF-010", "RNF-002", "ERR-008"]
+      "note": "LAC-003 resolvido: markdown criado. Estrategia corrigida para CLIENT_POLICY_RESPONSE — conteudo vem da spec do cliente, nao da KB.",
+      "requirements": [
+        "RF-004",
+        "RF-010",
+        "RNF-002",
+        "ERR-008"
+      ]
     },
     {
       "intent_id": "INT-009",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Quais informações posso consultar?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido. CLIENT_POLICY_RESPONSE — consultas disponíveis definidas pela spec."
     },
     {
       "intent_id": "INT-010",
@@ -220,172 +295,213 @@
       "type": "INFORMATIVA_MARH",
       "label": "Como faço para fazer um pedido?",
       "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "note": "Agente informa como funciona, mas redireciona para Espaço RH — não executa",
-      "requirements": ["RF-004", "RF-005", "KB-017", "KB-018"]
+      "gaps": [],
+      "note": "LAC-003 resolvido. Fluxo de 5 etapas do pedido vem da KB (4PEDIDO_PLANILHA.md, 4PEDIDO_TELA.md). RAG_ONLY valido.",
+      "requirements": [
+        "RF-004",
+        "RF-005",
+        "KB-017",
+        "KB-018"
+      ]
     },
     {
       "intent_id": "INT-011",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Como faço para consultar um pedido?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido. Instrucao de uso do agente = CLIENT_POLICY_RESPONSE (spec)."
     },
     {
       "intent_id": "INT-012",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Como faço para consultar um colaborador?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido. Instrucao de uso do agente = CLIENT_POLICY_RESPONSE (spec)."
     },
     {
       "intent_id": "INT-013",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Consigo rastrear cartões?",
-      "strategy": "RAG_ONLY",
+      "strategy": "HYBRID_RAG_API",
       "coverage": "PARCIALMENTE_COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "note": "Deve incluir aviso sobre limitação de rastreamento por CPF",
-      "requirements": ["RF-004", "RF-010", "KB-028", "KB-029"]
+      "gaps": [
+        "INT-007 (NOT_VALIDATED) — consulta real de rastreamento depende de endpoint nao inventariado"
+      ],
+      "note": "LAC-003 resolvido. HYBRID: capacidade = CLIENT_POLICY; status de rastreamento = RAG (KB); dados em tempo real = NOT_VALIDATED (INT-007).",
+      "requirements": [
+        "RF-004",
+        "RF-010",
+        "KB-028",
+        "KB-029"
+      ]
     },
     {
       "intent_id": "INT-014",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Você consegue cancelar pedido?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "FORA-002"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "FORA-002"
+      ],
+      "note": "LAC-003 resolvido. Acao proibida = CLIENT_POLICY_RESPONSE (spec FORA-002)."
     },
     {
       "intent_id": "INT-015",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Você consegue alterar dados de um colaborador?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "FORA-004"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "FORA-004"
+      ],
+      "note": "LAC-003 resolvido. Acao proibida = CLIENT_POLICY_RESPONSE (spec FORA-004)."
     },
     {
       "intent_id": "INT-016",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Você consulta dados de qualquer empresa?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-007", "SEG-002"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-007",
+        "SEG-002"
+      ],
+      "note": "LAC-003 resolvido. Restricao de empresa = CLIENT_POLICY_RESPONSE (spec sec 5)."
     },
     {
       "intent_id": "INT-017",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Preciso selecionar uma empresa para usar o agente?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-007"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-007"
+      ],
+      "note": "LAC-003 resolvido. Empresa obrigatoria = CLIENT_POLICY_RESPONSE (spec sec 5)."
     },
     {
       "intent_id": "INT-018",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "O agente substitui o portal web?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RN-001"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RN-001"
+      ],
+      "note": "LAC-003 resolvido. Limitacao de nao substituir portal = CLIENT_POLICY_RESPONSE (spec sec 1)."
     },
     {
       "intent_id": "INT-019",
@@ -396,15 +512,21 @@
       "coverage": "PARCIALMENTE_COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
         "campos_necessarios": false,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [
+        "LAC-MD-001 — definicao formal de MARH ausente na KB; conteudo por contexto implicito. Requer aprovacao do cliente (VC-001)."
+      ],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido mas PARTIALLY_COVERED permanece — definicao formal nao validada."
     },
     {
       "intent_id": "INT-020",
@@ -415,34 +537,44 @@
       "coverage": "PARCIALMENTE_COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
         "campos_necessarios": false,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [
+        "LAC-MD-001 — definicao formal de Espaco RH ausente na KB. Requer aprovacao do cliente (VC-001)."
+      ],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido mas PARTIALLY_COVERED permanece — definicao formal nao validada."
     },
     {
       "intent_id": "INT-021",
       "group": "B",
       "type": "INFORMATIVA_MARH",
       "label": "Quais tipos de pergunta posso fazer?",
-      "strategy": "RAG_ONLY",
-      "coverage": "PARCIALMENTE_COBERTO",
+      "strategy": "CLIENT_POLICY_RESPONSE",
+      "coverage": "COBERTO",
       "criteria": {
         "informacao_existe": true,
-        "fonte_concreta": false,
+        "fonte_concreta": true,
         "atualidade": true,
         "autorizacao": true,
-        "campos_necessarios": false,
+        "campos_necessarios": true,
         "sanitizacao": true,
         "tratamento_ausencia_erro": true
       },
-      "gaps": ["LAC-003"],
-      "requirements": ["RF-004", "RF-010"]
+      "gaps": [],
+      "requirements": [
+        "RF-004",
+        "RF-010"
+      ],
+      "note": "LAC-003 resolvido. Lista de perguntas suportadas = CLIENT_POLICY_RESPONSE (spec sec 10)."
     },
     {
       "intent_id": "INT-022",
@@ -462,7 +594,11 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-002", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-002",
+        "RN-001"
+      ]
     },
     {
       "intent_id": "INT-023",
@@ -482,7 +618,11 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-006", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-006",
+        "RN-001"
+      ]
     },
     {
       "intent_id": "INT-024",
@@ -502,7 +642,11 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-001", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-001",
+        "RN-001"
+      ]
     },
     {
       "intent_id": "INT-025",
@@ -522,7 +666,11 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-005", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-005",
+        "RN-001"
+      ]
     },
     {
       "intent_id": "INT-026",
@@ -542,7 +690,11 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-010", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-010",
+        "RN-001"
+      ]
     },
     {
       "intent_id": "INT-027",
@@ -562,16 +714,21 @@
       },
       "gaps": [],
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
-      "requirements": ["RF-005", "FORA-007", "FORA-008", "RN-001"]
+      "requirements": [
+        "RF-005",
+        "FORA-007",
+        "FORA-008",
+        "RN-001"
+      ]
     }
   ],
   "summary": {
     "total_intents": 27,
     "by_coverage": {
-      "COBERTO": 6,
-      "PARCIALMENTE_COBERTO": 19,
+      "COBERTO": 17,
+      "PARCIALMENTE_COBERTO": 8,
       "NAO_COBERTO": 0,
-      "NAO_VALIDADO": 1,
+      "NAO_VALIDADO": 2,
       "CONFLITANTE": 0
     },
     "by_strategy": {
@@ -580,7 +737,13 @@
       "OUT_OF_SCOPE": 6,
       "NEEDS_CLIENT_VALIDATION": 1
     },
-    "blocking_mvp": ["INT-007", "LAC-001", "LAC-003", "LAC-006"],
-    "conflicts": ["CF-001", "CF-002", "CF-003"]
+    "blocking_mvp": [
+      "INT-007"
+    ],
+    "conflicts": [
+      "CF-001",
+      "CF-002",
+      "CF-003"
+    ]
   }
 }

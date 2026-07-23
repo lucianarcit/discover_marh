@@ -3,7 +3,9 @@
     "version": "1.0",
     "generated_at": "2026-07-22",
     "project": "Agente Consultivo MARH",
-    "description": "Registro de todas as fontes documentais analisadas nesta etapa de discovery."
+    "description": "Registro de todas as fontes documentais analisadas nesta etapa de discovery.",
+    "data_classification": "DISCOVERY_METADATA",
+    "synthetic_note": "Identificadores obtidos durante testes foram substituidos por \"identificador obtido dinamicamente da consulta anterior\"."
   },
   "sources": [
     {
@@ -16,7 +18,8 @@
       "date": "2026-07-21",
       "sections": 14,
       "readable": true,
-      "notes": "Arquivo de 3.5MB. Lido em partes (offsets de 2000 linhas). Contém 14 seções: Objetivo, Referências, Disponibilização, Responsabilidades ma-hr-orch, Contexto obrigatório, Markdown, Classificação de intenção, Escopo MVP, Navegação frontend, Perguntas suportadas, Segurança, Fora de escopo, Tratamento de erros, Critérios de aceite."
+      "notes": "Arquivo de 3.5MB. Lido em partes (offsets de 2000 linhas). Contém 14 seções: Objetivo, Referências, Disponibilização, Responsabilidades ma-hr-orch, Contexto obrigatório, Markdown, Classificação de intenção, Escopo MVP, Navegação frontend, Perguntas suportadas, Segurança, Fora de escopo, Tratamento de erros, Critérios de aceite.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F02",
@@ -28,7 +31,8 @@
       "date": "2026-06-11",
       "sections": 4,
       "readable": true,
-      "notes": "Arquivo de 3.5MB. Lido em partes. API Sensedia cardholders-hr-management/v1. 4 jornadas: Consulta, Cadastro, Atualização, Exclusão de colaborador. Contém diagramas de sequência mermaid e exemplos de request/response."
+      "notes": "Arquivo de 3.5MB. Lido em partes. API Sensedia cardholders-hr-management/v1. 4 jornadas: Consulta, Cadastro, Atualização, Exclusão de colaborador. Contém diagramas de sequência mermaid e exemplos de request/response.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F03",
@@ -40,7 +44,8 @@
       "date": "2026-05-26",
       "sections": 11,
       "readable": true,
-      "notes": "Arquivo de 3.6MB. Lido em partes. 11 documentos: NF, Colaboradores do Pedido, Consulta de Pedidos, Detalhes do Pedido, Produtos, Benefícios, Dias para Crédito, Simulação, Criação, Boleto, Cancelamento. Contém limitação explícita sobre filtro por data."
+      "notes": "Arquivo de 3.6MB. Lido em partes. 11 documentos: NF, Colaboradores do Pedido, Consulta de Pedidos, Detalhes do Pedido, Produtos, Benefícios, Dias para Crédito, Simulação, Criação, Boleto, Cancelamento. Contém limitação explícita sobre filtro por data.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F04",
@@ -49,7 +54,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Perfis permitidos, modalidades, botões PULAR/SALVAR."
+      "notes": "Perfis permitidos, modalidades, botões PULAR/SALVAR.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F05",
@@ -58,7 +64,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Redes por modalidade: Alimentação, Refeição, Benefícios."
+      "notes": "Redes por modalidade: Alimentação, Refeição, Benefícios.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F06",
@@ -67,7 +74,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Fluxo em 2 etapas, restrições por perfil."
+      "notes": "Fluxo em 2 etapas, restrições por perfil.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F07",
@@ -76,7 +84,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "4 perfis: Decisão, Gerenciamento, Operação, Financeiro. Permissões por perfil."
+      "notes": "4 perfis: Decisão, Gerenciamento, Operação, Financeiro. Permissões por perfil.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F08",
@@ -85,7 +94,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Campos obrigatórios, regra de atualização por CPF."
+      "notes": "Campos obrigatórios, regra de atualização por CPF.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F09",
@@ -94,7 +104,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Tag atribuída somente quando colaborador entra em pedido."
+      "notes": "Tag atribuída somente quando colaborador entra em pedido.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F10",
@@ -103,7 +114,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Campos obrigatórios, restrição de CPF imutável."
+      "notes": "Campos obrigatórios, restrição de CPF imutável.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F11",
@@ -112,7 +124,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "5 etapas do pedido via planilha."
+      "notes": "5 etapas do pedido via planilha.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F12",
@@ -121,7 +134,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Mesmo fluxo de 5 etapas, seleção manual de colaboradores."
+      "notes": "Mesmo fluxo de 5 etapas, seleção manual de colaboradores.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F13",
@@ -130,7 +144,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Único método: boleto bancário. Tipos: Automática e Agendada."
+      "notes": "Único método: boleto bancário. Tipos: Automática e Agendada.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F14",
@@ -139,7 +154,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Etapas 4 e 5 do pedido. Prazo de compensação de até 2 dias úteis."
+      "notes": "Etapas 4 e 5 do pedido. Prazo de compensação de até 2 dias úteis.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F15",
@@ -148,7 +164,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Tarifas do pedido atual cobradas no próximo boleto (exceto 1º pedido)."
+      "notes": "Tarifas do pedido atual cobradas no próximo boleto (exceto 1º pedido).",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F16",
@@ -157,7 +174,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Apenas para pedidos já pagos. Sem cobrança de tarifa."
+      "notes": "Apenas para pedidos já pagos. Sem cobrança de tarifa.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F17",
@@ -166,7 +184,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "NF emitida somente após disponibilização dos créditos."
+      "notes": "NF emitida somente após disponibilização dos créditos.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F18",
@@ -175,7 +194,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "6 status documentados. Cancelamento automático em 30 dias sem pagamento."
+      "notes": "6 status documentados. Cancelamento automático em 30 dias sem pagamento.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F19",
@@ -184,7 +204,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "4 tipos: Sintético de Cobrança, Analítico de Cobrança, Disponibilização, Espelho de Pedidos."
+      "notes": "4 tipos: Sintético de Cobrança, Analítico de Cobrança, Disponibilização, Espelho de Pedidos.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F20",
@@ -193,7 +214,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Busca por CPF, status de rastreio, detalhe de entrega."
+      "notes": "Busca por CPF, status de rastreio, detalhe de entrega.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F21",
@@ -202,7 +224,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Dados do contrato, tarifas, restrição de alteração de Decisão."
+      "notes": "Dados do contrato, tarifas, restrição de alteração de Decisão.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F22",
@@ -211,7 +234,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "3 etapas: dados cadastrais, responsável pelos cartões, responsável pela NF."
+      "notes": "3 etapas: dados cadastrais, responsável pelos cartões, responsável pela NF.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F23",
@@ -220,7 +244,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Formato .xls/.xlsx até 15MB. Reimportar atualiza dados existentes."
+      "notes": "Formato .xls/.xlsx até 15MB. Reimportar atualiza dados existentes.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F24",
@@ -229,7 +254,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Mesma raiz CNPJ obrigatória. Todos os boletos devem ser pagos para disponibilização integral."
+      "notes": "Mesma raiz CNPJ obrigatória. Todos os boletos devem ser pagos para disponibilização integral.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F25",
@@ -238,7 +264,8 @@
       "type": "kb",
       "format": "Markdown",
       "readable": true,
-      "notes": "Motivos: Perda ou Roubo. Reemissão irreversível. Cancela cartões ativos."
+      "notes": "Motivos: Perda ou Roubo. Reemissão irreversível. Cancela cartões ativos.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F26",
@@ -247,7 +274,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "4 operacoes: GET (seguro), POST/PUT/DELETE (SKIPPED_SAFETY). Headers obrigatórios documentados."
+      "notes": "4 operacoes: GET (seguro), POST/PUT/DELETE (SKIPPED_SAFETY). Headers obrigatórios documentados.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F27",
@@ -256,7 +284,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "8 GETs inventariados. 3 POSTs ignorados por segurança. Limitação de filtro por data documentada."
+      "notes": "8 GETs inventariados. 3 POSTs ignorados por segurança. Limitação de filtro por data documentada.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F28",
@@ -265,7 +294,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 1 integração real GET /v1/beneficiaries: HTTP 200 (3275ms). POST/PUT/DELETE não executados."
+      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 1 integração real GET /v1/beneficiaries: HTTP 200 (3275ms). POST/PUT/DELETE não executados.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F29",
@@ -274,7 +304,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 7/8 GETs com HTTP 200. 1 com 422 esperado (NF não emitida). orderNumber 356145 usado nos testes."
+      "notes": "Execução 2026-07-22. 64 testes unitários: 100% sucesso. 7/8 GETs com HTTP 200. 1 com 422 esperado (NF não emitida). orderNumber obtido dinamicamente da consulta anterior usado nos testes.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F30",
@@ -283,7 +314,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "Recomendações: GET=APTO_SOMENTE_COM_TOOL_CALL, POST/PUT=NECESSITA_VALIDACAO, DELETE=NAO_APTO. Campos PII identificados."
+      "notes": "Recomendações: GET=APTO_SOMENTE_COM_TOOL_CALL, POST/PUT=NECESSITA_VALIDACAO, DELETE=NAO_APTO. Campos PII identificados.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F31",
@@ -292,7 +324,8 @@
       "type": "report",
       "format": "Markdown",
       "readable": true,
-      "notes": "Recomendações por endpoint. /v1/products e /v1/benefits candidatos a RAG. Campos restritos identificados em /v1/orders."
+      "notes": "Recomendações por endpoint. /v1/products e /v1/benefits candidatos a RAG. Campos restritos identificados em /v1/orders.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F32",
@@ -301,7 +334,8 @@
       "type": "artifact",
       "format": "JSON",
       "readable": true,
-      "notes": "4 operações com exemplos de request/response. Subtypes: WORKPLACE, HOME_DELIVERY, BRANCH. 8 headers obrigatórios documentados."
+      "notes": "4 operações com exemplos de request/response. Subtypes: WORKPLACE, HOME_DELIVERY, BRANCH. 8 headers obrigatórios documentados.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F33",
@@ -310,7 +344,8 @@
       "type": "artifact",
       "format": "JSON",
       "readable": true,
-      "notes": "8 operações GET documentadas com schemas. Endpoint de boleto retorna barCodeLine e content (base64)."
+      "notes": "8 operações GET documentadas com schemas. Endpoint de boleto retorna barCodeLine e content (base64).",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F34",
@@ -319,7 +354,8 @@
       "type": "artifact",
       "format": "JSON",
       "readable": true,
-      "notes": "Campos úteis vs. restritos (PII) por operação. Campos uteis GET: name, placeName, subtype, isHomeDelivery."
+      "notes": "Campos úteis vs. restritos (PII) por operação. Campos uteis GET: name, placeName, subtype, isHomeDelivery.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F35",
@@ -328,7 +364,8 @@
       "type": "artifact",
       "format": "JSON",
       "readable": true,
-      "notes": "Campos úteis vs. restritos por endpoint. barCodeLine útil; content (base64 do PDF) não vai ao modelo. billingDocumentNumber restrito."
+      "notes": "Campos úteis vs. restritos por endpoint. barCodeLine útil; content (base64 do PDF) não vai ao modelo. billingDocumentNumber restrito.",
+      "data_classification": "DISCOVERY_METADATA"
     },
     {
       "id": "F36",
@@ -337,7 +374,8 @@
       "type": "artifact",
       "format": "diretório",
       "readable": false,
-      "notes": "Pasta sem extensão de arquivo visível nos resultados do Glob. Não foi possível determinar o conteúdo sem listagem interna."
+      "notes": "Pasta sem extensão de arquivo visível nos resultados do Glob. Não foi possível determinar o conteúdo sem listagem interna.",
+      "data_classification": "DISCOVERY_METADATA"
     }
   ],
   "summary": {
@@ -350,7 +388,11 @@
       "report": 6,
       "artifact": 5
     },
-    "sources_with_ambiguities": ["F01", "F02", "F03"],
+    "sources_with_ambiguities": [
+      "F01",
+      "F02",
+      "F03"
+    ],
     "sources_with_limitations": [
       {
         "id": "F01",
