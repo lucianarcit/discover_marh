@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "generated_at": "2026-07-23",
+    "project": "Agente Consultivo MARH — POC",
+    "test_runner": "pytest 9.1.1",
+    "python_version": "3.14.2"
+  },
+  "before_corrections": {
+    "total": 42,
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 0.45
+  },
+  "after_corrections": {
+    "total": 57,
+    "passed": 57,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 0.49,
+    "new_tests": 15
+  },
+  "test_files": [
+    {
+      "file": "tests/integration/test_api.py",
+      "tests_before": 12,
+      "tests_after": 17,
+      "all_passed": true
+    },
+    {
+      "file": "tests/unit/test_orchestrator.py",
+      "tests_before": 30,
+      "tests_after": 40,
+      "all_passed": true
+    }
+  ],
+  "coverage_of_critical_scenarios": {
+    "INT001_collaborator_by_name": true,
+    "INT002_collaborator_by_cpf": true,
+    "INT003_order_by_number": true,
+    "INT004_last_order": true,
+    "INT005_orders_by_status": true,
+    "INT006_tracking_by_cpf": true,
+    "INT007_tracking_by_order": true,
+    "transactional_blocked": true,
+    "company_switch_blocked": true,
+    "allowlist_collaborator": true,
+    "allowlist_order": true,
+    "deeplink_hml": true,
+    "deeplink_prd": true,
+    "deeplink_casing": true,
+    "deeplink_no_id_order": true,
+    "deeplink_no_beneficiary_id": true,
+    "path_traversal_blocked": true,
+    "individual_collaborator_route_blocked": true,
+    "cancelled_status_not_transactional": true,
+    "lookup_error_handled": true,
+    "unknown_status_no_exposure": true,
+    "cpf_not_in_response": true,
+    "cors_localhost_accepted": true,
+    "cors_unauthorized_rejected": true,
+    "invalid_json_400": true,
+    "missing_message_422": true,
+    "id_order_never_in_response": true,
+    "deeplink_no_sensitive_ids": true
+  }
+}

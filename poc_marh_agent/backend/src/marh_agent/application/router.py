@@ -245,6 +245,16 @@ def route(
             error_code="ERR-005",
             metadata=metadata,
         )
+    except LookupError:
+        # 404 do backend — recurso não encontrado
+        return ChatResponse(
+            correlation_id=correlation_id,
+            intent_id=intent_id,
+            flow="API_ONLY",
+            message=ERROR_CATALOG["ERR-003"],
+            error_code="ERR-003",
+            metadata=metadata,
+        )
     except TimeoutError:
         return ChatResponse(
             correlation_id=correlation_id,

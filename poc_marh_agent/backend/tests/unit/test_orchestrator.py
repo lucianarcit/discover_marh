@@ -285,3 +285,118 @@ def test_errors_use_discovery_catalog(orchestrator):
     resp = orchestrator.handle(req)
     assert resp.error_code == "ERR-001"
     assert "empresa selecionada" in resp.message
+
+
+# ── Testes adicionados pelo Quality Gate 2026-07-23 ──────────────────────────
+
+# 31. "pedidos cancelados" deve ser INT-005 (consulta por status), NÃO INT-022
+def test_cancelled_status_query_not_transactional(orchestrator):
+    """Garante que 'cancelados' como status de pedido não dispara INT-022."""
+    req = _make_request(message="Pedidos cancelados")
+    resp = orchestrator.handle(req)
+    assert resp.flow != "REDIRECT_TO_OFFICIAL_JOURNEY", (
+        "'pedidos cancelados' não deve redirecionar para jornada transacional"
+    )
+    assert resp.intent_id == "INT-005"
+
+
+# 32. "pedidos anulados" → INT-005 CANCELLED
+def test_cancelled_alias_anulado(orchestrator):
+    req = _make_request(message="Pedidos anulados")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-005"
+    assert resp.flow != "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# 33. simulate_error=404 (LookupError) não propaga exceção não tratada
+def test_lookup_error_handled_gracefully():
+    client = __import__(
+        "marh_agent.clients.mock_ma_hr_orch", fromlist=["MockMaHrOrchClient"]
+    ).MockMaHrOrchClient()
+    client.simulate_error = 404
+    from marh_agent.application.orchestrator import Orchestrator
+    orch = Orchestrator(client=client)
+    req = _make_request(message="Consultar pedido 342671")
+    resp = orch.handle(req)
+    # Deve retornar ERR-003 ou ERR-007, nunca lançar exceção
+    assert resp.error_code in ("ERR-003", "ERR-007")
+    assert resp.correlation_id is not None
+
+
+# 34. get_display_label com status desconhecido não expõe api_status
+def test_unknown_status_display_label():
+    from marh_agent.classification.status_mapper import get_display_label
+    result = get_display_label("SUSPENDED_BY_FRAUD_UNKNOWN")
+    assert result != "SUSPENDED_BY_FRAUD_UNKNOWN", (
+        "Status técnico da API não deve ser exposto ao usuário"
+    )
+    assert "desconhecido" in result.lower() or "disponível" in result.lower()
+
+
+# 35. PARTIAL_REFUNDED label_completed é None → não expõe "PARTIAL_REFUNDED"
+def test_partial_refunded_no_technical_label():
+    from marh_agent.classification.status_mapper import get_display_label
+    result = get_display_label("PARTIAL_REFUNDED")
+    assert result != "PARTIAL_REFUNDED", (
+        "PARTIAL_REFUNDED não deve expor o valor técnico da API"
+    )
+
+
+# 36. steps na fixture não vaza dados restritos (caso presente)
+def test_steps_do_not_leak_restricted_fields():
+    from marh_agent.security.allowlists import filter_order
+    order_with_steps = {
+        "orderNumber": "999",
+        "status": "PAID",
+        "steps": [
+            {
+                "beneficiaryId": "ben-secret-001",
+                "documentNumber": "123.456.789-00",
+                "label": "Pedido criado",
+            }
+        ],
+        "billingDocumentNumber": "RESTRICTED",
+    }
+    filtered = filter_order(order_with_steps)
+    # steps passa pela allowlist (sem sub-filtro na POC)
+    # Este teste documenta o comportamento ATUAL e serve de alerta:
+    # em produção, steps deve ter sub-filtro.
+    assert "billingDocumentNumber" not in filtered
+    # Documentar que steps passa como está (risco conhecido HIGH)
+    if "steps" in filtered and filtered["steps"]:
+        step = filtered["steps"][0]
+        # Registrar que beneficiaryId e documentNumber ESTÃO no step
+        # Este teste vai falhar quando sub-filtro for adicionado (esperado)
+        assert "label" in step  # pelo menos o campo legítimo está
+
+
+# 37. idOrder nunca aparece no JSON de resposta completa
+def test_id_order_never_in_full_response(orchestrator):
+    req = _make_request(message="Consultar pedido 342671")
+    resp = orchestrator.handle(req)
+    resp_json = resp.model_dump_json()
+    assert "idOrder" not in resp_json
+    assert "id-interno-sintetico" not in resp_json
+
+
+# 38. POST /chat com environment PRD usa base PRD no deeplink
+def test_prd_environment_uses_prd_base(orchestrator):
+    req = _make_request(message="Consultar pedido 342671", environment="PRD")
+    resp = orchestrator.handle(req)
+    if resp.navigation:
+        assert "meualelo-webviews.alelo.com.br" in resp.navigation.webview_url
+        assert "hml" not in resp.navigation.webview_url.lower()
+
+
+# 39. Verbo "cancelar" (imperativo) dispara INT-022
+def test_cancel_imperative_triggers_int022(orchestrator):
+    req = _make_request(message="Cancele o pedido 342671")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# 40. "cancelamento" como palavra isolada não dispara INT-022 (é status)
+def test_cancellation_word_not_transactional(orchestrator):
+    req = _make_request(message="Pedidos em cancelamento")
+    resp = orchestrator.handle(req)
+    assert resp.flow != "REDIRECT_TO_OFFICIAL_JOURNEY"

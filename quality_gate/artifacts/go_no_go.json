@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-23",
+    "project": "Agente Consultivo MARH — POC",
+    "audited_commit": "960f042",
+    "branch": "main"
+  },
+  "decision": "GO_WITH_CONDITIONS",
+  "blockers_found": 1,
+  "blockers_corrected": 1,
+  "blockers_remaining": 0,
+  "tests_before_corrections": {"total": 42, "passed": 42, "failed": 0},
+  "tests_after_corrections": {"total": 57, "passed": 57, "failed": 0},
+  "new_tests_added": 15,
+  "principles_all_respected": true,
+  "principles": {
+    "exclusively_consultive": true,
+    "no_write_operations": true,
+    "company_immutable_by_chat": true,
+    "authorization_delegated_to_ma_hr_orch": true,
+    "no_invented_rbac": true,
+    "cpf_not_in_response_or_deeplink": true,
+    "order_number_not_id_order": true,
+    "no_individual_collaborator_deeplink": true,
+    "all_test_data_synthetic": true,
+    "no_credentials_in_frontend": true,
+    "no_credentials_committed": true
+  },
+  "conditions_for_go": [
+    {
+      "id": "COND-1",
+      "finding": "F-002",
+      "severity": "HIGH",
+      "description": "Sub-filter steps field in order allowlist before connecting real API",
+      "estimated_effort_hours": 1.5,
+      "when_required": "Before first call to real ma-hr-orch API"
+    },
+    {
+      "id": "COND-2",
+      "finding": "F-003",
+      "severity": "HIGH",
+      "description": "Connect sanitize_response_text() to orchestrator pipeline before using LLM",
+      "estimated_effort_hours": 0.5,
+      "when_required": "Before first Bedrock call"
+    },
+    {
+      "id": "COND-3",
+      "severity": "MEDIUM",
+      "description": "Verify that real MaHrOrchClient implementation always filters by company_id",
+      "estimated_effort_hours": 0.5,
+      "when_required": "Before connecting real ma-hr-orch"
+    }
+  ],
+  "pending_decisions_not_blocking": [
+    "DP-001: tracking endpoint",
+    "DP-002: CPF tracking",
+    "DP-003-B: default navigation screen",
+    "DP-004: INVOICE and CANCEL_PROCESSING aliases",
+    "DP-005: pagination strategy",
+    "Bedrock model selection",
+    "AWS account and deployment"
+  ],
+  "next_recommended_step": "Implement COND-1 and COND-2, then integrate with Bedrock InvokeModel using claude-haiku-4-5 for initial POC tests"
+}

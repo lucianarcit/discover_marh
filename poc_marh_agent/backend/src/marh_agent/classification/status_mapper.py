@@ -13,8 +13,6 @@ Regras:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from dataclasses import dataclass
 
 
@@ -26,12 +24,9 @@ class StatusEntry:
     input_aliases: list[str]
 
 
-_CATALOG_PATH = (
-    Path(__file__).resolve().parents[4]
-    / "fixtures"
-    / "order_status_catalog.json"
-)
-
+# Catálogo inline — fonte: discover3/artifacts/order_status_catalog.json
+# Mantido inline para que o backend não dependa de arquivo externo em runtime.
+# Em produção, este catálogo pode ser lido do S3 ou de variável de ambiente.
 _STATUS_ENTRIES: list[StatusEntry] = []
 _ALIAS_MAP: dict[str, str] = {}
 
@@ -153,11 +148,18 @@ def resolve_status_from_input(user_text: str) -> str | None:
 
 
 def get_display_label(api_status: str) -> str:
-    """Retorna o label de exibição (completed) para um status."""
+    """Retorna o label de exibição (completed) para um status.
+
+    Nunca expõe o valor técnico do api_status ao usuário.
+    Se o status não está no catálogo ou está sem label confirmado,
+    retorna uma string genérica.
+    """
     for entry in _STATUS_ENTRIES:
         if entry.api_status == api_status:
-            return entry.label_completed or entry.api_status
-    return api_status
+            # label_completed pode ser None para PARTIAL_REFUNDED (pendente confirmação)
+            return entry.label_completed if entry.label_completed else "Status não disponível"
+    # Status desconhecido — não expõe o valor técnico da API ao usuário
+    return "Status desconhecido"
 
 
 def get_all_entries() -> list[StatusEntry]:

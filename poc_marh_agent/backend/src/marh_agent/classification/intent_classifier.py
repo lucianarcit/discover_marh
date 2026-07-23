@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 from marh_agent.classification.entity_extractor import (
     extract_cpf,
+    extract_name,
     extract_order_number,
 )
 from marh_agent.classification.status_mapper import resolve_status_from_input
@@ -23,8 +24,14 @@ class ClassificationResult:
 
 
 # Padrões para intenções FORA DO ESCOPO (Grupo C)
+# IMPORTANTE: esses padrões devem ser suficientemente específicos para não
+# sobrepor consultas de status de pedido (ex: "pedidos cancelados" é INT-005,
+# não INT-022). O padrão de cancelamento exige a forma verbal imperativa/infinitiva
+# ou referência direta ao ato de cancelar, nunca apenas a palavra "cancelad*".
 _TRANSACTIONAL_PATTERNS = [
-    (r"cancel[ae]", "INT-022"),
+    # Cancelamento: exige verbo imperativo/infinitivo ("cancele", "cancela", "cancelar")
+    # sem incluir o particípio passado "cancelado/cancelados" (que é estado de pedido).
+    (r"\bcancelar?\b|\bcancele\b", "INT-022"),
     (r"alter[ae]|muda|trocar?\s.*(endere[çc]o|dados)", "INT-023"),
     (r"cri[ae]r?\s.*pedido|novo\s+pedido|fazer\s.*pedido", "INT-024"),
     (r"remov|exclu|delet", "INT-025"),
@@ -180,7 +187,6 @@ def classify(message: str) -> ClassificationResult:
             "consultar", "buscar", "encontrar", "encontre",
             "colaborador", "colaboradora", "pelo nome", "por nome",
         ]
-        from marh_agent.classification.entity_extractor import extract_name
         name = extract_name(message, name_keywords)
         if name:
             return ClassificationResult(

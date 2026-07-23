@@ -170,3 +170,68 @@ async def test_response_contract(client):
     assert "metadata" in data
     assert data["metadata"]["mode"] == "MOCK_LOCAL"
     assert data["metadata"]["data_classification"] == "SYNTHETIC_TEST_DATA"
+
+
+# ── Testes adicionados pelo Quality Gate 2026-07-23 ──────────────────────────
+
+# 13. idOrder nunca aparece no JSON de resposta
+@pytest.mark.asyncio
+async def test_id_order_never_in_response(client):
+    resp = await client.post("/chat", json=_payload(message="Consultar pedido 342671"))
+    assert resp.status_code == 200
+    text = resp.text
+    assert "idOrder" not in text
+    assert "id-interno-sintetico" not in text
+
+
+# 14. POST /chat body JSON inválido retorna 400
+@pytest.mark.asyncio
+async def test_invalid_json_body(client):
+    resp = await client.post(
+        "/chat",
+        content=b"not-json",
+        headers={"Content-Type": "application/json"},
+    )
+    assert resp.status_code == 400
+    data = resp.json()
+    assert data["error_code"] == "ERR-PARSE"
+
+
+# 15. POST /chat sem campo message retorna 422
+@pytest.mark.asyncio
+async def test_missing_message_field(client):
+    payload = {
+        "company_id": "empresa-sintetica-001",
+        "user_id": "usuario-sintetico-001",
+        "session_id": "sessao-sintetica-001",
+        "environment": "HML",
+        # message ausente
+    }
+    resp = await client.post("/chat", json=payload)
+    assert resp.status_code == 422
+    data = resp.json()
+    assert data["error_code"] == "ERR-VALIDATION"
+
+
+# 16. "pedidos cancelados" → INT-005, não redirect transacional
+@pytest.mark.asyncio
+async def test_cancelled_orders_query_not_transactional(client):
+    resp = await client.post("/chat", json=_payload(message="Pedidos cancelados"))
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["flow"] != "REDIRECT_TO_OFFICIAL_JOURNEY"
+    assert data["intent_id"] == "INT-005"
+
+
+# 17. deeplink não contém beneficiaryId nem idOrder
+@pytest.mark.asyncio
+async def test_deeplink_no_sensitive_ids(client):
+    resp = await client.post("/chat", json=_payload(message="Consultar pedido 342671"))
+    assert resp.status_code == 200
+    data = resp.json()
+    if data.get("navigation") and data["navigation"].get("deeplink"):
+        deeplink = data["navigation"]["deeplink"]
+        assert "idOrder" not in deeplink
+        assert "beneficiaryId" not in deeplink
+        assert "ben-sintetico" not in deeplink
+        assert "id-interno" not in deeplink

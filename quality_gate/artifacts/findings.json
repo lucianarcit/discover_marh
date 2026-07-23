@@ -1,0 +1,199 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-23",
+    "project": "Agente Consultivo MARH — POC",
+    "quality_gate_decision": "GO_WITH_CONDITIONS",
+    "total_findings": 19,
+    "corrected": 6,
+    "remaining": 13
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "BLOCKER",
+      "category": "logic_bug",
+      "file": "src/marh_agent/classification/intent_classifier.py",
+      "line": 27,
+      "description": "Pattern cancel[ae] captured 'cancelados' (past participle = order status), routing status queries to transactional journey instead of listing cancelled orders.",
+      "corrected": true,
+      "correction": "Regex changed to \\bcancelar?\\b|\\bcancele\\b (imperative/infinitive form only)"
+    },
+    {
+      "id": "F-002",
+      "severity": "HIGH",
+      "category": "security_pii",
+      "file": "src/marh_agent/security/allowlists.py",
+      "line": 26,
+      "description": "Field 'steps' in ORDER_ALLOWED_FIELDS without sub-filtering. Real API may populate steps with beneficiaryId, CPF, delivery address.",
+      "corrected": false,
+      "correction": "Define ORDER_STEPS_FIELDS and sub-filter steps in filter_order() before connecting real API"
+    },
+    {
+      "id": "F-003",
+      "severity": "HIGH",
+      "category": "security_pii",
+      "file": "src/marh_agent/security/sanitization.py",
+      "line": 1,
+      "description": "sanitize_response_text() and contains_sensitive_data() defined but never called anywhere in the pipeline. False sense of security.",
+      "corrected": false,
+      "correction": "Call sanitize_response_text(response.message) in orchestrator after route() before using LLM"
+    },
+    {
+      "id": "F-004",
+      "severity": "HIGH",
+      "category": "resilience",
+      "file": "src/marh_agent/application/router.py",
+      "line": 239,
+      "description": "LookupError (raised by mock for 404) not caught in router try/except block. Would propagate as unhandled exception causing HTTP 500 without correlation_id.",
+      "corrected": true,
+      "correction": "Added except LookupError returning ERR-003"
+    },
+    {
+      "id": "F-005",
+      "severity": "MEDIUM",
+      "category": "security_exposure",
+      "file": "src/marh_agent/classification/status_mapper.py",
+      "line": 155,
+      "description": "get_display_label() returned the raw API status string for unknown statuses and for PARTIAL_REFUNDED (null label_completed), exposing technical backend values to users.",
+      "corrected": true,
+      "correction": "Returns 'Status desconhecido' for unknown, 'Status não disponível' for pending-confirmation labels"
+    },
+    {
+      "id": "F-006",
+      "severity": "MEDIUM",
+      "category": "logic",
+      "file": "src/marh_agent/classification/intent_classifier.py",
+      "line": 27,
+      "description": "Other transactional patterns may have false positives. 'remov' could capture 'removido'. Recommend word-boundary review for all patterns.",
+      "corrected": false,
+      "correction": "Review remaining patterns with \\b word boundaries in next iteration"
+    },
+    {
+      "id": "F-007",
+      "severity": "MEDIUM",
+      "category": "code_quality",
+      "file": "src/marh_agent/classification/status_mapper.py",
+      "line": 29,
+      "description": "Dead code: _CATALOG_PATH pointing to non-existent fixtures/order_status_catalog.json. Catalog is inline. Creates confusion about data source.",
+      "corrected": true,
+      "correction": "Dead code removed, explicit comment about inline catalog added"
+    },
+    {
+      "id": "F-008",
+      "severity": "MEDIUM",
+      "category": "code_quality",
+      "file": "src/marh_agent/classification/intent_classifier.py",
+      "line": 183,
+      "description": "extract_name imported inside classify() function on every call.",
+      "corrected": true,
+      "correction": "Import moved to top of file"
+    },
+    {
+      "id": "F-009",
+      "severity": "MEDIUM",
+      "category": "ux_errors",
+      "file": "src/marh_agent/security/trusted_context.py",
+      "line": 17,
+      "description": "ERR-001 returned for missing user_id or session_id with message 'Selecione uma empresa no Espaço RH' — misleading when the issue is expired session.",
+      "corrected": false,
+      "correction": "Requires product decision on message wording"
+    },
+    {
+      "id": "F-010",
+      "severity": "MEDIUM",
+      "category": "test_quality",
+      "file": "tests/unit/test_orchestrator.py",
+      "line": 279,
+      "description": "test_cpf_not_in_deeplink uses weak OR condition that passes even if CPF is in deeplink alongside 'employees'.",
+      "corrected": true,
+      "correction": "Supplemented with test_deeplink_no_sensitive_ids with precise assertions"
+    },
+    {
+      "id": "F-011",
+      "severity": "LOW",
+      "category": "code_quality",
+      "file": "src/marh_agent/templates/orders.py",
+      "line": 16,
+      "description": "format_date_ptbr() returns original string on parse failure, potentially exposing malformed data to user.",
+      "corrected": false,
+      "correction": "Return empty string on parse failure"
+    },
+    {
+      "id": "F-012",
+      "severity": "LOW",
+      "category": "security",
+      "file": "src/marh_agent/api/local_api.py",
+      "line": 36,
+      "description": "docs_url='/docs' enabled. Acceptable for local POC, must be None in production.",
+      "corrected": false,
+      "correction": "Set docs_url=None for production deployment"
+    },
+    {
+      "id": "F-013",
+      "severity": "LOW",
+      "category": "security",
+      "file": "poc_marh_agent/frontend/assets/js/home.js",
+      "line": 61,
+      "description": "innerHTML used with synthetic fixture data escaped via _escText(). Not a real risk in POC — data is static/synthetic.",
+      "corrected": false,
+      "correction": "Use DOM building instead of innerHTML template strings in future refactor"
+    },
+    {
+      "id": "F-014",
+      "severity": "LOW",
+      "category": "code_quality",
+      "file": "src/marh_agent/navigation/builder.py",
+      "line": 30,
+      "description": "ROUTE-015 in ALLOWED_ROUTES catalog but never invoked in router.py. Planned feature not yet implemented.",
+      "corrected": false,
+      "correction": "Implement when beneficiaries feature is needed, or remove if not planned"
+    },
+    {
+      "id": "F-015",
+      "severity": "LOW",
+      "category": "tooling",
+      "file": "pyproject.toml",
+      "line": 1,
+      "description": "No ruff, mypy, bandit, or coverage configured in dev dependencies.",
+      "corrected": false,
+      "correction": "Add quality tools before production"
+    },
+    {
+      "id": "F-016",
+      "severity": "INFO",
+      "category": "cleanup",
+      "file": "artifacts/api_inventory/cardholders-hr-management",
+      "line": null,
+      "description": "Empty file (0 bytes) without extension. Likely incomplete test artifact.",
+      "corrected": false
+    },
+    {
+      "id": "F-017",
+      "severity": "INFO",
+      "category": "cleanup",
+      "file": "docs/",
+      "line": null,
+      "description": "3 HTML files exist in 2 copies each (~21MB extra). docs/sample/ and docs/discover/ duplicate docs/cliente/.",
+      "corrected": false
+    },
+    {
+      "id": "F-018",
+      "severity": "INFO",
+      "category": "credentials",
+      "file": ".env",
+      "line": null,
+      "description": ".env contains real HML credentials (client_id, client_secret, access_token, refresh_token). NOT committed (verified with git check-ignore). Recommend rotating tokens after Discovery.",
+      "corrected": false
+    },
+    {
+      "id": "F-019",
+      "severity": "INFO",
+      "category": "documentation",
+      "file": "discover3/",
+      "line": null,
+      "description": "Documents 07-11 missing in discover3/. Gap from 06 to 12 is intentional but may confuse new team members.",
+      "corrected": false
+    }
+  ]
+}
