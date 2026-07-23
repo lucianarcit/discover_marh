@@ -10,19 +10,25 @@
 ## Objetivo
 
 Desenho da arquitetura AWS para a POC do Agente Consultivo MARH, um agente de IA conversacional
-exclusivamente consultivo que responde perguntas sobre colaboradores, pedidos, rastreamento de cartões
-e dúvidas sobre a feature MARH no app Meu Alelo.
+exclusivamente consultivo que responde consultas sobre colaboradores e pedidos, dúvidas informativas
+sobre a feature MARH e orientações de rastreamento.
+
+A consulta de rastreamento em tempo real será implementada somente após a validação e o inventário
+do endpoint correspondente da ma-hr-orch (INT-007, LAC-001).
 
 ## Decisão Arquitetural
 
 **Alternativa recomendada: B — Lambda com orquestração própria**
 
 Justificativa resumida:
-- Menor custo fixo (zero quando inativo)
+- Runtime serverless e pay-per-use, sem container ou servidor always-on
+- Baixo custo fixo de armazenamento, segurança e observabilidade
 - Menor complexidade operacional
-- Latência controlável
-- Totalmente disponível em `sa-east-1`
-- Controle total sobre sanitização de PII e classificação determinística
+- Latência controlável por fluxo
+- Componentes-base disponíveis em `sa-east-1`
+- Modelo de geração pendente de validação In-Region na conta AWS
+- Controle total sobre classificação determinística, sanitização e tools
+- Nenhuma dependência de cross-Region inference
 
 ## Correções Aplicadas nesta Versão
 
@@ -90,12 +96,13 @@ Justificativa resumida:
 
 | # | Bloqueador | Prioridade |
 |---|---|---|
-| 1 | Conta AWS e permissões (DP-005) | P0 CRÍTICO |
-| 2 | Modelo ACTIVE In-Region sa-east-1 (DP-002) | P0 CRÍTICO |
-| 3 | Formato de invocação — hospedagem da API MARH (DP-001) | P0 |
-| 4 | S3 Vectors em sa-east-1 (DP-003) | P1 |
-| 5 | Aprovação de marh_feature_knowledge.md (DP-007) | P1 |
-| 6 | Sandbox ma-hr-orch (DP-006) | P1 |
+| 1 | Conta AWS, role e permissões necessárias (DP-005) | P0 CRÍTICO |
+| 2 | Modelo ACTIVE com inferência exclusivamente In-Region em `sa-east-1` (DP-002) | P0 CRÍTICO |
+| 3 | Formato de invocação conforme hospedagem da API MARH (DP-001) | P0 |
+| 4 | Acesso, IAM e quotas do S3 Vectors na conta AWS (DP-003) | P1 |
+| 5 | Aprovação de `marh_feature_knowledge.md` (DP-007) | P1 |
+| 6 | Credenciais e conectividade com o sandbox da `ma-hr-orch` (DP-006) | P1 |
+| 7 | Endpoint de rastreamento da `ma-hr-orch` (LAC-001) | Não bloqueia POC técnica; bloqueia rastreamento real |
 
 ---
 

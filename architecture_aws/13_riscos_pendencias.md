@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|
 | R-01 | Quotas de Bedrock menores que us-east-1 | Alta | Alto | Verificar quotas reais no console; solicitar aumento antes do POC | Platform |
 | R-02 | Nenhum modelo ACTIVE In-Region disponível em sa-east-1 | Média | Crítico | Verificar no console da conta alvo antes de qualquer implementação | Arquitetura |
-| R-03 | S3 Vectors não disponível em sa-east-1 | Média | Alto | Testar criação de vector bucket; alternativa: FAISS em Lambda layer | Arquitetura |
+| R-03 | S3 Vectors — disponibilidade regional CONFIRMADA; acesso na conta não validado | Baixa | Médio | Validar IAM e criação de vector bucket na conta alvo; fallback: FAISS em Lambda layer | Arquitetura |
 | R-04 | Bedrock Knowledge Bases não disponível em sa-east-1 | Alta | Médio | Já mitigado: desenho preferencial usa S3 Vectors direto | Arquitetura |
 | R-05 | Modelo de embedding não disponível In-Region | Média | Alto | Verificar no console; alternativa: embedding via modelo alternativo | Arquitetura |
 | R-06 | Integração direta S3 Vectors + embedding não validada | Média | Alto | Testar end-to-end em Fase 3 | Dev |
@@ -82,15 +82,16 @@
 | **Status** | ❓ AGUARDANDO validação no console da conta — **BLOQUEANTE** |
 | **Deadline** | Antes da Fase 1 |
 
-### DP-003: S3 Vectors disponível em sa-east-1
+### DP-003: Acesso ao S3 Vectors na conta alvo
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | S3 Vectors está disponível em sa-east-1 na conta alvo? |
-| **Impacto** | Define a estratégia RAG — direto via S3 Vectors ou alternativa |
-| **Opções** | A) S3 Vectors direto / B) FAISS em Lambda layer |
-| **Recomendação** | Testar criação de vector bucket antes da Fase 3 |
-| **Status** | ❓ AGUARDANDO — **BLOQUEANTE para Fase 3** |
+| **Pergunta** | A conta alvo tem IAM, permissões e quotas para criar e consultar vector buckets em sa-east-1? |
+| **Contexto** | Disponibilidade regional CONFIRMADA pela documentação oficial AWS (South America / São Paulo listado) |
+| **Impacto** | Define se S3 Vectors direto funciona ou se fallback (FAISS em Lambda layer) é necessário |
+| **Opções** | A) S3 Vectors direto (preferencial) / B) FAISS em Lambda layer |
+| **Recomendação** | Testar criação de vector bucket e QueryVectors na conta antes da Fase 3 |
+| **Status** | ❓ AGUARDANDO — validação de acesso na conta |
 | **Deadline** | Antes da Fase 3 |
 
 ### DP-004: Bedrock Knowledge Bases em sa-east-1

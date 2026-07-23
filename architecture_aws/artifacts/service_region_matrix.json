@@ -102,10 +102,13 @@
     {
       "service_name": "S3 Vectors",
       "service_id": "s3-vectors",
-      "available_in_sa_east_1": "REQUIRES_ACCOUNT_VALIDATION",
-      "status": "REQUIRES_ACCOUNT_VALIDATION",
-      "fallback_if_unavailable": "FAISS in Lambda layer",
-      "notes": "Test vector bucket creation in sa-east-1 before Phase 3"
+      "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
+      "verified_date": "2026-07-23",
+      "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-regions-quotas.html — South America (São Paulo) listed",
+      "account_access_status": "REQUIRES_ACCOUNT_VALIDATION",
+      "fallback_if_account_access_fails": "FAISS in Lambda layer",
+      "notes": "Regional availability confirmed. Account-level access (IAM, quotas, vector bucket creation) requires validation before Phase 3."
     },
     {
       "service_name": "AWS Secrets Manager",
@@ -222,10 +225,10 @@
     },
     {
       "risk_id": "REG-002",
-      "description": "S3 Vectors may not be available in sa-east-1 in target account",
-      "probability": "medium",
-      "impact": "high",
-      "mitigation": "Test creation before Phase 3; fallback to FAISS in Lambda layer"
+      "description": "S3 Vectors regional availability CONFIRMED. Account-level access (IAM, quotas) not yet validated.",
+      "probability": "low",
+      "impact": "medium",
+      "mitigation": "Validate IAM permissions and vector bucket creation in target account before Phase 3; fallback to FAISS in Lambda layer if account access fails"
     },
     {
       "risk_id": "REG-003",

@@ -82,12 +82,15 @@ Bedrock Knowledge Bases gerenciada será considerada **apenas se confirmada com 
 
 ---
 
-## Amazon S3 Vectors — REQUIRES_ACCOUNT_VALIDATION
+## Amazon S3 Vectors
 
-| Funcionalidade | Status | Verificação |
+| Funcionalidade | Status | Fonte |
 |---|---|---|
-| S3 Vectors — bucket criação | REQUIRES_ACCOUNT_VALIDATION | Testar criação de vector bucket em sa-east-1 |
-| S3 Vectors — put/query vectors | REQUIRES_ACCOUNT_VALIDATION | Testar API de vetores em sa-east-1 |
+| S3 Vectors — disponibilidade regional | CONFIRMED | [AWS Regions, endpoints, and quotas for S3 Vectors](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-regions-quotas.html) — South America (São Paulo) listado |
+| S3 Vectors — acesso na conta alvo | REQUIRES_ACCOUNT_VALIDATION | Verificar IAM, service quotas e criação de vector bucket na conta específica |
+
+**Nota:** Disponibilidade regional está confirmada pela documentação oficial da AWS. O que ainda
+requer validação é o acesso da conta alvo (IAM permissions, quotas, criação efetiva de vector bucket).
 
 ---
 

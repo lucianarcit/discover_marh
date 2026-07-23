@@ -193,7 +193,8 @@ Todos os valores de modelo marcados como PRICE_REQUIRES_VALIDATION até confirma
 |---|---|
 | Modelo principal não confirmado (ACTIVE In-Region sa-east-1) | ABERTO — requer validação em conta |
 | Bedrock Knowledge Bases em sa-east-1 não confirmada | ABERTO — requer evidência oficial |
-| S3 Vectors em sa-east-1 — integração direta validada? | ABERTO — requer validação |
+| S3 Vectors em sa-east-1 — disponibilidade regional | CONFIRMED (documentação oficial AWS) |
+| S3 Vectors — acesso, IAM e quotas na conta alvo | ABERTO — requer validação na conta |
 | Endpoint de rastreamento por orderNumber não inventariado (INT-007) | ABERTO — DP-001 |
 | Invocação da Lambda (SDK vs Function URL) — hospedagem da API MARH desconhecida | ABERTO — DP-001 |
 | Conta AWS e permissões | ABERTO — DP-006 |
