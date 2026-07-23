@@ -11,7 +11,14 @@ O MARH Agent é um assistente consultivo de IA para interlocutores de RH dentro 
 │                        App Meu Alelo                            │
 │                    (Espaço RH → Chat)                           │
 └──────────────────────────┬──────────────────────────────────────┘
-                           │ HTTPS + JWT
+                           │ HTTPS
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               CloudFront (HTTPS frontend)                       │
+│         d1vtu9x0di76z9.cloudfront.net                           │
+│                   ↕ S3 bucket                                   │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ fetch POST /chat
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                   API Gateway HTTP API                           │

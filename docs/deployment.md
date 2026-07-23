@@ -5,10 +5,17 @@
 | Item | Versão mínima | Comando para verificar |
 |------|---------------|----------------------|
 | Python | 3.12 | `python --version` |
-| Node.js | 20 | `node --version` |
-| AWS CDK CLI | 2.150+ | `cdk --version` |
+| Terraform | 1.5+ | `terraform --version` |
 | AWS CLI | 2.x | `aws --version` |
 | Conta AWS | — | `aws sts get-caller-identity` |
+
+## URLs dos Ambientes
+
+| Ambiente | Frontend | API |
+|----------|----------|-----|
+| **Local** | `http://localhost:8080` | `http://localhost:8000` |
+| **HML (AWS)** | `https://d1vtu9x0di76z9.cloudfront.net` | `https://pzn843po3h.execute-api.sa-east-1.amazonaws.com` |
+| **PRD** | *(Fase 5)* | *(Fase 5)* |
 
 ## Variáveis de Ambiente da Lambda
 
@@ -23,41 +30,64 @@
 | `BEDROCK_REGION` | Fase 3+ | `sa-east-1` | Região do Bedrock |
 | `BEDROCK_MODEL_ID` | Fase 4+ | `anthropic.claude-3-haiku-*` | Model ID do classificador |
 | `BEDROCK_KNOWLEDGE_BASE_ID` | Fase 3+ | — | ID da Knowledge Base |
-| `CORS_ALLOWED_ORIGINS` | Sim | `localhost:8080` | Origens permitidas (vírgula) |
+| `CORS_ALLOWED_ORIGINS` | Sim | *(ver tfvars)* | Origens permitidas (vírgula) |
 
-## Deploy Manual (primeira vez)
+## Deploy com Script (recomendado)
 
-### 1. Bootstrap do CDK
+O jeito mais simples — testa, commita, pusha e deploya tudo de uma vez:
 
-```bash
-# Configurar credenciais AWS
-aws configure
-
-# Bootstrap (uma vez por conta/região)
-cdk bootstrap aws://ACCOUNT_ID/sa-east-1
+```powershell
+.\deploy.ps1 "sua mensagem de commit"
 ```
 
-### 2. Deploy do stack HML
+O script faz:
+1. Roda pytest (107+ testes)
+2. Git add + commit
+3. Git push para GitHub
+4. Terraform apply (atualiza Lambda + infra)
+5. S3 sync (atualiza frontend)
+6. CloudFront invalidation (limpa cache)
+
+Se qualquer passo falhar, ele para.
+
+## Deploy Manual (passo a passo)
+
+### 1. Configurar credenciais AWS
+
+```bash
+aws configure
+# ou usar SSO:
+aws sso login
+```
+
+### 2. Primeiro deploy (apenas uma vez)
 
 ```bash
 cd infra
-pip install -r requirements.txt
-cdk deploy marh-agent-hml
+terraform init
+terraform apply
 ```
 
-O CDK vai mostrar os recursos que serão criados. Confirme com `y`.
-
-### 3. Verificar o deploy
+### 3. Deploys subsequentes
 
 ```bash
-# O output do CDK mostra a URL da API
-# Exemplo: https://abc123.execute-api.sa-east-1.amazonaws.com
+# Backend (Lambda)
+cd infra
+terraform apply -auto-approve
 
+# Frontend (S3 + CloudFront)
+aws s3 sync poc_marh_agent/frontend/ s3://marh-agent-frontend-hml/ --delete
+aws cloudfront create-invalidation --distribution-id E29TLS56TW0RXY --paths "/*"
+```
+
+### 4. Verificar o deploy
+
+```bash
 # Health check
-curl https://API_URL/health
+curl https://pzn843po3h.execute-api.sa-east-1.amazonaws.com/health
 
 # Testar chat
-curl -X POST https://API_URL/chat \
+curl -X POST https://pzn843po3h.execute-api.sa-east-1.amazonaws.com/chat \
   -H "Content-Type: application/json" \
   -d '{
     "company_id": "emp-001",
@@ -68,63 +98,48 @@ curl -X POST https://API_URL/chat \
   }'
 ```
 
-## Deploy Automático (CI/CD)
+## Rodar Localmente
 
-Após configurar o OIDC (ver `.github/SETUP_AWS_OIDC.md`):
+```bash
+# Backend (FastAPI com mocks)
+cd poc_marh_agent/backend
+pip install -e ".[dev]"
+uvicorn marh_agent.api.local_api:app --reload --port 8000
 
-- **Push em `main`** → test → build → deploy automático em HML
-- **Pull Request** → test + build (sem deploy)
-- **Deploy PRD** → manual com aprovação (Fase 5)
+# Frontend (qualquer servidor estático)
+cd poc_marh_agent/frontend
+python -m http.server 8080
+```
 
 ## Rollback
 
-### Via CDK
+### Via Terraform
 
 ```bash
 cd infra
-# Voltar para commit anterior
 git checkout COMMIT_ANTERIOR -- infra/ poc_marh_agent/backend/src/
-cdk deploy marh-agent-hml
+terraform apply -auto-approve
 ```
 
-### Via Console AWS
+### Via Console AWS (hotfix)
 
-1. Lambda → Versions → selecionar versão anterior
-2. Ou: CloudFormation → Stack → Roll back
+Lambda → escolher versão anterior → publicar
 
-### Via Lambda (hotfix rápido)
+## Deploy Automático (CI/CD — GitHub Actions)
 
-```bash
-# Apontar alias para versão anterior
-aws lambda update-alias \
-  --function-name marh-agent-hml \
-  --name live \
-  --function-version VERSAO_ANTERIOR
-```
+Configurado mas requer OIDC (ver `.github/SETUP_AWS_OIDC.md`):
 
-## Estrutura de Ambientes
-
-| Ambiente | Stack | AGENT_MODE | Deploy |
-|----------|-------|-----------|--------|
-| Local | — | MOCK_LOCAL | `uvicorn` |
-| HML | `marh-agent-hml` | MOCK_LOCAL (Fase 1) → INTEGRATED (Fase 2+) | Automático no push |
-| PRD | `marh-agent-prd` | INTEGRATED | Manual com aprovação |
-
-## Monitoramento pós-deploy
-
-| O que verificar | Como |
-|-----------------|------|
-| Lambda errors | CloudWatch → Log group `/aws/lambda/marh-agent-hml` |
-| Latência | CloudWatch → Metrics → Lambda → Duration |
-| Throttling | API Gateway → Metrics → 429 count |
-| Tracing | X-Ray → Service map |
+- **Push em `main`** → test → lint → build → deploy HML
+- **Pull Request** → test + lint (sem deploy)
+- **Deploy PRD** → manual com aprovação (Fase 5)
 
 ## Troubleshooting
 
 | Sintoma | Causa provável | Ação |
 |---------|---------------|------|
-| 502 Bad Gateway | Lambda timeout ou crash | Verificar logs no CloudWatch |
-| 403 Forbidden | CORS ou IAM | Verificar `CORS_ALLOWED_ORIGINS` e role |
-| 429 Too Many Requests | Throttling | Aumentar limits no API Gateway |
-| Cold start lento (>3s) | Muitas deps no zip | Considerar Lambda Layer ou provisioned concurrency |
-| `ModuleNotFoundError` | Empacotamento incorreto | Verificar que `marh_agent/` está no raiz do zip |
+| 502 Bad Gateway | Lambda timeout ou crash | Verificar logs: `aws logs tail /aws/lambda/marh-agent-hml` |
+| 403 Forbidden | CORS | Verificar `CORS_ALLOWED_ORIGINS` no tfvars |
+| 429 Too Many Requests | Throttling | Aumentar limits no terraform.tfvars |
+| `ModuleNotFoundError` | Faltam deps no Layer | Rebuild: `bash infra/build_layer.sh` + terraform apply |
+| Frontend não atualiza | Cache CloudFront | Invalidar: `aws cloudfront create-invalidation --distribution-id E29TLS56TW0RXY --paths "/*"` |
+| CSP bloqueando API | Content-Security-Policy no HTML | Adicionar URL da API no `connect-src` |
