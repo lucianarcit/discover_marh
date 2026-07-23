@@ -97,15 +97,37 @@ def lambda_handler(event: dict, context: object) -> dict:
     Returns:
         dict no formato API Gateway proxy response.
     """
-    # OPTIONS preflight
+    # Detectar método HTTP (API Gateway v1 e v2)
     http_method = event.get("httpMethod") or event.get("requestContext", {}).get(
         "http", {}
     ).get("method", "")
+
+    # Detectar path (API Gateway v1 e v2)
+    raw_path = event.get("rawPath") or event.get("path") or ""
+
+    # OPTIONS preflight
     if http_method == "OPTIONS":
         return {
             "statusCode": 200,
             "headers": _CORS_HEADERS,
             "body": "",
+        }
+
+    # GET /health
+    if http_method == "GET" and raw_path.rstrip("/").endswith("/health"):
+        return {
+            "statusCode": 200,
+            "headers": _CORS_HEADERS,
+            "body": json.dumps({
+                "status": "ok",
+                "mode": MODE.value,
+                "environment": ENVIRONMENT.value,
+                "dependencies": {
+                    "ma_hr_orch": "MOCK" if MODE == Mode.MOCK_LOCAL else "INTEGRATED",
+                    "bedrock_classifier": "DISABLED" if MODE == Mode.MOCK_LOCAL else "ENABLED",
+                    "bedrock_rag": "DISABLED" if MODE == Mode.MOCK_LOCAL else "ENABLED",
+                },
+            }),
         }
 
     # Parse body

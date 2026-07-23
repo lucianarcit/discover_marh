@@ -8,7 +8,7 @@ from pathlib import Path
 from marh_agent.clients.ma_hr_orch import MaHrOrchClient
 
 
-_FIXTURES_DIR = Path(__file__).resolve().parents[3] / "fixtures"
+_FIXTURES_DIR = Path(__file__).resolve().parent.parent / "fixtures"
 
 
 class MockMaHrOrchClient(MaHrOrchClient):

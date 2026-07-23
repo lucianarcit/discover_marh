@@ -73,6 +73,16 @@ resource "aws_cloudwatch_log_group" "lambda" {
   retention_in_days = var.log_retention_days
 }
 
+# ─── Lambda Layer (dependências Python) ──────────────────────────────────────
+
+resource "aws_lambda_layer_version" "deps" {
+  layer_name          = "marh-agent-${local.env_lower}-deps"
+  description         = "Dependências Python (pydantic, etc.)"
+  filename            = "${path.module}/.build/layer.zip"
+  source_code_hash    = filebase64sha256("${path.module}/.build/layer.zip")
+  compatible_runtimes = ["python3.12"]
+}
+
 # ─── Lambda Function ─────────────────────────────────────────────────────────
 
 data "archive_file" "lambda_zip" {
@@ -97,6 +107,8 @@ resource "aws_lambda_function" "agent" {
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  layers = [aws_lambda_layer_version.deps.arn]
 
   tracing_config {
     mode = "Active"

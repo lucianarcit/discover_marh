@@ -1,0 +1,67 @@
+[
+  {
+    "idOrder": "id-interno-sintetico-001",
+    "orderNumber": "342671",
+    "status": "PAID",
+    "orderDate": "2026-07-21",
+    "totalOrder": 90.00,
+    "productInfo": {"productName": "Produto Exemplo"},
+    "paymentMethod": "Boleto",
+    "steps": [],
+    "billingDocumentNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "contractNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "idLegalPersonBilling": "RESTRICTED_SYNTHETIC_VALUE"
+  },
+  {
+    "idOrder": "id-interno-sintetico-002",
+    "orderNumber": "342672",
+    "status": "PENDING",
+    "orderDate": "2026-07-18",
+    "totalOrder": 150.00,
+    "productInfo": {"productName": "Produto Alimentação"},
+    "paymentMethod": "Débito Automático",
+    "steps": [],
+    "billingDocumentNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "contractNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "idLegalPersonBilling": "RESTRICTED_SYNTHETIC_VALUE"
+  },
+  {
+    "idOrder": "id-interno-sintetico-003",
+    "orderNumber": "342673",
+    "status": "CANCELLED",
+    "orderDate": "2026-07-10",
+    "totalOrder": 200.00,
+    "productInfo": {"productName": "Produto Refeição"},
+    "paymentMethod": "Boleto",
+    "steps": [],
+    "billingDocumentNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "contractNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "idLegalPersonBilling": "RESTRICTED_SYNTHETIC_VALUE"
+  },
+  {
+    "idOrder": "id-interno-sintetico-004",
+    "orderNumber": "342674",
+    "status": "PAID",
+    "orderDate": "2026-07-15",
+    "totalOrder": 320.50,
+    "productInfo": {"productName": "Produto Mobilidade"},
+    "paymentMethod": "Boleto",
+    "steps": [],
+    "billingDocumentNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "contractNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "idLegalPersonBilling": "RESTRICTED_SYNTHETIC_VALUE"
+  },
+  {
+    "idOrder": "id-interno-sintetico-005",
+    "orderNumber": "342675",
+    "status": "REJECTED",
+    "orderDate": "2026-07-05",
+    "totalOrder": 75.00,
+    "productInfo": {"productName": "Produto Cultura"},
+    "paymentMethod": "Débito Automático",
+    "steps": [],
+    "billingDocumentNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "contractNumber": "RESTRICTED_SYNTHETIC_VALUE",
+    "idLegalPersonBilling": "RESTRICTED_SYNTHETIC_VALUE"
+  }
+]

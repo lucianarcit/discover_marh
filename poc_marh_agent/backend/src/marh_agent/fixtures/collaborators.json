@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Pessoa Colaboradora A",
+    "placeName": "Filial Centro",
+    "subtype": "WORKPLACE",
+    "isHomeDelivery": false,
+    "products": [{"productName": "Produto Alimentação"}],
+    "documentNumber": "000.000.000-00",
+    "email": "colaboradora.a@sintetico.test",
+    "phoneNumber": "(11) 90000-0001",
+    "motherName": "Nome Mãe Sintético A",
+    "beneficiaryId": "ben-sintetico-001",
+    "address": {"street": "Rua Sintética A", "number": "100"}
+  },
+  {
+    "name": "Pessoa Colaboradora B",
+    "placeName": "Filial Norte",
+    "subtype": "HOME_DELIVERY",
+    "isHomeDelivery": true,
+    "products": [{"productName": "Produto Refeição"}],
+    "documentNumber": "111.111.111-11",
+    "email": "colaboradora.b@sintetico.test",
+    "phoneNumber": "(11) 90000-0002",
+    "motherName": "Nome Mãe Sintético B",
+    "beneficiaryId": "ben-sintetico-002",
+    "address": {"street": "Rua Sintética B", "number": "200"}
+  },
+  {
+    "name": "Pessoa Colaboradora C",
+    "placeName": "Filial Sul",
+    "subtype": "BRANCH",
+    "isHomeDelivery": false,
+    "products": [{"productName": "Produto Mobilidade"}],
+    "documentNumber": "222.222.222-22",
+    "email": "colaboradora.c@sintetico.test",
+    "phoneNumber": "(11) 90000-0003",
+    "motherName": "Nome Mãe Sintético C",
+    "beneficiaryId": "ben-sintetico-003",
+    "address": {"street": "Rua Sintética C", "number": "300"}
+  }
+]
