@@ -15,6 +15,7 @@ import time
 from marh_agent.classification.intent_classifier import classify
 from marh_agent.clients.knowledge_client import KnowledgeClient
 from marh_agent.clients.ma_hr_orch import MaHrOrchClient
+from marh_agent.config import MODE
 from marh_agent.domain.errors import ERROR_CATALOG
 from marh_agent.domain.requests import ChatRequest
 from marh_agent.domain.responses import ChatResponse
@@ -41,8 +42,8 @@ class Orchestrator:
         correlation_id = request.ensure_correlation_id()
 
         metadata_base = {
-            "mode": "MOCK_LOCAL",
-            "data_classification": "SYNTHETIC_TEST_DATA",
+            "mode": MODE.value,
+            "data_classification": "SYNTHETIC_TEST_DATA" if MODE == "MOCK_LOCAL" else "LIVE_DATA",
         }
 
         # 1. Validação de contexto confiável
@@ -100,6 +101,6 @@ class Orchestrator:
                 "flow": flow,
                 "error_code": error_code,
                 "duration_ms": duration_ms,
-                "mode": "MOCK_LOCAL",
+                "mode": MODE.value,
             },
         )

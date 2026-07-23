@@ -1,0 +1,138 @@
+name: CI — MARH Agent
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  id-token: write   # Necessário para OIDC com AWS
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+  AWS_REGION: "sa-east-1"
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Testes + Lint
+  # ─────────────────────────────────────────────
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: poc_marh_agent/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: poc_marh_agent/backend/pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install ruff
+
+      - name: Lint (ruff)
+        run: ruff check src/ tests/
+
+      - name: Run tests
+        run: python -m pytest -v --tb=short
+        env:
+          AGENT_MODE: MOCK_LOCAL
+          ENVIRONMENT: HML
+
+  # ─────────────────────────────────────────────
+  # 2. Build (empacota Lambda)
+  # ─────────────────────────────────────────────
+  build:
+    name: Build Lambda Package
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Build Lambda zip
+        run: |
+          mkdir -p build/lambda
+
+          # Instalar dependências no diretório de build
+          pip install \
+            --target build/lambda \
+            --no-deps \
+            fastapi pydantic pydantic-core annotated-types typing-inspection \
+            starlette anyio sniffio
+
+          # Copiar código-fonte
+          cp -r poc_marh_agent/backend/src/marh_agent build/lambda/
+
+          # Copiar fixtures (necessárias para modo MOCK_LOCAL)
+          cp -r poc_marh_agent/backend/fixtures build/lambda/
+
+          # Criar zip
+          cd build/lambda
+          zip -r ../../lambda-package.zip . -x "**/__pycache__/*" "*.pyc"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: lambda-package.zip
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # 3. Deploy HML (só no push para main)
+  # ─────────────────────────────────────────────
+  deploy-hml:
+    name: Deploy to HML
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: hml
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Node (CDK CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Install CDK dependencies
+        run: |
+          cd infra
+          pip install -r requirements.txt
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: CDK Deploy
+        run: |
+          cd infra
+          cdk deploy marh-agent-hml --require-approval never
