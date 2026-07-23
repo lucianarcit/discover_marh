@@ -10,7 +10,7 @@
 
 const CONFIG = Object.freeze({
   /** Quando true, usa MockAgent sem chamadas HTTP */
-  USE_MOCK_AGENT: true,
+  USE_MOCK_AGENT: false,
 
   /** URL do backend quando USE_MOCK_AGENT = false */
   AGENT_API_URL: "http://localhost:8000/chat",
@@ -61,7 +61,7 @@ const CONFIG = Object.freeze({
   /** Modo de exibição do indicador de ambiente */
   get ENV_LABEL() {
     if (this.USE_MOCK_AGENT) return "MOCK LOCAL";
-    if (this.AGENT_API_URL.includes("localhost")) return "BACKEND LOCAL";
+    if (this.AGENT_API_URL.includes("localhost")) return "BACKEND MOCK";
     return "AWS HML";
   },
 
