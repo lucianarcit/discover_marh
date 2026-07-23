@@ -30,6 +30,18 @@ from marh_agent.templates.policies import (
     REDIRECT_TO_OFFICIAL_JOURNEY,
     TRACKING_NOT_VALIDATED,
 )
+from marh_agent.templates.presentation_builder import (
+    build_capabilities_list,
+    build_clarification,
+    build_collaborator_summary,
+    build_error_notice,
+    build_knowledge_answer,
+    build_order_list,
+    build_order_summary,
+    build_transactional_redirect,
+    build_warning_notice,
+    knowledge_title_for_intent,
+)
 
 # Mapeamento de intent_id para tópico do KnowledgeClient
 _INTENT_KNOWLEDGE_TOPIC: dict[str, str] = {
@@ -71,11 +83,18 @@ def route(
     try:
         # Troca de empresa
         if intent_id == "COMPANY_SWITCH":
+            from marh_agent.domain.responses import Presentation, PresentationTone, PresentationVariant
             return ChatResponse(
                 correlation_id=correlation_id,
                 intent_id=None,
                 flow="STATIC_RESPONSE",
                 message=COMPANY_SWITCH_BLOCKED,
+                presentation=Presentation(
+                    variant=PresentationVariant.informational_notice,
+                    title="Consulta por empresa",
+                    icon="info",
+                    tone=PresentationTone.informative,
+                ),
                 error_code=None,
                 metadata=metadata,
             )
@@ -92,6 +111,7 @@ def route(
                 intent_id=intent_id,
                 flow=flow,
                 message=REDIRECT_TO_OFFICIAL_JOURNEY,
+                presentation=build_transactional_redirect(),
                 navigation=nav,
                 error_code=None,
                 metadata=metadata,
@@ -117,11 +137,17 @@ def route(
                 msg = INFORMATIVE_RESPONSES.get(intent_id, ERROR_CATALOG["ERR-008"])
                 metadata = {**metadata, "flow_detail": "STATIC_POLICY_FALLBACK"}
 
+            if intent_id == "INT-008":
+                pres = build_capabilities_list()
+            else:
+                pres = build_knowledge_answer(knowledge_title_for_intent(intent_id))
+
             return ChatResponse(
                 correlation_id=correlation_id,
                 intent_id=intent_id,
                 flow=flow,
                 message=msg,
+                presentation=pres,
                 error_code=None,
                 metadata=metadata,
             )
@@ -133,6 +159,7 @@ def route(
                 intent_id="INT-006",
                 flow="REQUIRES_CLARIFICATION",
                 message=ERROR_CATALOG["ERR-010"],
+                presentation=build_clarification("Número do pedido necessário"),
                 error_code="ERR-010",
                 metadata=metadata,
             )
@@ -152,6 +179,7 @@ def route(
                 intent_id="INT-007",
                 flow="API_ONLY",
                 message=TRACKING_NOT_VALIDATED,
+                presentation=build_warning_notice("Rastreamento em validação"),
                 navigation=nav,
                 error_code=None,
                 metadata=metadata,
@@ -183,6 +211,7 @@ def route(
                     intent_id="INT-003",
                     flow="API_ONLY",
                     message=ERROR_CATALOG["ERR-003"],
+                    presentation=build_error_notice("ERR-003"),
                     error_code="ERR-003",
                     metadata=metadata,
                 )
@@ -197,6 +226,7 @@ def route(
                 intent_id="INT-003",
                 flow="API_ONLY",
                 message=msg,
+                presentation=build_order_summary(order, "Pedido"),
                 navigation=nav,
                 error_code=None,
                 metadata=metadata,
@@ -212,6 +242,7 @@ def route(
                     intent_id="INT-004",
                     flow="API_ONLY",
                     message=ERROR_CATALOG["ERR-007"],
+                    presentation=build_error_notice("ERR-007"),
                     error_code="ERR-007",
                     metadata=metadata,
                 )
@@ -229,6 +260,7 @@ def route(
                 intent_id="INT-004",
                 flow="API_ONLY",
                 message=msg,
+                presentation=build_order_summary(first_order, "Último pedido"),
                 navigation=nav,
                 error_code=None,
                 metadata=metadata,
@@ -243,6 +275,7 @@ def route(
                     intent_id="INT-005",
                     flow="API_ONLY",
                     message=ERROR_CATALOG["ERR-004"],
+                    presentation=build_error_notice("ERR-004"),
                     error_code="ERR-004",
                     metadata=metadata,
                 )
@@ -258,6 +291,7 @@ def route(
                 intent_id="INT-005",
                 flow="API_ONLY",
                 message=msg,
+                presentation=build_order_list(orders, label),
                 navigation=nav,
                 error_code=None,
                 metadata=metadata,
@@ -269,6 +303,7 @@ def route(
             intent_id=None,
             flow="STATIC_RESPONSE",
             message=ERROR_CATALOG["ERR-008"],
+            presentation=build_error_notice("ERR-008"),
             error_code="ERR-008",
             metadata=metadata,
         )
@@ -279,16 +314,17 @@ def route(
             intent_id=intent_id,
             flow="API_ONLY",
             message=ERROR_CATALOG["ERR-005"],
+            presentation=build_error_notice("ERR-005"),
             error_code="ERR-005",
             metadata=metadata,
         )
     except LookupError:
-        # 404 do backend — recurso não encontrado
         return ChatResponse(
             correlation_id=correlation_id,
             intent_id=intent_id,
             flow="API_ONLY",
             message=ERROR_CATALOG["ERR-003"],
+            presentation=build_error_notice("ERR-003"),
             error_code="ERR-003",
             metadata=metadata,
         )
@@ -298,6 +334,7 @@ def route(
             intent_id=intent_id,
             flow="API_ONLY",
             message=ERROR_CATALOG["ERR-007"],
+            presentation=build_error_notice("ERR-007"),
             error_code="ERR-007",
             metadata=metadata,
         )
@@ -307,6 +344,7 @@ def route(
             intent_id=intent_id,
             flow="API_ONLY",
             message=ERROR_CATALOG["ERR-007"],
+            presentation=build_error_notice("ERR-007"),
             error_code="ERR-007",
             metadata=metadata,
         )
@@ -329,6 +367,7 @@ def _handle_collaborator_result(
             intent_id=intent_id,
             flow="API_ONLY",
             message=ERROR_CATALOG["ERR-002"],
+            presentation=build_error_notice("ERR-002"),
             error_code="ERR-002",
             metadata=metadata,
         )
@@ -338,14 +377,17 @@ def _handle_collaborator_result(
 
     if total == 1:
         msg = template_collaborator_found(filtered[0])
+        pres = build_collaborator_summary(filtered[0])
     else:
         msg = template_multiple_collaborators(filtered)
+        pres = None
 
     return ChatResponse(
         correlation_id=correlation_id,
         intent_id=intent_id,
         flow="API_ONLY",
         message=msg,
+        presentation=pres,
         navigation=nav,
         error_code=None,
         metadata=metadata,

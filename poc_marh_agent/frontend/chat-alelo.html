@@ -17,6 +17,7 @@
 
   <link rel="stylesheet" href="assets/css/common.css">
   <link rel="stylesheet" href="assets/css/chat.css">
+  <link rel="stylesheet" href="assets/css/agent-response.css">
 </head>
 
 <body class="chat-body">
@@ -271,10 +272,11 @@
   <!-- ── Backdrop (fecha menus ao clicar fora) ── -->
   <div id="overlay-backdrop" class="overlay-backdrop" aria-hidden="true"></div>
 
-  <!-- ── Scripts — ordem importa: config → mock → api → chat ── -->
+  <!-- ── Scripts — ordem importa: config → mock → api → renderer → chat ── -->
   <script src="assets/js/config.js"></script>
   <script src="assets/js/mock-agent.js"></script>
   <script src="assets/js/api-client.js"></script>
+  <script src="assets/js/message-renderer.js"></script>
   <script src="assets/js/chat.js"></script>
 
 </body>

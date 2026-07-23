@@ -190,10 +190,8 @@
     const bubble = document.createElement("div");
     bubble.className = "message__bubble";
 
-    // Renderiza o texto com suporte a markdown básico (negrito **texto**)
-    // sem permitir HTML arbitrário
-    const formatted = _formatMessageText(response.message || "Sem resposta.");
-    bubble.appendChild(formatted);
+    const rendered = MessageRenderer.renderMessage(response);
+    bubble.appendChild(rendered);
 
     const time = document.createElement("span");
     time.className = "message__time";
@@ -215,36 +213,6 @@
     _scrollBottom();
 
     _announce(response.message || "");
-  }
-
-  /**
-   * Formata texto do agente com suporte básico a **negrito** e quebras de linha.
-   * Nunca usa innerHTML com input de usuário ou backend — constrói nós DOM.
-   */
-  function _formatMessageText(text) {
-    const container = document.createDocumentFragment();
-    // Processa linha a linha
-    const lines = text.split("\n");
-    lines.forEach((line, i) => {
-      if (i > 0) container.appendChild(document.createElement("br"));
-
-      // Suporte básico a **negrito**
-      const parts = line.split(/(\*\*[^*]+\*\*)/g);
-      parts.forEach((part) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          const strong = document.createElement("strong");
-          strong.textContent = part.slice(2, -2);
-          container.appendChild(strong);
-        } else if (part.startsWith("_") && part.endsWith("_")) {
-          const em = document.createElement("em");
-          em.textContent = part.slice(1, -1);
-          container.appendChild(em);
-        } else {
-          container.appendChild(document.createTextNode(part));
-        }
-      });
-    });
-    return container;
   }
 
   /* ── Navigation Builder ── */

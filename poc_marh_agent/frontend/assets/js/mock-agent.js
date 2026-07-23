@@ -80,12 +80,24 @@ const MockAgent = (() => {
       intent_id: "INT-003",
       flow: "API_ONLY",
       message:
-        `Encontrei o pedido ${orderNumber}.\n\n` +
-        `**Status:** Pago\n` +
-        `**Data do pedido:** 21/07/2026\n` +
-        `**Produto:** Produto Exemplo (Sintético)\n` +
-        `**Valor:** R$ 90,00\n\n` +
-        `_Estes dados são sintéticos para fins de POC._`,
+        `Encontrei o pedido ${orderNumber}.\n` +
+        `Status: Pagamento confirmado\n` +
+        `Data do pedido: 21/07/2026\n` +
+        `Produto: Produto Exemplo (Sintético)\n` +
+        `Valor: R$ 90,00`,
+      presentation: {
+        variant: "order_summary",
+        title: "Pedido " + orderNumber,
+        icon: "order",
+        tone: "positive",
+        status_label: "Pagamento confirmado",
+        fields: [
+          { label: "Produto", value: "Produto Exemplo (Sintético)", emphasis: true },
+          { label: "Data", value: "21/07/2026" },
+          { label: "Valor", value: "R$ 90,00", emphasis: true },
+        ],
+        items: [],
+      },
       navigation: {
         type: "list_navigation",
         route_id: "ROUTE-ORDER-DETAIL",
@@ -108,12 +120,24 @@ const MockAgent = (() => {
       intent_id: "INT-002",
       flow: "API_ONLY",
       message:
-        `Seu último pedido registrado é o **${orderNumber}**.\n\n` +
-        `**Status:** Pago\n` +
-        `**Data:** 21/07/2026\n` +
-        `**Produto:** Produto Exemplo (Sintético)\n` +
-        `**Valor:** R$ 90,00\n\n` +
-        `_Estes dados são sintéticos para fins de POC._`,
+        `Seu pedido mais recente é o ${orderNumber}.\n` +
+        `Status: Pagamento confirmado\n` +
+        `Data do pedido: 21/07/2026\n` +
+        `Produto: Produto Exemplo (Sintético)\n` +
+        `Valor: R$ 90,00`,
+      presentation: {
+        variant: "order_summary",
+        title: "Último pedido — " + orderNumber,
+        icon: "order",
+        tone: "positive",
+        status_label: "Pagamento confirmado",
+        fields: [
+          { label: "Produto", value: "Produto Exemplo (Sintético)", emphasis: true },
+          { label: "Data", value: "21/07/2026" },
+          { label: "Valor", value: "R$ 90,00", emphasis: true },
+        ],
+        items: [],
+      },
       navigation: {
         type: "list_navigation",
         route_id: "ROUTE-ORDER-DETAIL",
@@ -135,11 +159,24 @@ const MockAgent = (() => {
       intent_id: "INT-004",
       flow: "API_ONLY",
       message:
-        `Encontrei **3 pedidos** com status **Pago** nos últimos 30 dias:\n\n` +
-        `• Pedido **342671** — R$ 90,00 — 21/07/2026\n` +
-        `• Pedido **342580** — R$ 150,00 — 15/07/2026\n` +
-        `• Pedido **342401** — R$ 60,00 — 08/07/2026\n\n` +
-        `_Estes dados são sintéticos para fins de POC._`,
+        `Encontrei 3 pedido(s) com o status Pagamento confirmado.\n` +
+        `• Pedido 342671 — 21/07/2026 — R$ 90,00\n` +
+        `• Pedido 342580 — 15/07/2026 — R$ 150,00\n` +
+        `• Pedido 342401 — 08/07/2026 — R$ 60,00`,
+      presentation: {
+        variant: "order_list",
+        title: "Pedidos com status: Pagamento confirmado",
+        subtitle: "3 pedidos encontrados",
+        icon: "list",
+        tone: "positive",
+        status_label: "Pagamento confirmado",
+        fields: [],
+        items: [
+          { title: "Pedido 342671", subtitle: "21/07/2026", value: "R$ 90,00", badge: "Pagamento confirmado", tone: "positive" },
+          { title: "Pedido 342580", subtitle: "15/07/2026", value: "R$ 150,00", badge: "Pagamento confirmado", tone: "positive" },
+          { title: "Pedido 342401", subtitle: "08/07/2026", value: "R$ 60,00", badge: "Pagamento confirmado", tone: "positive" },
+        ],
+      },
       navigation: {
         type: "list_navigation",
         route_id: "ROUTE-ORDER-LIST",
@@ -159,10 +196,24 @@ const MockAgent = (() => {
       intent_id: "INT-005",
       flow: "API_ONLY",
       message:
-        `Para consultar um colaborador, informe o **nome**, **CPF** ou **matrícula**.\n\n` +
-        `Exemplo: _"Consultar colaborador João Silva"_\n\n` +
-        `Posso buscar informações cadastrais e status de cartões associados.\n\n` +
-        `_Esta é uma POC — nenhum dado real é consultado._`,
+        `Encontrei o colaborador solicitado.\n` +
+        `Nome: Pessoa Colaboradora A\n` +
+        `Local: Filial Centro\n` +
+        `Tipo: Posto de trabalho\n` +
+        `Produtos: Produto Alimentação`,
+      presentation: {
+        variant: "collaborator_summary",
+        title: "Colaborador encontrado",
+        icon: "person",
+        tone: "neutral",
+        fields: [
+          { label: "Nome", value: "Pessoa Colaboradora A", emphasis: true },
+          { label: "Local", value: "Filial Centro" },
+          { label: "Tipo", value: "Posto de trabalho" },
+          { label: "Produtos", value: "Produto Alimentação" },
+        ],
+        items: [],
+      },
       navigation: {
         type: "list_navigation",
         route_id: "ROUTE-COLLABORATOR-LIST",
@@ -182,10 +233,16 @@ const MockAgent = (() => {
       intent_id: "INT-BLOCKED",
       flow: "BLOCKED",
       message:
-        `Não consigo realizar o cancelamento de pedidos diretamente por aqui.\n\n` +
-        `Para cancelar um pedido, acesse o Espaço RH e utilize a opção **"Meus Pedidos"**, ` +
-        `ou entre em contato com o suporte Alelo.\n\n` +
-        `Posso te ajudar com **consultas** de pedidos ou colaboradores.`,
+        `No momento eu consigo apenas consultar informações. ` +
+        `Para realizar essa ação, acesse a jornada correspondente no Espaço RH.`,
+      presentation: {
+        variant: "transactional_redirect",
+        title: "Ação não disponível aqui",
+        icon: "redirect",
+        tone: "informative",
+        fields: [],
+        items: [],
+      },
       navigation: null,
     };
   }
@@ -196,14 +253,30 @@ const MockAgent = (() => {
       intent_id: "INT-001",
       flow: "API_ONLY",
       message:
-        `Sou o **ChatAlelo**, assistente de RH com IA. Posso te ajudar com:\n\n` +
-        `• **Consultar pedido** — busque pelo número do pedido\n` +
-        `• **Último pedido** — veja o pedido mais recente\n` +
-        `• **Pedidos por status** — filtre por Pago, Pendente, etc.\n` +
-        `• **Consultar colaborador** — busque por nome, CPF ou matrícula\n` +
-        `• **Rastreamento de cartões** — status de entrega\n` +
-        `• **Processo de pedido** — tire dúvidas sobre como fazer um pedido\n\n` +
-        `O que você gostaria de saber?`,
+        `Posso ajudar você com:\n` +
+        `• Consultar colaboradores por nome ou CPF\n` +
+        `• Consultar pedidos pelo número\n` +
+        `• Verificar o último pedido\n` +
+        `• Listar pedidos por status\n` +
+        `• Informações sobre rastreamento de cartões\n` +
+        `• Dúvidas sobre o Espaço RH e o MARH\n\n` +
+        `No momento, consigo apenas consultar informações.`,
+      presentation: {
+        variant: "capabilities_list",
+        title: "Como posso ajudar?",
+        subtitle: "Sou um assistente consultivo — não realizo ações.",
+        icon: "sparkles",
+        tone: "informative",
+        fields: [],
+        items: [
+          { title: "Consultar colaboradores por nome ou CPF" },
+          { title: "Consultar pedidos pelo número" },
+          { title: "Verificar o último pedido" },
+          { title: "Listar pedidos por status" },
+          { title: "Informações sobre rastreamento de cartões" },
+          { title: "Dúvidas sobre o Espaço RH e o MARH" },
+        ],
+      },
       navigation: null,
     };
   }
@@ -214,8 +287,16 @@ const MockAgent = (() => {
       intent_id: "INT-BLOCKED",
       flow: "BLOCKED",
       message:
-        `Não é possível alterar a empresa através da conversa. ` +
-        `O contexto da empresa é definido pela sua sessão autenticada.`,
+        `A consulta considera apenas a empresa selecionada no app. ` +
+        `Para consultar outra empresa, selecione-a no Espaço RH.`,
+      presentation: {
+        variant: "informational_notice",
+        title: "Consulta por empresa",
+        icon: "info",
+        tone: "informative",
+        fields: [],
+        items: [],
+      },
       navigation: null,
     };
   }
@@ -226,12 +307,8 @@ const MockAgent = (() => {
       intent_id: "INT-000",
       flow: "API_ONLY",
       message:
-        `Não entendi exatamente o que você precisa. Posso te ajudar com:\n\n` +
-        `• Consultar pedido (ex: _"Consultar pedido 342671"_)\n` +
-        `• Ver último pedido\n` +
-        `• Pedidos por status\n` +
-        `• Consultar colaborador\n\n` +
-        `Tente reformular sua pergunta ou escolha uma das sugestões acima.`,
+        `Ainda não tenho essa informação disponível sobre o MARH. ` +
+        `Posso ajudar com consultas de colaboradores, pedidos e rastreamento de cartões.`,
       navigation: null,
     };
   }
