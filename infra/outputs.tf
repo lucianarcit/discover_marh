@@ -19,6 +19,11 @@ output "secret_arn" {
 }
 
 output "amplify_app_url" {
-  description = "URL do frontend (S3 Website)"
-  value       = aws_s3_bucket_website_configuration.frontend.website_endpoint
+  description = "URL do frontend (S3 Website — HTTP)"
+  value       = "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}"
+}
+
+output "frontend_url" {
+  description = "URL do frontend (CloudFront — HTTPS)"
+  value       = "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
