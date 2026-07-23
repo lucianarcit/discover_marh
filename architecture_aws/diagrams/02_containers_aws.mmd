@@ -1,51 +1,51 @@
 %% AWS Container Diagram - MARH Consultive Agent
-%% Data: 2026-07-23
+%% Data: 2026-07-23 (revisão corretiva)
 %% Region: sa-east-1
+%% Modelo: PROPOSED_PENDING_ACCOUNT_VALIDATION
+%% RAG: Lambda → embedding → S3 Vectors direto (KB gerenciada não confirmada)
 
 graph TB
     subgraph External["Sistemas Externos"]
-        APIMARH["🔗 API MARH<br/>(Invocador)"]
-        MaHrOrch["⚙️ ma-hr-orch<br/>(Dados Corporativos)<br/>HTTP GET only"]
+        APIMARH["API MARH<br/>(Invocador — IAM)"]
+        MaHrOrch["ma-hr-orch<br/>(Dados + Autorização)<br/>HTTP GET only"]
     end
 
     subgraph AWS_SA_EAST_1["AWS sa-east-1 (São Paulo)"]
         subgraph Compute["Computação"]
-            Lambda["⚡ AWS Lambda<br/>Python 3.12 / 512MB<br/>Function URL"]
+            Lambda["AWS Lambda<br/>Python 3.12 / 512MB<br/>Timeout: 30s"]
         end
 
-        subgraph AI_ML["AI/ML"]
-            BedrockRuntime["🧠 Bedrock Runtime<br/>Claude 3.5 Haiku<br/>(Geração)"]
-            BedrockKB["📚 Bedrock Knowledge Bases<br/>(Retrieval)"]
+        subgraph AI_ML["AI/ML — PROPOSED_PENDING_ACCOUNT_VALIDATION"]
+            BedrockRuntime["Bedrock Runtime<br/>(modelo confirmado ACTIVE)<br/>RAG_ONLY: embedding + geração"]
         end
 
         subgraph Storage["Armazenamento"]
-            S3Docs["📁 S3 Bucket<br/>(Documentos Markdown)<br/>KMS + Versioning"]
-            S3Vectors["📊 S3 Vectors<br/>(Embeddings)"]
+            S3Docs["S3 Bucket<br/>(marh_feature_knowledge.md)<br/>KMS + Versioning + Metadados"]
+            S3Vectors["S3 Vectors<br/>(embeddings RAG)<br/>REQUIRES_ACCOUNT_VALIDATION"]
         end
 
         subgraph Security["Segurança"]
-            SecretsManager["🔐 Secrets Manager<br/>(API Keys, Tokens)"]
-            KMS["🔑 KMS<br/>(Chaves de Criptografia)"]
+            SecretsManager["Secrets Manager<br/>(token ma-hr-orch)"]
+            KMS["KMS<br/>(CMK — S3 + Secrets)"]
         end
 
         subgraph Observability["Observabilidade"]
-            CloudWatch["📈 CloudWatch<br/>(Logs + Metrics)"]
-            XRay["🔍 X-Ray<br/>(Distributed Tracing)"]
+            CloudWatch["CloudWatch<br/>(Logs JSON + Metrics)<br/>Sem PII — 30 dias"]
+            XRay["X-Ray<br/>(Distributed Tracing)"]
         end
     end
 
     %% Connections
-    APIMARH -->|"Invoke (IAM Auth)"| Lambda
-    Lambda -->|"InvokeModel"| BedrockRuntime
-    Lambda -->|"Retrieve"| BedrockKB
-    Lambda -->|"HTTP GET (HTTPS)"| MaHrOrch
+    APIMARH -->|"InvokeFunction (SDK)<br/>ou Function URL AWS_IAM"| Lambda
+    Lambda -->|"InvokeModel<br/>(embedding + geração<br/>RAG_ONLY apenas)"| BedrockRuntime
+    Lambda -->|"QueryVectors<br/>(retrieval direto)"| S3Vectors
+    Lambda -->|"GetObject<br/>(chunks aprovados)"| S3Docs
+    Lambda -->|"HTTP GET HTTPS<br/>(timeout: 3s+8s)"| MaHrOrch
     Lambda -->|"GetSecretValue"| SecretsManager
-    Lambda -->|"PutLogEvents"| CloudWatch
+    Lambda -->|"PutLogEvents<br/>(sem PII)"| CloudWatch
     Lambda -->|"PutTraceSegments"| XRay
-    BedrockKB -->|"Read embeddings"| S3Vectors
-    BedrockKB -->|"Read source docs"| S3Docs
     SecretsManager -->|"Decrypt"| KMS
-    S3Docs -->|"Encrypt/Decrypt"| KMS
+    S3Docs -->|"KMS Encrypt/Decrypt"| KMS
 
     %% Styling
     classDef external fill:#e8e8e8,stroke:#666,stroke-width:2px
@@ -57,7 +57,7 @@ graph TB
 
     class APIMARH,MaHrOrch external
     class Lambda compute
-    class BedrockRuntime,BedrockKB ai
+    class BedrockRuntime ai
     class S3Docs,S3Vectors storage
     class SecretsManager,KMS security
     class CloudWatch,XRay observability

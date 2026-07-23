@@ -2,163 +2,171 @@
   "metadata": {
     "project": "MARH Consultive Agent POC",
     "date": "2026-07-23",
+    "revision": "corretiva-2026-07-23",
     "region": "sa-east-1",
-    "description": "Latency budget per route/flow type",
-    "units": "milliseconds"
+    "description": "Latency budget per route/flow type. Values marked ASSUMPTION_REQUIRES_LOAD_TEST are estimates only.",
+    "units": "milliseconds",
+    "observed_data_note": "Only real observed data: GET /v1/beneficiaries = 3275ms single_observed_sample (2026-07-22), GET /v1/orders = 782ms single_observed_sample (2026-07-22). These are NOT P50/P95/P99."
+  },
+  "observed_samples": {
+    "GET /v1/beneficiaries": {
+      "value_ms": 3275,
+      "type": "single_observed_sample_ms",
+      "date": "2026-07-22",
+      "note": "One measurement only. Cannot derive P50, P75, P95, or P99 from this."
+    },
+    "GET /v1/orders": {
+      "value_ms": 782,
+      "type": "single_observed_sample_ms",
+      "date": "2026-07-22",
+      "note": "One measurement only. Cannot derive P50, P75, P95, or P99 from this."
+    }
   },
   "stages": {
     "request_parse": {
       "description": "JSON parse + schema validation",
-      "p50": 3,
-      "p95": 8,
-      "p99": 15,
+      "estimate_ms": 10,
+      "type": "ESTIMATE",
       "timeout": null
     },
     "classification": {
-      "description": "Deterministic intent classification (regex + keywords)",
-      "p50": 5,
-      "p95": 12,
-      "p99": 20,
+      "description": "Deterministic intent classification (regex + keywords) — no LLM",
+      "estimate_ms": 10,
+      "type": "ESTIMATE",
       "timeout": null
     },
-    "kb_retrieve": {
-      "description": "Bedrock Knowledge Base retrieve (top-k=5)",
-      "p50": 400,
-      "p95": 1500,
-      "p99": 3000,
+    "embedding_generate": {
+      "description": "Generate query embedding using In-Region model",
+      "estimate_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "timeout": 5000
+    },
+    "s3_vectors_query": {
+      "description": "Query S3 Vectors in sa-east-1",
+      "estimate_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST",
       "timeout": 5000
     },
     "llm_generate": {
-      "description": "Bedrock Claude 3.5 Haiku invocation (~500 tokens out)",
-      "p50": 600,
-      "p95": 2000,
-      "p99": 4000,
-      "timeout": 8000
+      "description": "Bedrock InvokeModel — generation only in RAG_ONLY flow",
+      "estimate_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "timeout": 8000,
+      "note": "Model not yet confirmed — cannot estimate latency"
     },
     "ma_hr_orch_call": {
-      "description": "HTTP GET to ma-hr-orch (observed latency)",
-      "p50": 1500,
-      "p95": 3275,
-      "p99": 4500,
-      "timeout": 10000,
-      "observed_data": {
-        "source": "API discovery runs 2026-07-22",
-        "sample_size": "multiple runs",
-        "note": "P95=3275ms is the primary bottleneck"
-      }
+      "description": "HTTP GET to ma-hr-orch",
+      "estimate_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "observed_sample_ms": {
+        "beneficiaries": 3275,
+        "orders": 782,
+        "type": "single_observed_sample"
+      },
+      "connect_timeout": 3000,
+      "read_timeout": 8000
     },
-    "sanitization": {
-      "description": "PII removal via regex + allowlist filtering",
-      "p50": 3,
-      "p95": 10,
-      "p99": 20,
+    "schema_allowlist_sanitization": {
+      "description": "Schema validation + allowlist + complementary sanitization",
+      "estimate_ms": 20,
+      "type": "ESTIMATE",
+      "timeout": null
+    },
+    "template_deterministic": {
+      "description": "Deterministic template rendering (API_ONLY — no LLM)",
+      "estimate_ms": 10,
+      "type": "ESTIMATE",
       "timeout": null
     },
     "output_validation": {
-      "description": "Re-scan for PII, URL check, size check",
-      "p50": 2,
-      "p95": 5,
-      "p99": 10,
+      "description": "PII re-scan + size check",
+      "estimate_ms": 5,
+      "type": "ESTIMATE",
       "timeout": null
     },
     "response_serialize": {
-      "description": "JSON serialization + response formatting",
-      "p50": 2,
-      "p95": 5,
-      "p99": 8,
+      "description": "JSON serialization",
+      "estimate_ms": 5,
+      "type": "ESTIMATE",
       "timeout": null
     }
   },
   "flows": {
     "STATIC_RESPONSE": {
-      "description": "Out-of-scope intents, deterministic response",
-      "stages_involved": ["request_parse", "classification", "response_serialize"],
+      "description": "Deterministic response — no LLM, no RAG, no API",
+      "intents": ["INT-008", "INT-009", "INT-011", "INT-012", "INT-013", "INT-014", "INT-015", "INT-016", "INT-017", "INT-018", "INT-021", "INT-022", "INT-023", "INT-024", "INT-025", "INT-026", "INT-027"],
       "uses_llm": false,
       "uses_rag": false,
       "uses_api": false,
-      "latency": {
-        "p50": 15,
-        "p95": 40,
-        "p99": 60,
-        "timeout": 1000
-      }
+      "stages": ["request_parse", "classification", "template_deterministic", "response_serialize"],
+      "target_p95_ms": 100,
+      "timeout_ms": 1000,
+      "type": "ESTIMATE"
     },
-    "REDIRECT": {
-      "description": "Redirect to official journey, deterministic",
-      "stages_involved": ["request_parse", "classification", "response_serialize"],
+    "CLIENT_POLICY_RESPONSE": {
+      "description": "Policy/capability responses from agent_policy.md — no LLM",
+      "intents": ["INT-008", "INT-009", "INT-011", "INT-012", "INT-014", "INT-015", "INT-016", "INT-017", "INT-018", "INT-021"],
       "uses_llm": false,
       "uses_rag": false,
       "uses_api": false,
-      "latency": {
-        "p50": 15,
-        "p95": 40,
-        "p99": 60,
-        "timeout": 1000
-      }
+      "stages": ["request_parse", "classification", "template_deterministic", "response_serialize"],
+      "target_p95_ms": 100,
+      "timeout_ms": 1000,
+      "type": "ESTIMATE"
     },
-    "RAG_ONLY": {
-      "description": "Knowledge Base retrieve + LLM generate",
-      "stages_involved": ["request_parse", "classification", "kb_retrieve", "llm_generate", "output_validation", "response_serialize"],
-      "uses_llm": true,
-      "uses_rag": true,
+    "REDIRECT_TO_OFFICIAL_JOURNEY": {
+      "description": "Redirect message — no LLM",
+      "intents": ["INT-022", "INT-023", "INT-024", "INT-025", "INT-026", "INT-027"],
+      "uses_llm": false,
+      "uses_rag": false,
       "uses_api": false,
-      "latency": {
-        "p50": 1100,
-        "p95": 3500,
-        "p99": 5000,
-        "timeout": 10000
-      }
+      "stages": ["request_parse", "classification", "template_deterministic", "response_serialize"],
+      "target_p95_ms": 100,
+      "timeout_ms": 1000,
+      "type": "ESTIMATE"
     },
     "API_ONLY": {
-      "description": "ma-hr-orch call + sanitize + LLM format",
-      "stages_involved": ["request_parse", "classification", "ma_hr_orch_call", "sanitization", "llm_generate", "output_validation", "response_serialize"],
-      "uses_llm": true,
+      "description": "ma-hr-orch GET + schema + allowlist + deterministic template — NO LLM",
+      "intents": ["INT-001", "INT-002", "INT-003", "INT-004", "INT-005"],
+      "uses_llm": false,
       "uses_rag": false,
       "uses_api": true,
-      "latency": {
-        "p50": 2100,
-        "p95": 5300,
-        "p99": 7000,
-        "timeout": 15000
+      "stages": ["request_parse", "classification", "ma_hr_orch_call", "schema_allowlist_sanitization", "template_deterministic", "output_validation", "response_serialize"],
+      "budget_ms": {
+        "parse_classify": 20,
+        "ma_hr_orch": 10000,
+        "schema_allowlist_template": 30,
+        "total_budget": 10050,
+        "global_timeout": 15000
       },
+      "target_p95_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "timeout_ms": 15000,
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST",
       "bottleneck": "ma_hr_orch_call"
     },
-    "HYBRID_RAG_API": {
-      "description": "RAG + API in parallel, then LLM generate",
-      "stages_involved": ["request_parse", "classification", "kb_retrieve", "ma_hr_orch_call", "sanitization", "llm_generate", "output_validation", "response_serialize"],
+    "RAG_ONLY": {
+      "description": "Embedding + S3 Vectors + one LLM generation",
+      "intents": ["INT-010", "INT-013", "INT-019", "INT-020"],
       "uses_llm": true,
       "uses_rag": true,
-      "uses_api": true,
-      "parallel_stages": ["kb_retrieve", "ma_hr_orch_call"],
-      "latency": {
-        "p50": 2100,
-        "p95": 5300,
-        "p99": 7500,
-        "timeout": 15000
-      },
-      "bottleneck": "ma_hr_orch_call",
-      "note": "Parallel execution means total = max(RAG, API) + LLM, not sum"
+      "uses_api": false,
+      "stages": ["request_parse", "classification", "embedding_generate", "s3_vectors_query", "llm_generate", "output_validation", "response_serialize"],
+      "target_p95_ms": "ASSUMPTION_REQUIRES_LOAD_TEST",
+      "timeout_ms": 12000,
+      "type": "ASSUMPTION_REQUIRES_LOAD_TEST"
     },
     "REQUIRES_CLARIFICATION": {
-      "description": "Request clarification from user",
-      "stages_involved": ["request_parse", "classification", "response_serialize"],
+      "description": "ERR-010 deterministic response (INT-006)",
+      "intents": ["INT-006"],
       "uses_llm": false,
       "uses_rag": false,
       "uses_api": false,
-      "latency": {
-        "p50": 50,
-        "p95": 1500,
-        "p99": 3000,
-        "timeout": 8000
-      },
-      "note": "P95 higher because some clarifications use LLM"
+      "stages": ["request_parse", "classification", "template_deterministic", "response_serialize"],
+      "target_p95_ms": 100,
+      "timeout_ms": 1000,
+      "type": "ESTIMATE"
     }
   },
-  "global_timeout": 30000,
-  "lambda_timeout": 30000,
-  "sla_target": {
-    "p95_all_flows": 6000,
-    "error_rate": 0.01,
-    "availability": 0.99
-  }
+  "global_timeout_lambda_ms": 30000,
+  "retry_budget_note": "1 retry for transient errors only when remaining budget allows. connect=3s + read=8s = 11s max per attempt. With 1 retry: may exceed global budget — check elapsed time before retrying."
 }

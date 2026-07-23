@@ -2,9 +2,11 @@
   "metadata": {
     "project": "MARH Consultive Agent POC",
     "date": "2026-07-23",
+    "revision": "corretiva-2026-07-23",
     "region": "sa-east-1",
-    "description": "Service availability matrix for sa-east-1 (São Paulo)",
-    "status": "DRAFT"
+    "description": "Service availability matrix for sa-east-1 (São Paulo). Items marked REQUIRES_ACCOUNT_VALIDATION require verification in the target account console or CLI.",
+    "status": "DRAFT",
+    "validation_note": "Model availability and Knowledge Bases must be verified independently in the target account. Inference profiles are NOT evidence of In-Region availability."
   },
   "target_region": "sa-east-1",
   "services": [
@@ -12,62 +14,86 @@
       "service_name": "AWS Lambda",
       "service_id": "lambda",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
       "runtime_required": "python3.12",
       "runtime_available": true,
-      "features_required": ["function-url", "x-ray-tracing", "arm64"],
+      "features_required": ["function-url", "x-ray-tracing", "reserved-concurrency"],
       "features_available": true,
       "max_concurrency_default": 1000,
       "notes": "Full feature parity with us-east-1 for required features"
     },
     {
-      "service_name": "Amazon Bedrock",
-      "service_id": "bedrock",
+      "service_name": "Amazon Bedrock Runtime",
+      "service_id": "bedrock-runtime",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
-      "models_required": [
+      "features_required": ["invoke-model", "converse-api"],
+      "features_available": true,
+      "cross_region_inference": false,
+      "notes": "Runtime confirmed. Models must be validated separately."
+    },
+    {
+      "service_name": "Bedrock Foundation Models",
+      "service_id": "bedrock-models",
+      "available_in_sa_east_1": "REQUIRES_ACCOUNT_VALIDATION",
+      "status": "REQUIRES_ACCOUNT_VALIDATION",
+      "models": [
+        {
+          "model_id": "anthropic.claude-3-haiku-20240307-v1:0",
+          "model_name": "Claude 3 Haiku",
+          "status": "REQUIRES_ACCOUNT_VALIDATION",
+          "usage": "candidate-primary-generation",
+          "validation_command": "aws bedrock list-foundation-models --region sa-east-1 --by-inference-type ON_DEMAND"
+        },
+        {
+          "model_id": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+          "model_name": "Claude 3.5 Sonnet v2",
+          "status": "REQUIRES_ACCOUNT_VALIDATION",
+          "usage": "candidate-primary-generation",
+          "validation_command": "aws bedrock list-foundation-models --region sa-east-1 --by-inference-type ON_DEMAND"
+        },
         {
           "model_id": "anthropic.claude-3-5-haiku-20241022-v1:0",
           "model_name": "Claude 3.5 Haiku",
-          "available": true,
-          "status": "VERIFY_BEFORE_POC",
-          "quota_rpm": "100 (estimated, verify actual)",
-          "quota_tpm": "100000 (estimated, verify actual)"
-        },
-        {
-          "model_id": "anthropic.claude-sonnet-4-20250514-v1:0",
-          "model_name": "Claude Sonnet 4",
-          "available": true,
-          "status": "VERIFY_BEFORE_POC",
-          "usage": "alternative/fallback"
+          "status": "REQUIRES_ACCOUNT_VALIDATION",
+          "removed_from": "automatic-selection",
+          "removal_reason": "Status ACTIVE In-Region sa-east-1 not confirmed by direct evidence. Do not declare ACCEPTED without account validation.",
+          "validation_command": "aws bedrock list-foundation-models --region sa-east-1 --by-inference-type ON_DEMAND"
         },
         {
           "model_id": "amazon.titan-embed-text-v2:0",
           "model_name": "Titan Embeddings v2",
-          "available": true,
-          "status": "VERIFY_BEFORE_POC",
-          "usage": "knowledge-base-embeddings"
+          "status": "REQUIRES_ACCOUNT_VALIDATION",
+          "usage": "candidate-embedding",
+          "validation_command": "aws bedrock list-foundation-models --region sa-east-1 --by-inference-type ON_DEMAND"
         }
       ],
-      "features_required": ["invoke-model", "knowledge-bases", "retrieve"],
-      "features_available": true,
-      "cross_region_inference": false,
-      "notes": "Quotas may be lower than us-east-1; request increase before POC"
+      "selection_criteria": [
+        "Status: ACTIVE",
+        "Inference type: ON_DEMAND (not cross-region profile)",
+        "In-Region: sa-east-1 only",
+        "Portuguese language support",
+        "Tool use support",
+        "Low latency",
+        "Compatible cost for POC"
+      ],
+      "notes": "Do not infer regional availability from inference profiles. Verify in account console."
     },
     {
       "service_name": "Bedrock Knowledge Bases",
       "service_id": "bedrock-knowledge-bases",
-      "available_in_sa_east_1": true,
-      "verified_date": "2026-07-23",
-      "vector_stores_supported": ["s3-vectors", "opensearch-serverless", "aurora-pgvector"],
-      "chosen_vector_store": "s3-vectors",
-      "status": "VERIFY_BEFORE_POC",
-      "notes": "Verify S3 Vectors GA status in sa-east-1"
+      "available_in_sa_east_1": "REQUIRES_ACCOUNT_VALIDATION",
+      "status": "REQUIRES_ACCOUNT_VALIDATION",
+      "poc_strategy": "Not used in POC — using direct S3 Vectors retrieval instead",
+      "notes": "Must be confirmed with official documentation evidence specific to sa-east-1 before use. Not assumed available."
     },
     {
       "service_name": "Amazon S3",
       "service_id": "s3",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
       "features_required": ["versioning", "kms-encryption", "lifecycle-rules"],
       "features_available": true,
@@ -76,15 +102,16 @@
     {
       "service_name": "S3 Vectors",
       "service_id": "s3-vectors",
-      "available_in_sa_east_1": true,
-      "verified_date": "2026-07-23",
-      "status": "VERIFY_GA_STATUS",
-      "notes": "Relatively new service; verify GA status in sa-east-1 before POC start"
+      "available_in_sa_east_1": "REQUIRES_ACCOUNT_VALIDATION",
+      "status": "REQUIRES_ACCOUNT_VALIDATION",
+      "fallback_if_unavailable": "FAISS in Lambda layer",
+      "notes": "Test vector bucket creation in sa-east-1 before Phase 3"
     },
     {
       "service_name": "AWS Secrets Manager",
       "service_id": "secretsmanager",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
       "features_required": ["automatic-rotation", "kms-encryption"],
       "features_available": true,
@@ -94,6 +121,7 @@
       "service_name": "AWS KMS",
       "service_id": "kms",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
       "features_required": ["symmetric-cmk", "envelope-encryption"],
       "features_available": true,
@@ -103,6 +131,7 @@
       "service_name": "Amazon CloudWatch",
       "service_id": "cloudwatch",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
       "features_required": ["logs", "metrics", "log-insights", "custom-metrics"],
       "features_available": true,
@@ -112,8 +141,9 @@
       "service_name": "AWS X-Ray",
       "service_id": "xray",
       "available_in_sa_east_1": true,
+      "status": "CONFIRMED",
       "verified_date": "2026-07-23",
-      "features_required": ["active-tracing", "service-map", "annotations"],
+      "features_required": ["active-tracing", "annotations"],
       "features_available": true,
       "notes": "Full feature parity"
     }
@@ -137,7 +167,49 @@
     },
     {
       "service_name": "OpenSearch Serverless",
-      "reason": "Cost prohibitive ($700/month); using S3 Vectors instead"
+      "reason": "Cost prohibitive ($700/month min); using S3 Vectors instead"
+    },
+    {
+      "service_name": "ElastiCache",
+      "reason": "No corporate data cache in POC"
+    },
+    {
+      "service_name": "WAF",
+      "reason": "Production only"
+    },
+    {
+      "service_name": "Bedrock Agents Classic",
+      "reason": "Discontinued for new customers starting July 30, 2026"
+    }
+  ],
+  "prohibited": [
+    {
+      "item": "Cross-Region Inference",
+      "reason": "Data sovereignty — data must stay in sa-east-1"
+    },
+    {
+      "item": "Inference profiles routing outside sa-east-1",
+      "reason": "Must verify that inference stays In-Region"
+    },
+    {
+      "item": "Shared secret authentication",
+      "reason": "Removed — use IAM (InvokeFunction or Function URL AWS_IAM)"
+    },
+    {
+      "item": "In-memory rate limiting as global security control",
+      "reason": "Lambda memory is not shared between instances"
+    },
+    {
+      "item": "In-memory circuit breaker as distributed control",
+      "reason": "Lambda memory is not shared between instances"
+    },
+    {
+      "item": "LLM in API_ONLY flow",
+      "reason": "Deterministic template required; no LLM for formatting API responses"
+    },
+    {
+      "item": "RBAC roles admin/rh/colaborador in agent",
+      "reason": "Authorization delegated to ma-hr-orch"
     }
   ],
   "regional_risks": [
@@ -146,21 +218,28 @@
       "description": "Bedrock model quotas may be lower in sa-east-1 than us-east-1",
       "probability": "high",
       "impact": "high",
-      "mitigation": "Request quota increase before POC start"
+      "mitigation": "Request quota increase before POC start; verify in console"
     },
     {
       "risk_id": "REG-002",
-      "description": "S3 Vectors may not be GA in sa-east-1",
-      "probability": "low",
+      "description": "S3 Vectors may not be available in sa-east-1 in target account",
+      "probability": "medium",
       "impact": "high",
-      "mitigation": "Verify availability; fallback to FAISS in Lambda layer"
+      "mitigation": "Test creation before Phase 3; fallback to FAISS in Lambda layer"
     },
     {
       "risk_id": "REG-003",
-      "description": "New Bedrock features may launch in us-east-1 first",
+      "description": "No model ACTIVE In-Region available in sa-east-1 in target account",
       "probability": "medium",
+      "impact": "critical",
+      "mitigation": "Validate in console before any implementation"
+    },
+    {
+      "risk_id": "REG-004",
+      "description": "Bedrock Knowledge Bases not available in sa-east-1",
+      "probability": "high",
       "impact": "low",
-      "mitigation": "Use only GA features; no dependency on preview features"
+      "mitigation": "Mitigated — POC uses direct S3 Vectors retrieval instead"
     }
   ]
 }

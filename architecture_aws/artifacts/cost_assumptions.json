@@ -2,186 +2,118 @@
   "metadata": {
     "project": "MARH Consultive Agent POC",
     "date": "2026-07-23",
+    "revision": "corretiva-2026-07-23",
     "region": "sa-east-1",
     "pricing_source": "AWS Official Pricing",
     "pricing_date": "2026-07-23",
     "currency": "USD",
-    "description": "Cost assumptions and formulas for estimation",
-    "disclaimer": "Prices are estimates and may vary. Always verify with AWS pricing page."
+    "description": "Cost assumptions. Items marked PRICE_REQUIRES_VALIDATION need verification after model selection.",
+    "disclaimer": "Model prices cannot be confirmed until model selection is validated ACTIVE In-Region sa-east-1."
   },
   "pricing": {
     "lambda": {
       "requests_per_million": 0.20,
       "gb_seconds": 0.0000166667,
+      "status": "CONFIRMED",
       "free_tier": {
         "requests_per_month": 1000000,
         "gb_seconds_per_month": 400000,
-        "duration_months": 12
+        "note": "Free tier is not a guarantee — limited to 12 months and subject to conditions"
       }
     },
-    "bedrock": {
-      "claude_3_5_haiku": {
+    "bedrock_llm": {
+      "status": "PRICE_REQUIRES_VALIDATION",
+      "note": "Model not yet confirmed ACTIVE In-Region sa-east-1. Prices cannot be declared until model is selected and validated.",
+      "removed_model": {
         "model_id": "anthropic.claude-3-5-haiku-20241022-v1:0",
-        "input_per_1k_tokens": 0.00025,
-        "output_per_1k_tokens": 0.00125,
-        "input_per_1m_tokens": 0.25,
-        "output_per_1m_tokens": 1.25
-      },
-      "claude_sonnet_4": {
-        "model_id": "anthropic.claude-sonnet-4-20250514-v1:0",
-        "input_per_1k_tokens": 0.003,
-        "output_per_1k_tokens": 0.015,
-        "input_per_1m_tokens": 3.00,
-        "output_per_1m_tokens": 15.00
-      },
-      "titan_embeddings_v2": {
-        "model_id": "amazon.titan-embed-text-v2:0",
-        "input_per_1k_tokens": 0.0001,
-        "note": "Used for Knowledge Base embeddings"
+        "reason": "Removed from automatic selection — status ACTIVE In-Region sa-east-1 not confirmed"
       }
+    },
+    "bedrock_embedding": {
+      "status": "PRICE_REQUIRES_VALIDATION",
+      "note": "Embedding model not yet confirmed ACTIVE In-Region sa-east-1."
     },
     "s3": {
       "storage_per_gb_month": 0.023,
-      "put_requests_per_1000": 0.005,
-      "get_requests_per_1000": 0.0004
+      "status": "CONFIRMED",
+      "poc_corpus_size": "< 200 KB (marh_feature_knowledge.md only)",
+      "poc_cost": "< $0.01/month"
     },
     "s3_vectors": {
-      "storage_per_gb_month": 0.25,
-      "note": "Estimated pricing for vector storage"
+      "status": "PRICE_REQUIRES_VALIDATION",
+      "note": "Service availability in sa-east-1 not yet confirmed. Price requires validation after availability check.",
+      "poc_corpus_vectors": "< 50 vectors",
+      "poc_queries_per_month": "< 1000 (only RAG_ONLY intents)"
     },
     "secrets_manager": {
       "per_secret_per_month": 0.40,
-      "per_10k_api_calls": 0.05
+      "status": "CONFIRMED"
     },
     "kms": {
       "per_cmk_per_month": 1.00,
-      "per_10k_requests": 0.03
+      "status": "CONFIRMED"
     },
     "cloudwatch": {
       "logs_ingestion_per_gb": 0.50,
-      "logs_storage_per_gb_month": 0.03,
-      "custom_metrics_per_metric_month": 0.30,
-      "log_insights_per_gb_scanned": 0.005
+      "status": "CONFIRMED"
     },
     "xray": {
-      "traces_recorded_per_million": 5.00,
-      "traces_retrieved_per_million": 0.50,
-      "free_tier_traces_per_month": 100000
+      "free_tier_traces_per_month": 100000,
+      "status": "CONFIRMED",
+      "poc_cost": "~$0 (within free tier)"
     }
   },
-  "formulas": {
-    "lambda_cost": {
-      "formula": "(invocations * $0.20 / 1M) + ((memory_gb * duration_s * invocations) * $0.0000166667)",
-      "variables": {
-        "invocations": "Number of Lambda invocations per month",
-        "memory_gb": "Lambda memory in GB (0.5 for 512MB)",
-        "duration_s": "Average duration in seconds per invocation"
-      }
-    },
-    "bedrock_cost_haiku": {
-      "formula": "(input_tokens * $0.00000025) + (output_tokens * $0.00000125)",
-      "per_request_estimate": {
-        "avg_input_tokens": 1500,
-        "avg_output_tokens": 500,
-        "cost_per_request": 0.001
-      }
-    },
-    "bedrock_cost_sonnet": {
-      "formula": "(input_tokens * $0.000003) + (output_tokens * $0.000015)",
-      "per_request_estimate": {
-        "avg_input_tokens": 1500,
-        "avg_output_tokens": 500,
-        "cost_per_request": 0.012
-      }
-    },
-    "monthly_cost_total": {
-      "formula": "fixed_costs + (monthly_requests * llm_call_rate * cost_per_llm_request) + lambda_cost + cloudwatch_cost",
-      "note": "llm_call_rate = 0.70 (30% of requests are static, no LLM)"
-    }
+  "llm_usage_correction": {
+    "description": "LLM is NOT called in API_ONLY flows. Significant cost reduction vs. previous version.",
+    "flows_without_llm": [
+      "CLIENT_POLICY_RESPONSE (INT-008, INT-009, INT-011-018, INT-021)",
+      "REDIRECT_TO_OFFICIAL_JOURNEY (INT-022-027)",
+      "API_ONLY (INT-001, INT-002, INT-003, INT-004, INT-005) — deterministic template",
+      "REQUIRES_CLARIFICATION (INT-006) — ERR-010 deterministic"
+    ],
+    "flows_with_llm": [
+      "RAG_ONLY (INT-010, INT-013, INT-019, INT-020) — one generation call"
+    ],
+    "estimated_llm_call_rate": "~30% of requests (only RAG_ONLY intents)",
+    "vs_previous_version": "Previous incorrectly assumed LLM in API_ONLY — ~70% reduction in LLM calls"
   },
   "assumptions": {
     "lambda": {
       "memory_mb": 512,
-      "avg_duration_s": 3.0,
+      "avg_duration_s": {
+        "STATIC": 0.1,
+        "API_ONLY": 3.0,
+        "RAG_ONLY": "ASSUMPTION_REQUIRES_LOAD_TEST",
+        "CLIENT_POLICY": 0.1
+      },
       "timeout_s": 30
     },
-    "bedrock": {
-      "avg_input_tokens_per_request": 1500,
-      "avg_output_tokens_per_request": 500,
-      "llm_call_rate": 0.70,
-      "temperature": 0.1,
-      "max_tokens": 500
+    "bedrock_rag": {
+      "avg_input_tokens": "ASSUMPTION_REQUIRES_EVALUATION",
+      "avg_output_tokens": "ASSUMPTION_REQUIRES_EVALUATION",
+      "note": "Depends on marh_feature_knowledge.md content and chunk size"
     },
     "traffic": {
       "requests_per_day_poc": 100,
-      "requests_per_day_pilot": 1000,
-      "requests_per_day_production": 10000,
-      "requests_per_day_high_volume": 50000,
-      "peak_multiplier": 3,
-      "business_hours_only": true
+      "rag_only_fraction": 0.30,
+      "rag_requests_per_month_poc": 900,
+      "static_fraction": 0.70
     },
     "storage": {
-      "kb_documents_count": 50,
-      "kb_documents_avg_size_kb": 10,
-      "total_kb_storage_gb": 0.5,
-      "vectors_storage_gb": 20,
-      "logs_per_day_gb": 0.1
+      "kb_document": "marh_feature_knowledge.md",
+      "kb_size_actual": "< 200 KB",
+      "note": "Previous assumption of 20 GB corpus was incorrect. Real corpus is a single markdown file."
     }
   },
-  "cost_optimization_strategies": [
-    {
-      "strategy": "Static responses for OUT-* intents (no LLM)",
-      "savings_pct": 22,
-      "implemented_in": "POC",
-      "description": "22% of requests use deterministic responses, saving all token costs"
-    },
-    {
-      "strategy": "Short, focused prompts",
-      "savings_pct": 15,
-      "implemented_in": "POC",
-      "description": "Reduce average input tokens from 2000 to 1500"
-    },
-    {
-      "strategy": "Claude 3.5 Haiku instead of Sonnet",
-      "savings_pct": 92,
-      "implemented_in": "POC",
-      "description": "Haiku costs $0.001/req vs Sonnet $0.012/req"
-    },
-    {
-      "strategy": "X-Ray sampling (10% in production)",
-      "savings_pct": 5,
-      "implemented_in": "Production",
-      "description": "Reduce tracing costs at scale"
-    },
-    {
-      "strategy": "Response caching (ElastiCache)",
-      "savings_pct": 15,
-      "implemented_in": "Production",
-      "description": "Cache frequent RAG responses, reducing LLM calls"
-    },
-    {
-      "strategy": "Bedrock committed throughput",
-      "savings_pct": 25,
-      "implemented_in": "High Volume",
-      "description": "Committed pricing for sustained high volume"
-    }
-  ],
-  "comparison_alternatives": {
-    "vector_store": {
-      "s3_vectors": 5,
-      "opensearch_serverless": 700,
-      "savings_per_month": 695,
-      "savings_per_year": 8340
-    },
-    "runtime": {
-      "lambda_100_req_day": 0.08,
-      "ecs_fargate_min": 35,
-      "savings_per_month": 34.92
-    },
-    "api_management": {
-      "function_url": 0,
-      "api_gateway_per_million_requests": 3.50,
-      "savings_at_poc_volume": 0.01
-    }
+  "fixed_costs_poc": {
+    "lambda": {"cost_usd": 0, "status": "CONFIRMED"},
+    "s3_docs": {"cost_usd": 0.01, "status": "CONFIRMED"},
+    "s3_vectors": {"cost_usd": "PRICE_REQUIRES_VALIDATION", "status": "PENDING"},
+    "secrets_manager": {"cost_usd": 0.80, "status": "CONFIRMED", "note": "2 secrets"},
+    "kms": {"cost_usd": 2.00, "status": "CONFIRMED", "note": "2 CMKs"},
+    "cloudwatch_logs": {"cost_usd": 2.00, "status": "CONFIRMED", "note": "~1GB/month with 30-day retention"},
+    "xray": {"cost_usd": 0, "status": "CONFIRMED", "note": "Within free tier"},
+    "total_without_bedrock": {"cost_usd": "< $5/month", "status": "CONFIRMED"},
+    "bedrock": {"cost_usd": "PRICE_REQUIRES_VALIDATION", "status": "PENDING"}
   }
 }

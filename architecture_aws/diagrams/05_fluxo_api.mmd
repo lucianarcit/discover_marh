@@ -1,63 +1,74 @@
 %% Sequence Diagram - API_ONLY Flow
-%% Data: 2026-07-23
-%% Fluxo: API_ONLY (ma-hr-orch → sanitize → Bedrock)
-%% Intents: INT-001 a INT-007 (consultivos)
+%% Data: 2026-07-23 (revisão corretiva)
+%% Fluxo: API_ONLY — ma-hr-orch → schema + allowlist → template determinístico
+%% SEM LLM — template determinístico após allowlist
+%% Intents: INT-001 a INT-005
 
 sequenceDiagram
     autonumber
     participant MARH as API MARH
     participant Lambda as Lambda Agent
     participant Classifier as Classificador
-    participant Sanitizer as Sanitizador PII
     participant Orch as ma-hr-orch
-    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
 
-    MARH->>Lambda: Invoke (mensagem + context{company_id, user_id})
+    MARH->>Lambda: InvokeFunction (mensagem + company_id confiável)
     activate Lambda
-    
-    Lambda->>Lambda: Parse + Validação
-    Lambda->>Classifier: classify(mensagem)
+
+    Lambda->>Lambda: Parse + Validação contexto
+    Note over Lambda: Valida company_id presente<br/>Empresa não pode ser alterada pelo chat
+
+    Lambda->>Classifier: classify_deterministic(mensagem)
     activate Classifier
-    Classifier-->>Lambda: intent=INT-001, flow=API_ONLY, params={order_id}
+    Classifier-->>Lambda: intent=INT-003, flow=API_ONLY
     deactivate Classifier
-    
-    Lambda->>Lambda: Valida parâmetros obrigatórios
-    
-    alt Parâmetros completos
-        Lambda->>Orch: HTTP GET /orders/{order_id} (timeout=10s)
-        activate Orch
-        
-        alt Sucesso (200)
-            Orch-->>Lambda: Response 200 (dados do pedido)
-            deactivate Orch
-            
-            Lambda->>Sanitizer: sanitize(response, allowlist="consulta_pedidos")
-            activate Sanitizer
-            
-            Note over Sanitizer: Allowlist: order_id, status,<br/>created_at, total_value<br/>Remove: cpf, full_name, email,<br/>phone, address, bank_account
-            
-            Sanitizer-->>Lambda: Dados sanitizados (apenas campos permitidos)
-            deactivate Sanitizer
-            
-            Lambda->>Lambda: Monta prompt (system + dados sanitizados + user)
-            Lambda->>Bedrock: InvokeModel(prompt, max_tokens=300)
-            activate Bedrock
-            Bedrock-->>Lambda: Resposta formatada em linguagem natural
-            deactivate Bedrock
-            
-            Lambda->>Lambda: Validação de output (re-scan PII)
-            Lambda-->>MARH: Response 200 (resposta natural com dados)
-            
-        else Erro HTTP (4xx/5xx)
-            Orch-->>Lambda: Response 4xx/5xx
-            Lambda->>Lambda: Mapeia erro → mensagem padronizada (ERR-001 a ERR-010)
-            Lambda-->>MARH: Response 200 (mensagem de erro amigável)
-        end
-        
+
+    Lambda->>Lambda: Extrai parâmetro deterministicamente
+    Note over Lambda: Ex: orderNumber extraído da mensagem<br/>Nunca inventado pelo modelo
+
+    alt Empresa ausente
+        Lambda-->>MARH: ERR-001 (sem API, sem LLM)
     else Parâmetros insuficientes
-        Lambda-->>MARH: Response 200 (pergunta de clarificação)
+        Lambda-->>MARH: REQUIRES_CLARIFICATION (mensagem padronizada, sem LLM)
+    else Parâmetros OK
+        Lambda->>Orch: HTTP GET /v1/orders/{orderNumber}<br/>Timeout: connect=3s read=8s
+        activate Orch
+
+        alt Sucesso (HTTP 200)
+            Orch-->>Lambda: Response 200 (dados do pedido com campos restritos)
+            deactivate Orch
+
+            Lambda->>Lambda: Camada 1: Validação de schema
+            Lambda->>Lambda: Camada 2: Allowlist de campos reais
+            Note over Lambda: PERMITIDOS: status, orderDate, totalOrder,<br/>productInfo.productName, paymentMethod, steps<br/>REMOVIDOS: billingDocumentNumber,<br/>contractNumber, idLegalPersonBilling
+
+            Lambda->>Lambda: Camada 3: Sanitização complementar
+            Lambda->>Lambda: Template determinístico (sem LLM)
+            Note over Lambda: Traduz status API → português<br/>Renderiza campos permitidos<br/>SEM chamada ao modelo
+
+            Lambda->>Lambda: Camada 4: Validação output (re-scan PII)
+            Lambda-->>MARH: Response 200 (resposta via template — sem LLM)
+
+        else HTTP 403 (permissão)
+            Orch-->>Lambda: 403
+            Lambda-->>MARH: ERR-005 (sem LLM)
+        else HTTP 403 (FNP/prova de vida)
+            Orch-->>Lambda: 403
+            Lambda-->>MARH: ERR-006 (sem LLM)
+        else HTTP 404
+            Orch-->>Lambda: 404
+            Lambda-->>MARH: ERR-002 ou ERR-003 (sem LLM)
+        else HTTP 422
+            Orch-->>Lambda: 422
+            Lambda-->>MARH: ERR-001 (sem LLM)
+        else HTTP 429 / 5xx transitório
+            Orch-->>Lambda: 429/5xx
+            Note over Lambda: 1 retry com jitter se cabe no budget<br/>Nunca retry em 400/401/403/404/422
+            Lambda->>Orch: Retry (máximo 1x)
+            Orch-->>Lambda: Resposta
+            Lambda-->>MARH: Resultado ou ERR-007 (sem LLM)
+        end
     end
-    
+
     deactivate Lambda
-    
-    Note over MARH,Bedrock: Latência total: P50=2.1s, P95=5.3s<br/>Gargalo: ma-hr-orch (P95=3.3s)<br/>Custo: ~$0.001 (LLM) + $0 (API)
+
+    Note over MARH,Orch: Latência: ASSUMPTION_REQUIRES_LOAD_TEST<br/>LLM: zero chamadas<br/>3275ms = single_observed_sample — não é P95

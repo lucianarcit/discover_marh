@@ -1,242 +1,180 @@
 # 11 — Estimativa de Custos
 
-**Projeto:** MARH Consultive Agent POC  
-**Data:** 2026-07-23  
-**Região AWS:** sa-east-1  
-**Fonte de Preços:** AWS Official Pricing (2026-07-23)  
+**Projeto:** MARH Consultive Agent POC
+**Data:** 2026-07-23 (revisão corretiva)
+**Região AWS:** sa-east-1
 **Status:** DRAFT
 
 ---
 
-## 1. Custos Fixos (Near-Zero para POC)
+## Premissas Gerais
+
+| Premissa | Valor |
+|---|---|
+| Modelo LLM | PROPOSED_PENDING_ACCOUNT_VALIDATION — preços marcados como PRICE_REQUIRES_VALIDATION |
+| Modelo de embedding | PROPOSED_PENDING_ACCOUNT_VALIDATION |
+| Bedrock Knowledge Bases | Não confirmada em sa-east-1 — usando S3 Vectors direto |
+| LLM em API_ONLY | ❌ Removido — template determinístico |
+| LLM em CLIENT_POLICY/REDIRECT | ❌ Removido — resposta estática |
+| LLM em RAG_ONLY | ✅ Uma chamada por request (INT-010, INT-013, INT-019, INT-020) |
+| Corpus da KB | `marh_feature_knowledge.md` — arquivo real, estimado < 200 KB |
+| Vetores estimados | Baseado em tamanho real — não assumir 20 GB |
+
+---
+
+## 1. Custos Fixos
 
 | Serviço | Custo Fixo Mensal | Notas |
 |---|---|---|
 | Lambda | $0 (free tier: 1M requests + 400K GB-s) | POC dentro do free tier |
-| S3 (documentos KB) | ~$0.50 | ~20GB storage com KMS |
-| S3 Vectors | ~$5.00 | Armazenamento de embeddings |
-| Secrets Manager | ~$1.20 | 3 secrets × $0.40 |
-| KMS | ~$3.00 | 3 CMKs × $1.00 |
-| CloudWatch Logs | ~$2.00 | ~2GB/mês de logs |
-| X-Ray | ~$0.50 | Free tier 100K traces |
-| Knowledge Bases | $0 | Sem custo fixo (pay per query) |
-| **TOTAL FIXO** | **~$12.20/mês** | — |
+| S3 (documentos KB) | < $0.01 | Corpus real < 200 KB |
+| S3 Vectors | PRICE_REQUIRES_VALIDATION | Depende de confirmação disponibilidade e preço em sa-east-1 |
+| Secrets Manager | ~$0.40–0.80 | 1–2 secrets × $0.40 |
+| KMS | ~$2.00 | 2 CMKs × $1.00 |
+| CloudWatch Logs | ~$1.00–3.00 | Retenção curta (~30 dias) |
+| X-Ray | ~$0 | Free tier 100K traces |
+| **TOTAL FIXO (sem Bedrock, sem S3 Vectors)** | **~$4–6/mês** | Significativamente menor que versão anterior |
 
 ---
 
-## 2. Custos Variáveis — Fórmulas
+## 2. Corpus Real — Tamanho
 
-### 2.1 Lambda
+| Arquivo | Tamanho estimado |
+|---|---|
+| `marh_feature_knowledge.md` | < 200 KB |
+| Chunks estimados (512 tokens) | < 50 chunks |
+| Vetores estimados | < 50 vetores |
+
+**A versão anterior assumia 20 GB de corpus. O corpus real é < 200 KB. O custo de storage vetorial é desprezível.**
+
+---
+
+## 3. Custos Variáveis
+
+### 3.1 Lambda
 
 ```
 Custo Lambda = (invocações × $0.20/1M) + (duração_GB_s × $0.0000166667)
 
-Onde:
-- duração_GB_s = (memory_MB / 1024) × duração_s × invocações
-- Memory POC: 512MB = 0.5GB
-- Duração média: 3s (mix de fluxos)
+POC (100 req/dia = 3.000 req/mês):
+  Invocações: $0.0006 (free tier cobre)
+  Duração: 3.000 × 0.5GB × 3s = 4.500 GB-s → $0.075 (free tier cobre)
+  Total Lambda POC: ~$0 (dentro do free tier)
 ```
 
-### 2.2 Bedrock — Claude 3.5 Haiku
+### 3.2 Bedrock — LLM (RAG_ONLY apenas)
+
+**Status:** PRICE_REQUIRES_VALIDATION (modelo não confirmado)
+
+**Estimativa com referência provisória** (verificar preços reais em sa-east-1 após confirmar modelo):
 
 ```
-Custo Bedrock = (input_tokens × $0.00025/1K) + (output_tokens × $0.00125/1K)
+Mix de intenções POC (hipótese):
+  ~30% RAG_ONLY (INT-010, INT-013, INT-019, INT-020)
+  ~40% API_ONLY (sem LLM)
+  ~30% CLIENT_POLICY / REDIRECT (sem LLM)
 
-Preços Claude 3.5 Haiku (sa-east-1):
-- Input:  $0.25 / 1M tokens  = $0.00000025/token
-- Output: $1.25 / 1M tokens  = $0.00000125/token
+3.000 req/mês × 30% RAG = 900 requests com LLM
 
-Estimativa por request:
-- Input médio: ~1500 tokens (system + context + user)
-- Output médio: ~500 tokens
-- Custo por request: (1500 × 0.00025) + (500 × 0.00125) = $0.000375 + $0.000625 = $0.001
+Estimativa (modelo a confirmar):
+  Input médio RAG: ~800 tokens (contexto + query)
+  Output médio RAG: ~300 tokens
+  Custo por request: PRICE_REQUIRES_VALIDATION
+
+Impacto da remoção do LLM de API_ONLY:
+  Versão anterior: 3.000 × 70% × $0.001 = $2.10/mês
+  Versão corrigida: 900 × PRICE_REQUIRES_VALIDATION
+  Redução estimada: ~70% menos chamadas ao LLM
 ```
 
-### 2.3 Bedrock — Claude Sonnet 4 (Alternativo)
+### 3.3 Bedrock — Embedding (RAG_ONLY)
 
 ```
-Preços Claude Sonnet 4 (sa-east-1):
-- Input:  $3.00 / 1M tokens  = $0.000003/token
-- Output: $15.00 / 1M tokens = $0.000015/token
+Embedding gerado uma vez por query RAG:
+  900 queries/mês × ~50 tokens/query = 45.000 tokens/mês
+  Custo: PRICE_REQUIRES_VALIDATION
 
-Custo por request: (1500 × 0.003) + (500 × 0.015) = $0.0045 + $0.0075 = $0.012
-(~12x mais caro que Haiku)
+Indexação (rara — só ao atualizar marh_feature_knowledge.md):
+  < 50 chunks × ~300 tokens = ~15.000 tokens
+  Custo: PRICE_REQUIRES_VALIDATION (desprezível)
 ```
 
-### 2.4 Bedrock Knowledge Bases — Retrieve
+### 3.4 S3 Vectors
 
 ```
-Custo KB Retrieve = queries × $0.00 (incluso no modelo)
-Nota: Custo de retrieval é cobrado via embedding model + S3 Vectors storage
-```
-
-### 2.5 S3 Vectors
-
-```
-Custo S3 Vectors = storage_GB × $0.25/GB/mês + queries × preço_por_query
-Estimativa: ~20GB de vetores = ~$5/mês
-```
-
-### 2.6 CloudWatch
-
-```
-Custo CloudWatch = (logs_GB × $0.50/GB) + (métricas_custom × $0.30/métrica/mês) + (queries × $0.005/GB scanned)
-
-Estimativa:
-- Logs: ~2GB/mês = $1.00
-- Métricas: 10 custom = $3.00
-- Queries: ~1GB scanned = $0.005
+Storage: < 50 vetores
+Queries: ~900/mês (apenas RAG_ONLY)
+Custo: PRICE_REQUIRES_VALIDATION (provavelmente < $1/mês para esse volume)
 ```
 
 ---
 
-## 3. Cenários de Custo
+## 4. Cenário POC Pequeno — 100 req/dia (3.000 req/mês)
 
-### 3.1 Cenário POC Pequeno — 100 req/dia (3.000 req/mês)
-
-| Componente | Cálculo | Custo Mensal |
-|---|---|---|
-| Lambda | 3000 × 0.5GB × 3s = 4500 GB-s | ~$0.08 (free tier) |
-| Bedrock Haiku | 3000 × $0.001 | $3.00 |
-| KB Retrieve | 1200 queries (40% RAG) | incluso |
-| S3 Vectors | storage | $5.00 |
-| S3 (docs) | storage | $0.50 |
-| Secrets Manager | 3 secrets | $1.20 |
-| KMS | 3 keys + decrypt | $3.50 |
-| CloudWatch | logs + metrics | $3.00 |
-| X-Ray | traces | $0.50 |
-| **TOTAL** | — | **~$16.78/mês** |
-
-### 3.2 Cenário Piloto — 1.000 req/dia (30.000 req/mês)
-
-| Componente | Cálculo | Custo Mensal |
-|---|---|---|
-| Lambda | 30000 × 0.5GB × 3s = 45000 GB-s | ~$0.75 |
-| Bedrock Haiku | 30000 × $0.001 × 0.7 (70% usa LLM) | $21.00 |
-| KB Retrieve | 12000 queries | incluso |
-| S3 Vectors | storage | $5.00 |
-| S3 (docs) | storage | $0.50 |
-| Secrets Manager | 3 secrets | $1.20 |
-| KMS | 3 keys + decrypt | $4.00 |
-| CloudWatch | logs + metrics | $8.00 |
-| X-Ray | traces | $2.00 |
-| **TOTAL** | — | **~$42.45/mês** |
-
-### 3.3 Cenário Produção — 10.000 req/dia (300.000 req/mês)
-
-| Componente | Cálculo | Custo Mensal |
-|---|---|---|
-| Lambda | 300000 × 0.5GB × 3s = 450000 GB-s | ~$7.50 |
-| Bedrock Haiku | 300000 × $0.001 × 0.7 | $210.00 |
-| KB Retrieve | 120000 queries | incluso |
-| S3 Vectors | storage | $5.00 |
-| S3 (docs) | storage | $0.50 |
-| Secrets Manager | 3 secrets | $1.20 |
-| KMS | 3 keys + decrypt | $8.00 |
-| CloudWatch | logs + metrics | $25.00 |
-| X-Ray | traces (sampling 10%) | $5.00 |
-| **TOTAL** | — | **~$262.20/mês** |
-
-### 3.4 Cenário Alto Volume — 50.000 req/dia (1.500.000 req/mês)
-
-| Componente | Cálculo | Custo Mensal |
-|---|---|---|
-| Lambda | 1.5M × 0.5GB × 3s = 2.25M GB-s | ~$37.50 |
-| Bedrock Haiku | 1.5M × $0.001 × 0.7 | $1,050.00 |
-| KB Retrieve | 600000 queries | incluso |
-| S3 Vectors | storage (pode crescer) | $10.00 |
-| S3 (docs) | storage | $0.50 |
-| Secrets Manager | 3 secrets | $1.20 |
-| KMS | 3 keys + decrypt | $15.00 |
-| CloudWatch | logs + metrics | $60.00 |
-| X-Ray | traces (sampling 5%) | $10.00 |
-| Provisioned Concurrency | 20 instâncias | $50.00 |
-| **TOTAL** | — | **~$1,234.20/mês** |
-
----
-
-## 4. Resumo Comparativo
-
-| Cenário | Req/dia | Custo Mensal | Custo/Request |
+| Componente | Fórmula | Custo Mensal | Status |
 |---|---|---|---|
-| POC Pequeno | 100 | ~$17 | $0.0056 |
-| Piloto | 1.000 | ~$42 | $0.0014 |
-| Produção | 10.000 | ~$262 | $0.0009 |
-| Alto Volume | 50.000 | ~$1.234 | $0.0008 |
+| Lambda | free tier | $0 | |
+| S3 (docs) | < 200 KB storage | < $0.01 | |
+| S3 Vectors | < 50 vetores + 900 queries | PRICE_REQUIRES_VALIDATION | |
+| Bedrock (LLM RAG) | 900 × custo/req | PRICE_REQUIRES_VALIDATION | |
+| Bedrock (embedding) | 900 × 50 tokens | PRICE_REQUIRES_VALIDATION | |
+| Secrets Manager | 2 secrets | ~$0.80 | |
+| KMS | 2 CMKs | ~$2.00 | |
+| CloudWatch | ~1 GB logs/mês | ~$1.00 | |
+| X-Ray | ~3.000 traces | $0 (free tier) | |
+| **TOTAL ESTIMADO** | | **< $5 fixo + PRICE_REQUIRES_VALIDATION** | |
+
+**Redução vs. versão anterior:** Remoção do LLM de API_ONLY reduz em ~70% as chamadas ao modelo.
 
 ---
 
-## 5. Comparação com Alternativas
+## 5. Registros de Preço
 
-### 5.1 Vector Store: S3 Vectors vs. OpenSearch Serverless
-
-| Aspecto | S3 Vectors | OpenSearch Serverless |
-|---|---|---|
-| Custo fixo mínimo | ~$5/mês | ~$700/mês (2 OCU mínimo) |
-| Custo variável | Baixo | Médio |
-| Performance (P95) | ~500ms | ~200ms |
-| Escalabilidade | Alta | Alta |
-| Gerenciamento | Zero (serverless) | Baixo (serverless) |
-| **Decisão** | ✅ **POC** | Considerar em produção se latência for crítica |
-
-**Economia:** $700 - $5 = **$695/mês** por usar S3 Vectors
-
-### 5.2 Runtime: Lambda vs. ECS Fargate
-
-| Aspecto | Lambda | ECS Fargate |
-|---|---|---|
-| Custo (100 req/dia) | ~$0.08 | ~$35/mês (min 1 task) |
-| Custo (10000 req/dia) | ~$7.50 | ~$70/mês |
-| Cold start | ~300ms | 0 (always running) |
-| Escalabilidade | Automática | Requer config |
-| Operação | Zero | Médio |
-| **Decisão** | ✅ **POC e Produção** | Apenas se cold start for inaceitável |
-
-### 5.3 API Management: Function URL vs. API Gateway
-
-| Aspecto | Function URL | API Gateway |
-|---|---|---|
-| Custo | $0 | $3.50/M requests + data transfer |
-| Rate limiting | Lambda throttling | Built-in |
-| Auth | IAM Auth | API Key, JWT, IAM |
-| Métricas | CloudWatch | Built-in dashboard |
-| WAF | Não | Sim |
-| **Decisão** | ✅ **POC** | Produção |
+| Item | Preço | Unidade | Região | Fonte | Data | Status |
+|---|---|---|---|---|---|---|
+| Lambda invocações | $0.20 | por 1M requests | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| Lambda duração | $0.0000166667 | por GB-s | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| S3 storage | $0.023 | por GB/mês | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| KMS CMK | $1.00 | por chave/mês | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| Secrets Manager | $0.40 | por secret/mês | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| CloudWatch Logs ingest | $0.50 | por GB | sa-east-1 | AWS oficial | 2026-07-23 | CONFIRMED |
+| Bedrock (modelo LLM) | TBD | por token | sa-east-1 | PRICE_REQUIRES_VALIDATION | — | PENDING |
+| Bedrock (embedding) | TBD | por token | sa-east-1 | PRICE_REQUIRES_VALIDATION | — | PENDING |
+| S3 Vectors storage | TBD | — | sa-east-1 | PRICE_REQUIRES_VALIDATION | — | PENDING |
+| S3 Vectors queries | TBD | — | sa-east-1 | PRICE_REQUIRES_VALIDATION | — | PENDING |
 
 ---
 
-## 6. Cost Drivers (Maiores Impulsionadores de Custo)
+## 6. Cost Drivers
 
-| # | Driver | % do Custo Total | Otimização |
+| # | Driver | % estimado (após correção) | Otimização |
 |---|---|---|---|
-| 1 | Bedrock (tokens LLM) | ~70-80% | Reduzir tokens, usar Haiku, prompts curtos |
-| 2 | CloudWatch (logs) | ~5-10% | Log level INFO (não DEBUG), sampling |
-| 3 | Lambda (execução) | ~3-5% | Otimizar duração, memory right-sizing |
-| 4 | S3 Vectors | ~2-3% | Custo fixo baixo |
-| 5 | KMS + Secrets | ~2-3% | Custo fixo baixo |
+| 1 | Bedrock (tokens LLM — RAG_ONLY) | ~60–70% | Reduzido vs. versão anterior (LLM removido de API_ONLY) |
+| 2 | KMS + Secrets | ~20% | Custo fixo baixo |
+| 3 | CloudWatch | ~10% | Retenção curta |
+| 4 | Lambda | ~5% | Free tier para POC |
+| 5 | S3 Vectors | < 5% | Volume mínimo |
 
 ---
 
-## 7. Estratégias de Redução de Custo
+## 7. Estratégias de Redução
 
-| Estratégia | Economia Estimada | Quando Implementar |
+| Estratégia | Economia estimada | Status |
 |---|---|---|
-| Respostas estáticas para OUT-* (sem LLM) | ~20-30% dos tokens | ✅ POC (já planejado) |
-| Prompts curtos e objetivos | ~15% dos tokens | ✅ POC |
-| Cache de respostas RAG frequentes | ~10-15% das chamadas | Produção |
-| Sampling de X-Ray (10% em prod) | ~80% do custo X-Ray | Produção |
-| Log level INFO (sem DEBUG) | ~50% do volume de logs | ✅ POC |
-| Bedrock batch API (off-peak) | ~50% do custo Bedrock | Produção (se aplicável) |
-| Committed throughput (Bedrock) | ~20-30% do custo Bedrock | Alto volume |
+| LLM somente em RAG_ONLY (já implementado) | ~70% menos chamadas ao modelo | ✅ POC |
+| Respostas estáticas para CLIENT_POLICY (já implementado) | Sem custo de tokens | ✅ POC |
+| Corpus mínimo real (não 20 GB) | Storage desprezível | ✅ POC |
+| Log level INFO (sem DEBUG) | ~50% volume de logs | ✅ POC |
+| Retenção de logs 30 dias | Reduz custo de storage | ✅ POC |
+| Prompts curtos e objetivos | ~15% dos tokens RAG | ✅ POC |
 
 ---
 
-## 8. Notas sobre Precificação
+## 8. Free Tier — Nota
 
-- Preços referência: AWS sa-east-1, data 2026-07-23
-- Preços podem variar; consultar sempre a [página oficial da AWS](https://aws.amazon.com/pricing/)
-- Bedrock pricing pode ter variações regionais
-- Free tier Lambda: 1M requests/mês + 400K GB-s (12 meses)
-- Impostos não incluídos
-- Data transfer dentro da mesma região: gratuito
-- Data transfer para internet: $0.09/GB (desprezível para texto)
+Não declarar free tier como garantia de custo zero. Free tier:
+- É limitado a 12 meses em alguns serviços
+- Tem limites de uso
+- Pode não se aplicar à conta alvo
+
+O free tier de Lambda (1M requests + 400K GB-s) cobre a POC, mas não é garantia para produção.

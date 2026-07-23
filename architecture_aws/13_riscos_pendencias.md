@@ -1,9 +1,8 @@
 # 13 — Riscos e Pendências
 
-**Projeto:** MARH Consultive Agent POC  
-**Data:** 2026-07-23  
-**Região AWS:** sa-east-1  
-**Status:** DRAFT
+**Projeto:** MARH Consultive Agent POC
+**Data:** 2026-07-23 (revisão corretiva)
+**Região AWS:** sa-east-1
 
 ---
 
@@ -11,12 +10,12 @@
 
 | # | Risco | Prob. | Impacto | Mitigação | Owner |
 |---|---|---|---|---|---|
-| R-01 | Quotas de Bedrock menores que us-east-1 | Alta | Alto | Solicitar aumento antes do POC; validar quotas reais | Platform |
-| R-02 | Modelo Claude 3.5 Haiku indisponível na região | Baixa | Crítico | Verificar disponibilidade; fallback para outro modelo | Arquitetura |
-| R-03 | S3 Vectors não disponível em sa-east-1 | Baixa | Alto | Verificar GA; alternativa: FAISS em Lambda layer | Arquitetura |
-| R-04 | Latência regional maior que us-east-1 | Média | Baixo | Budget de latência já considera overhead; aceitável | Dev |
-| R-05 | Knowledge Bases com limitações regionais | Baixa | Médio | Verificar feature parity com us-east-1 | Platform |
-| R-06 | Titan Embeddings indisponível para KB | Baixa | Alto | Verificar; alternativa: Cohere Embed | Arquitetura |
+| R-01 | Quotas de Bedrock menores que us-east-1 | Alta | Alto | Verificar quotas reais no console; solicitar aumento antes do POC | Platform |
+| R-02 | Nenhum modelo ACTIVE In-Region disponível em sa-east-1 | Média | Crítico | Verificar no console da conta alvo antes de qualquer implementação | Arquitetura |
+| R-03 | S3 Vectors não disponível em sa-east-1 | Média | Alto | Testar criação de vector bucket; alternativa: FAISS em Lambda layer | Arquitetura |
+| R-04 | Bedrock Knowledge Bases não disponível em sa-east-1 | Alta | Médio | Já mitigado: desenho preferencial usa S3 Vectors direto | Arquitetura |
+| R-05 | Modelo de embedding não disponível In-Region | Média | Alto | Verificar no console; alternativa: embedding via modelo alternativo | Arquitetura |
+| R-06 | Integração direta S3 Vectors + embedding não validada | Média | Alto | Testar end-to-end em Fase 3 | Dev |
 
 ---
 
@@ -24,11 +23,11 @@
 
 | # | Risco | Prob. | Impacto | Mitigação | Owner |
 |---|---|---|---|---|---|
-| R-07 | ma-hr-orch latência P95 > 3.3s em horário de pico | Alta | Alto | Timeout agressivo (10s); circuit breaker; fallback message | Dev |
+| R-07 | ma-hr-orch latência alta em horário de pico | Alta | Alto | Timeout configurado (10s); fallback ERR-007 | Dev |
 | R-08 | ma-hr-orch indisponível durante desenvolvimento | Média | Médio | Mock server para desenvolvimento local | Dev |
-| R-09 | Formato de resposta do ma-hr-orch muda sem aviso | Média | Alto | Schema validation; contrato versionado; alertas | Dev + ma-hr-orch team |
-| R-10 | Sanitização de PII insuficiente (campo novo não mapeado) | Média | Crítico | Allowlist (whitelist) approach — só passa o que está listado | Dev |
-| R-11 | ma-hr-orch retorna PII inesperado em campos novos | Média | Alto | Allowlist garante que campos novos são ignorados | Dev |
+| R-09 | Formato de resposta do ma-hr-orch muda sem aviso | Média | Alto | Schema validation; allowlist garante que campos novos são ignorados | Dev |
+| R-10 | Sanitização PII insuficiente (campo novo não mapeado) | Média | Crítico | Allowlist approach — só passa o que está listado | Dev |
+| R-11 | Endpoint de rastreamento (INT-007) não inventariado | Alta | Médio | POC usa fallback ERR-007 para INT-007; não bloqueia demonstração | Dev |
 | R-12 | Credenciais do ma-hr-orch expiram durante POC | Baixa | Médio | Rotação automática via Secrets Manager | Platform |
 
 ---
@@ -37,13 +36,11 @@
 
 | # | Risco | Prob. | Impacto | Mitigação | Owner |
 |---|---|---|---|---|---|
-| R-13 | Alucinação: modelo inventa dados não existentes | Alta | Alto | System prompt restritivo; validação de output; RAG com threshold | Dev |
-| R-14 | Prompt injection via input do usuário | Média | Alto | Separação system/user; sanitização; instrução anti-injection | Dev |
+| R-13 | Alucinação em RAG_ONLY | Alta | Médio | System prompt restritivo; RAG com threshold; fallback ERR-008 | Dev |
+| R-14 | Prompt injection via input do usuário | Média | Alto | Separação system/user; instrução fixa; validação de output | Dev |
 | R-15 | Modelo revela system prompt | Baixa | Médio | Instrução anti-leak; detecção de patterns | Dev |
-| R-16 | Modelo gera conteúdo inadequado | Baixa | Alto | Prompt restritivo; validação de output; Guardrails (produção) | Dev |
-| R-17 | Indirect prompt injection via documentos KB | Baixa | Médio | Documentos curados internamente; review antes de indexar | Conteúdo |
-| R-18 | Modelo tenta operações de escrita | Baixa | Baixo | Apenas GET implementado; não há tools de escrita | Dev |
-| R-19 | Custo de tokens excede orçamento | Média | Médio | Monitorar custo/request; alertas; prompts curtos | Dev |
+| R-16 | Indirect injection via documentos KB | Baixa | Médio | Documentos curados e versionados internamente | Conteúdo |
+| R-17 | Custo de tokens excede orçamento | Baixa | Médio | LLM somente em RAG_ONLY (~30% dos requests) | Dev |
 
 ---
 
@@ -51,12 +48,12 @@
 
 | # | Risco | Prob. | Impacto | Mitigação | Owner |
 |---|---|---|---|---|---|
-| R-20 | Cold start afeta experiência do usuário | Média | Baixo | Warm-up via CloudWatch Events; aceitável para POC (~300ms) | Dev |
-| R-21 | Lambda throttling em pico | Baixa | Médio | Reserved concurrency = 100; monitorar | Platform |
-| R-22 | Logs com PII vazam acidentalmente | Baixa | Crítico | Sanitização antes de log; code review; testes | Dev |
-| R-23 | Secrets expostos em código/log | Baixa | Crítico | Secrets Manager; .gitignore; code review | Dev |
-| R-24 | Custo AWS excede orçamento do POC | Baixa | Médio | Budget alerts; monitorar diariamente | Platform |
-| R-25 | Documentos KB desatualizados | Média | Baixo | Processo de atualização; versionamento S3 | Conteúdo |
+| R-18 | Cold start afeta primeiras requisições | Média | Baixo | Warm-up via CloudWatch Events; ~300ms aceitável | Dev |
+| R-19 | Lambda throttling em pico | Baixa | Médio | Reserved concurrency configurado | Platform |
+| R-20 | Logs com PII vazam acidentalmente | Baixa | Crítico | Sanitização antes do log; code review; testes | Dev |
+| R-21 | Secrets expostos em código/log | Baixa | Crítico | Secrets Manager; .gitignore; code review | Dev |
+| R-22 | Custo AWS excede orçamento | Baixa | Médio | Budget alerts; LLM somente em RAG_ONLY | Platform |
+| R-23 | marh_feature_knowledge.md desatualizado | Média | Baixo | Processo de atualização; versionamento S3 | Conteúdo |
 
 ---
 
@@ -66,114 +63,96 @@
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | API MARH invocará via Function URL (HTTPS) ou via AWS SDK (invoke)? |
+| **Pergunta** | API MARH invocará via InvokeFunction (AWS SDK) ou Function URL AWS_IAM? |
 | **Impacto** | Define autenticação, formato de payload, métricas disponíveis |
-| **Opções** | A) Function URL com IAM Auth / B) AWS SDK invoke direto / C) Function URL com shared secret |
-| **Recomendação** | B (AWS SDK invoke) — menor overhead, sem expor endpoint público |
-| **Status** | ❓ AGUARDANDO decisão da equipe API MARH |
-| **Deadline** | Antes do início da Fase 1 |
+| **Opções** | A) InvokeFunction via AWS SDK (preferencial — API MARH em AWS) / B) Function URL com AWS_IAM + SigV4 |
+| **Descartado** | Shared secret — removido da arquitetura |
+| **Recomendação** | A se API MARH estiver em AWS e puder assumir role; B caso contrário |
+| **Status** | ❓ AGUARDANDO — depende de onde a API MARH está hospedada |
+| **Deadline** | Antes da Fase 1 |
 
-### DP-002: Modelo de Embedding para Knowledge Base
-
-| Campo | Valor |
-|---|---|
-| **Pergunta** | Qual modelo de embedding usar: Titan Embeddings v2 ou Cohere Embed? |
-| **Impacto** | Qualidade do retrieval, custo, disponibilidade regional |
-| **Opções** | A) Titan Embeddings v2 / B) Cohere Embed v3 |
-| **Recomendação** | A (Titan) — nativo AWS, integração mais simples com KB |
-| **Status** | ❓ AGUARDANDO verificação de disponibilidade em sa-east-1 |
-| **Deadline** | Antes do início da Fase 3 |
-
-### DP-003: Endpoints Exatos do ma-hr-orch
+### DP-002: Modelo ACTIVE In-Region sa-east-1
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | Quais são os endpoints exatos (URL base, paths, parâmetros)? |
-| **Impacto** | Implementação da integração, testes |
-| **Opções** | Documentação da API |
-| **Recomendação** | Obter OpenAPI/Swagger spec |
-| **Status** | ❓ AGUARDANDO documentação da equipe ma-hr-orch |
-| **Deadline** | Antes do início da Fase 4 |
+| **Pergunta** | Qual modelo está ACTIVE In-Region em sa-east-1 na conta alvo? |
+| **Impacto** | Bloqueante — sem modelo confirmado, RAG_ONLY não pode ser implementado |
+| **Opções** | A verificar no console: Claude 3 Haiku, Claude 3.5 Sonnet v2, outros |
+| **Recomendação** | Menor modelo ACTIVE com tool use e português — verificar no console |
+| **Status** | ❓ AGUARDANDO validação no console da conta — **BLOQUEANTE** |
+| **Deadline** | Antes da Fase 1 |
 
-### DP-004: Conteúdo dos Documentos da Knowledge Base
-
-| Campo | Valor |
-|---|---|
-| **Pergunta** | Quem produz e valida os ~50 documentos markdown para RAG? |
-| **Impacto** | Qualidade das respostas informativas |
-| **Opções** | A) Equipe de produto / B) Equipe técnica / C) Ambos |
-| **Recomendação** | C — Produto define conteúdo, técnico formata para RAG |
-| **Status** | ❓ AGUARDANDO definição de responsável |
-| **Deadline** | Antes do início da Fase 3 |
-
-### DP-005: Ambiente Sandbox do ma-hr-orch
+### DP-003: S3 Vectors disponível em sa-east-1
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | Existe ambiente sandbox/staging do ma-hr-orch para testes? |
+| **Pergunta** | S3 Vectors está disponível em sa-east-1 na conta alvo? |
+| **Impacto** | Define a estratégia RAG — direto via S3 Vectors ou alternativa |
+| **Opções** | A) S3 Vectors direto / B) FAISS em Lambda layer |
+| **Recomendação** | Testar criação de vector bucket antes da Fase 3 |
+| **Status** | ❓ AGUARDANDO — **BLOQUEANTE para Fase 3** |
+| **Deadline** | Antes da Fase 3 |
+
+### DP-004: Bedrock Knowledge Bases em sa-east-1
+
+| Campo | Valor |
+|---|---|
+| **Pergunta** | Bedrock Knowledge Bases está disponível em sa-east-1 com S3 Vectors? |
+| **Impacto** | Determina se usa KB gerenciada ou RAG direto |
+| **Opções** | A) KB gerenciada (se confirmada) / B) RAG direto via S3 Vectors (preferencial para POC) |
+| **Recomendação** | B — RAG direto elimina dependência de KB gerenciada não confirmada |
+| **Status** | DEFINIDO — usar RAG direto enquanto KB não for confirmada com evidência oficial |
+| **Deadline** | N/A para POC |
+
+### DP-005: Conta AWS e Permissões
+
+| Campo | Valor |
+|---|---|
+| **Pergunta** | Qual conta AWS? Quem cria IAM roles? Bedrock habilitado em sa-east-1? |
+| **Impacto** | Bloqueia TODA a implementação |
+| **Status** | ❓ AGUARDANDO — **BLOQUEANTE PRINCIPAL** |
+| **Deadline** | IMEDIATO |
+
+### DP-006: Ambiente Sandbox do ma-hr-orch
+
+| Campo | Valor |
+|---|---|
+| **Pergunta** | Existe sandbox/staging do ma-hr-orch para testes? |
 | **Impacto** | Testes de integração sem afetar produção |
 | **Opções** | A) Sandbox existente / B) Mock server / C) Ambiente de dev |
-| **Recomendação** | A ou C — ambiente real para validar comportamento |
-| **Status** | ❓ AGUARDANDO confirmação |
-| **Deadline** | Antes do início da Fase 4 |
+| **Status** | ❓ AGUARDANDO |
+| **Deadline** | Antes da Fase 4 |
 
-### DP-006: Conta AWS e Permissões
-
-| Campo | Valor |
-|---|---|
-| **Pergunta** | Qual conta AWS será usada? Quem cria IAM roles? |
-| **Impacto** | Bloqueia TODA a implementação |
-| **Opções** | A) Conta existente / B) Nova conta dedicada / C) Sandbox |
-| **Recomendação** | B — conta dedicada para isolamento |
-| **Status** | ❓ AGUARDANDO — **BLOQUEANTE PRINCIPAL** |
-| **Deadline** | IMEDIATO (bloqueia Fase 1) |
-
-### DP-007: Rate Limits do ma-hr-orch
+### DP-007: Aprovação do marh_feature_knowledge.md
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | Quais são os rate limits do ma-hr-orch? Há throttling? |
-| **Impacto** | Dimensionamento do circuit breaker e retry policy |
-| **Opções** | Documentação do serviço |
-| **Recomendação** | Obter limites documentados |
-| **Status** | ❓ AGUARDANDO informação da equipe ma-hr-orch |
-| **Deadline** | Antes do início da Fase 4 |
+| **Pergunta** | O cliente aprovou o conteúdo do marh_feature_knowledge.md para indexação? |
+| **Impacto** | Sem aprovação, indexar pode gerar respostas incorretas |
+| **Status** | ❓ AGUARDANDO revisão e aprovação |
+| **Deadline** | Antes da Fase 3 |
 
 ### DP-008: Orçamento Máximo do POC
 
 | Campo | Valor |
 |---|---|
-| **Pergunta** | Qual o orçamento máximo mensal aceitável para o POC? |
-| **Impacto** | Define limites de teste e uso |
-| **Opções** | A) $50/mês / B) $100/mês / C) $200/mês |
-| **Recomendação** | B ($100/mês) — permite 1000 req/dia com margem |
+| **Pergunta** | Qual o orçamento máximo mensal aceitável? |
+| **Impacto** | Define limites de teste |
+| **Recomendação** | < $20/mês para escopo mínimo (fixo) + custo Bedrock validado |
 | **Status** | ❓ AGUARDANDO aprovação |
-| **Deadline** | Antes do início da Fase 1 |
+| **Deadline** | Antes da Fase 1 |
 
 ---
 
-## 6. Matriz de Prioridade das Pendências
+## 6. Matriz de Prioridade
 
-| Prioridade | Decisão | Justificativa |
+| Prioridade | Decisão/Risco | Justificativa |
 |---|---|---|
-| 🔴 P0 (Bloqueante) | DP-006 (Conta AWS) | Sem conta = sem trabalho |
-| 🔴 P0 (Bloqueante) | DP-001 (Formato invocação) | Define arquitetura de entrada |
-| 🟡 P1 (Antes da fase) | DP-003 (Endpoints ma-hr-orch) | Necessário para Fase 4 |
-| 🟡 P1 (Antes da fase) | DP-005 (Sandbox) | Necessário para testes |
-| 🟡 P1 (Antes da fase) | DP-004 (Conteúdo KB) | Necessário para Fase 3 |
-| 🟢 P2 (Desejável) | DP-002 (Embedding model) | Default: Titan |
-| 🟢 P2 (Desejável) | DP-007 (Rate limits) | Default: conservador |
-| 🟢 P2 (Desejável) | DP-008 (Orçamento) | Default: $100/mês |
-
----
-
-## 7. Plano de Mitigação Consolidado
-
-| Risco | Probabilidade × Impacto | Ação | Responsável | Prazo |
-|---|---|---|---|---|
-| R-01 (Quotas sa-east-1) | Alta × Alto | Solicitar quotas antes do início | Platform | Semana 0 |
-| R-07 (ma-hr-orch latência) | Alta × Alto | Implementar circuit breaker robusto | Dev | Fase 4 |
-| R-10 (PII sanitização) | Média × Crítico | Allowlist + testes extensivos | Dev | Fase 4 |
-| R-13 (Alucinação) | Alta × Alto | Prompt restritivo + RAG threshold | Dev | Fase 3-4 |
-| R-22 (PII em logs) | Baixa × Crítico | Sanitização pré-log + auditoria | Dev | Fase 1 |
-| DP-006 (Conta AWS) | — | Escalar para gestão | Líder técnico | Imediato |
+| 🔴 P0 (Bloqueante) | DP-005 (Conta AWS) | Sem conta = sem trabalho |
+| 🔴 P0 (Bloqueante) | DP-002 (Modelo ACTIVE) | Sem modelo = sem RAG_ONLY |
+| 🔴 P0 (Bloqueante) | DP-001 (Formato invocação) | Define entrada da Lambda |
+| 🟡 P1 (Antes da fase) | DP-003 (S3 Vectors) | Necessário para Fase 3 |
+| 🟡 P1 (Antes da fase) | DP-007 (Aprovação KB) | Necessário para Fase 3 |
+| 🟡 P1 (Antes da fase) | DP-006 (Sandbox ma-hr-orch) | Necessário para Fase 4 |
+| 🟢 P2 (Desejável) | DP-004 (Bedrock KB) | Definido: RAG direto |
+| 🟢 P2 (Desejável) | DP-008 (Orçamento) | Default: < $20/mês |

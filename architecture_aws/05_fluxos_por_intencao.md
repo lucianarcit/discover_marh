@@ -1,374 +1,375 @@
 # 05 — Fluxos por Intenção
 
-**Projeto:** MARH Consultive Agent POC  
-**Data:** 2026-07-23  
-**Região AWS:** sa-east-1  
-**Status:** DRAFT
+**Projeto:** MARH Consultive Agent POC
+**Data:** 2026-07-23 (revisão corretiva)
+**Região AWS:** sa-east-1
+**Fonte:** `discover3/artifacts/intents_catalog.json`, `discover3/artifacts/response_source_matrix.json`
 
 ---
 
-## 1. Classificação dos 27 Intents
+## 1. Catálogo Real de Intenções
 
-| Tipo | Qtd | Exemplos | Fluxo |
-|---|---|---|---|
-| Consultivo (API) | 7 | Consulta de pedidos, saldo, colaboradores | API_ONLY ou HYBRID_RAG_API |
-| Informativo (RAG) | 14 | Como cadastrar benefício, política de uso | RAG_ONLY |
-| Fora de escopo | 6 | Piadas, previsão do tempo, assuntos pessoais | CLIENT_POLICY / STATIC_RESPONSE |
+O agente possui **27 intenções** catalogadas, derivadas exclusivamente de `intents_catalog.json`.
+
+| Grupo | Qtd | Estratégia de resposta |
+|---|---|---|
+| A — Consultivo (dados em tempo real) | 7 | API_ONLY ou REQUIRES_CLARIFICATION ou NEEDS_CLIENT_VALIDATION |
+| B — Informativo MARH | 14 | RAG_ONLY ou CLIENT_POLICY_RESPONSE |
+| C — Fora do Escopo | 6 | REDIRECT_TO_OFFICIAL_JOURNEY |
+
+**Intenções não existentes no catálogo — NÃO mapear:**
+- Consulta de saldo, legislação trabalhista, novidades, integrações, política de uso, tipos de cartão, regras de recarga, previsão do tempo, FAQ geral, rede credenciada, relatórios disponíveis.
 
 ---
 
-## 2. Fluxo CLIENT_POLICY / STATIC_RESPONSE
+## 2. Mapeamento Completo: Intent → Fluxo
 
-**Características:** Sem LLM, sem RAG, sem API.  
-**Intents:** OUT-001 a OUT-006 (fora de escopo)
+| ID | Nome Real | Grupo | Estratégia | Entrada | Fonte | Usa LLM | Usa RAG | Usa API | Cobertura | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| INT-001 | Consultar colaborador por nome | A | API_ONLY | nome (texto) | ma-hr-orch CAP-001 | ❌ | ❌ | ✅ | PARTIALLY_COVERED | CONFIRMED |
+| INT-002 | Consultar colaborador por CPF | A | API_ONLY | CPF (transitório) | ma-hr-orch CAP-001 | ❌ | ❌ | ✅ | PARTIALLY_COVERED | CONFIRMED |
+| INT-003 | Consultar pedido por número | A | API_ONLY | orderNumber (texto) | ma-hr-orch CAP-003 + CAP-004 | ❌ | ❌ | ✅ | PARTIALLY_COVERED | CONFIRMED |
+| INT-004 | Consultar último pedido | A | API_ONLY | — | ma-hr-orch CAP-002 | ❌ | ❌ | ✅ | PARTIALLY_COVERED | CONFIRMED |
+| INT-005 | Consultar pedidos por status | A | API_ONLY | status (texto) | ma-hr-orch CAP-002 | ❌ | ❌ | ✅ | PARTIALLY_COVERED | CONFIRMED |
+| INT-006 | Rastrear cartão por CPF | A | REQUIRES_CLARIFICATION | CPF (transitório) | fallback → ERR-010 | ❌ | ❌ | ❌ | NOT_VALIDATED | AMBIGUOUS |
+| INT-007 | Rastrear cartão por número do pedido | A | NEEDS_CLIENT_VALIDATION | orderNumber | endpoint não inventariado | ❌ | ❌ | ❌ | NOT_VALIDATED | CONFIRMED* |
+| INT-008 | O que posso fazer? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-009 | Quais informações posso consultar? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-010 | Como faço para fazer um pedido? | B | RAG_ONLY | — | marh_feature_knowledge.md | ✅ | ✅ | ❌ | COVERED | CONFIRMED |
+| INT-011 | Como faço para consultar um pedido? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-012 | Como faço para consultar um colaborador? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-013 | Consigo rastrear cartões? | B | RAG_ONLY (capacidade) | — | marh_feature_knowledge.md | ✅ | ✅ | ❌ | COVERED | CONFIRMED |
+| INT-014 | Você consegue cancelar pedido? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md (FORA-002) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-015 | Você consegue alterar dados de um colaborador? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md (FORA-004) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-016 | Você consulta dados de qualquer empresa? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md (SEG-002) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-017 | Preciso selecionar uma empresa para usar o agente? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-018 | O agente substitui o portal web? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-019 | O que é o MARH? | B | RAG_ONLY | — | marh_feature_knowledge.md | ✅ | ✅ | ❌ | PARTIALLY_COVERED | CONFIRMED |
+| INT-020 | O que é o Espaço RH? | B | RAG_ONLY | — | marh_feature_knowledge.md | ✅ | ✅ | ❌ | PARTIALLY_COVERED | CONFIRMED |
+| INT-021 | Quais tipos de pergunta posso fazer? | B | CLIENT_POLICY_RESPONSE | — | agent_policy.md | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-022 | Cancela o pedido | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-002) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-023 | Altera o endereço do colaborador | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-006) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-024 | Cria um novo pedido | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-001) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-025 | Remove esse colaborador | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-005) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-026 | Paga o pedido | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-010) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+| INT-027 | Emite um novo cartão | C | REDIRECT_TO_OFFICIAL_JOURNEY | — | agent_policy.md (FORA-007/008) | ❌ | ❌ | ❌ | COVERED | CONFIRMED |
+
+*INT-007: STATUS=CONFIRMED no catálogo significa que o comportamento esperado está documentado, mas o endpoint não está inventariado. Manter como NEEDS_CLIENT_VALIDATION enquanto o contrato não for validado.
+
+---
+
+## 3. Fluxo CLIENT_POLICY_RESPONSE / STATIC_RESPONSE
+
+**Intenções:** INT-008, INT-009, INT-011, INT-012, INT-014 a INT-018, INT-021
+
+**Características:**
+- Zero RAG
+- Zero chamada de API
+- Zero LLM
+- Resposta determinística versionada
 
 ```
-Entrada (mensagem do usuário)
+Mensagem do usuário
     │
     ▼
 [Classificador Determinístico]
     │
-    ├── Match com padrão fora de escopo?
+    ├── Match CLIENT_POLICY?
     │       │
     │       ▼ SIM
-    │   [Seleciona mensagem padronizada]
-    │       │
-    │       ▼
-    │   Retorna resposta estática
-    │
-    └── NÃO → próximo fluxo
-```
-
-**Regras:**
-- Resposta selecionada de um dicionário de 10 mensagens padronizadas
-- Zero chamadas externas
-- Latência alvo: < 50ms
-
-**Mensagens padronizadas (exemplos):**
-1. "Sou o assistente de RH da Alelo. Posso ajudar com informações sobre benefícios, pedidos e colaboradores."
-2. "Essa pergunta está fora do meu escopo. Posso ajudar com dúvidas sobre benefícios Alelo."
-3. "Não posso ajudar com esse assunto. Que tal perguntar sobre seus pedidos ou benefícios?"
-
----
-
-## 3. Fluxo REDIRECT_TO_OFFICIAL_JOURNEY
-
-**Características:** Sem LLM quando determinístico. Resposta direciona o usuário para a jornada oficial no app.
-
-```
-Entrada (mensagem do usuário)
-    │
-    ▼
-[Classificador Determinístico]
-    │
-    ├── Match com intent de redirecionamento?
-    │       │
-    │       ▼ SIM
-    │   [Seleciona mensagem de redirecionamento + deep link]
-    │       │
-    │       ▼
-    │   Retorna resposta com orientação
-    │
-    └── NÃO → próximo fluxo
-```
-
-**Regras:**
-- Mensagens pré-definidas com links para jornadas existentes
-- Não consome tokens LLM
-- Latência alvo: < 50ms
-
----
-
-## 4. Fluxo RAG_ONLY
-
-**Características:** Uma chamada de retrieval + uma chamada de generation.  
-**Intents:** INT-008 a INT-021 (informativos)
-
-```
-Entrada (mensagem do usuário)
-    │
-    ▼
-[Classificador Determinístico]
-    │
-    ▼ Intent informativo
-[Bedrock Knowledge Bases — Retrieve]
-    │
-    ├── Chunks relevantes encontrados? (score > threshold)
-    │       │
-    │       ▼ SIM
-    │   [Monta prompt com contexto dos chunks]
-    │       │
-    │       ▼
-    │   [Bedrock Claude 3.5 Haiku — Generate]
-    │       │
-    │       ▼
-    │   [Validação da resposta]
+    │   [Seleciona resposta estática por intent]
     │       │
     │       ▼
     │   Retorna resposta ao usuário
     │
-    └── NÃO (score < threshold)
-            │
-            ▼
-        [Resposta padronizada: "Não encontrei informação sobre isso"]
+    └── NÃO → próximo fluxo
 ```
 
-**Regras:**
-- Máximo 5 chunks recuperados (top-k = 5)
-- Score mínimo de relevância: 0.7
-- Prompt inclui instrução para não inventar informação
-- Se nenhum chunk relevante: resposta padronizada (sem LLM)
-- Latência alvo: < 3s (P95)
+**Fonte das respostas:** `agent_policy.md` — seções de capacidades, escopo, empresa, limitações.
 
-**Composição do prompt:**
+---
+
+## 4. Fluxo REDIRECT_TO_OFFICIAL_JOURNEY
+
+**Intenções:** INT-022 a INT-027
+
+**Características:**
+- Zero LLM (mensagem estática definida pelo cliente)
+- Zero API transacional
+- Resposta: "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH."
+- Não inventar deeplink — incluir [list_navigation] somente se DP-003 (AMB-002) for resolvido
+
 ```
-System: Você é o assistente de RH da Alelo. Responda APENAS com base no contexto fornecido.
-Se não houver informação suficiente, diga que não pode responder.
-
-Context: {chunks recuperados}
-
-User: {pergunta original}
+Mensagem do usuário
+    │
+    ▼
+[Classificador Determinístico]
+    │
+    ├── Match REDIRECT?
+    │       │
+    │       ▼ SIM
+    │   [Seleciona mensagem padronizada por intent]
+    │       │
+    │       ▼
+    │   Retorna orientação para Espaço RH
+    │
+    └── NÃO → próximo fluxo
 ```
 
 ---
 
 ## 5. Fluxo API_ONLY
 
-**Características:** Chamada ao ma-hr-orch + sanitização + LLM para formatação.  
-**Intents:** INT-001 a INT-007 (consultivos)
+**Intenções:** INT-001, INT-002, INT-003, INT-004, INT-005
+
+**Características:**
+- Zero LLM — template determinístico
+- Sanitização obrigatória antes de construir qualquer resposta
+- Allowlist de campos (reais, inventariados)
+- Erro específico por código HTTP (ERR-001 a ERR-007)
 
 ```
-Entrada (mensagem do usuário + contexto empresa/usuário)
+Mensagem (+ contexto empresa/usuário confiável)
     │
     ▼
 [Classificador Determinístico]
     │
-    ▼ Intent consultivo
-[Extrai parâmetros da mensagem]
+    ▼ Intent consultivo identificado
+[Extração determinística de parâmetros]
     │
-    ▼
-[Valida parâmetros obrigatórios]
+    ├── Empresa ausente → ERR-001 (sem API, sem LLM)
     │
     ├── Parâmetros insuficientes?
     │       │
-    │       ▼ SIM → Fluxo REQUIRES_CLARIFICATION
+    │       ▼ SIM → REQUIRES_CLARIFICATION (mensagem padronizada)
     │
     └── Parâmetros OK
             │
             ▼
+        [Validação de schema do parâmetro]
+            │
+            ▼
         [HTTP GET → ma-hr-orch]
             │
-            ├── Sucesso (200)?
+            ├── 200 OK
             │       │
             │       ▼
-            │   [Sanitização de PII do response]
+            │   [Validação de schema da resposta]
             │       │
             │       ▼
-            │   [Bedrock Claude 3.5 Haiku — Formata resposta]
+            │   [Allowlist de campos]
             │       │
             │       ▼
-            │   [Validação final]
+            │   [Sanitização complementar]
             │       │
             │       ▼
-            │   Retorna resposta formatada
+            │   [Template determinístico]
+            │       │
+            │       ▼
+            │   [Validação final da resposta]
+            │       │
+            │       ▼
+            │   Retorna ao usuário
             │
-            └── Erro?
-                    │
-                    ▼
-                [Mapeia erro → mensagem padronizada]
-                    │
-                    ▼
-                Retorna mensagem de erro amigável
+            ├── 403 (permissão) → ERR-005 (sem LLM)
+            ├── 403 (FNP/prova de vida) → ERR-006 (sem LLM)
+            ├── 404 → ERR-002 (colabs) / ERR-003 (pedido) / sem LLM
+            ├── 422 → ERR-001 (empresa inválida) / sem LLM
+            ├── 429 → retry 1x c/ jitter → ERR-007 (sem LLM)
+            ├── 5xx transitório → retry 1x c/ jitter → ERR-007 (sem LLM)
+            └── Timeout → ERR-007 (sem LLM)
 ```
 
-**Regras:**
-- Somente operações GET
-- Timeout para ma-hr-orch: 10s
-- Sanitização obrigatória antes do LLM (remove CPF, nomes completos, tokens)
-- Contexto empresa/usuário vem da API MARH (não do modelo)
-- Allowlist de campos por endpoint
+**LLM em API_ONLY:** Não usar LLM para formatar colaborador encontrado, múltiplos colaboradores, pedido por número, último pedido, pedidos por status, erros ou ausência de dados. Toda formatação via template.
 
-**Sanitização (allowlist por tool):**
-```python
-ALLOWED_FIELDS = {
-    "consulta_pedidos": ["order_id", "status", "created_at", "total_value"],
-    "consulta_beneficios": ["benefit_name", "balance", "expiry_date"],
-    "consulta_colaboradores": ["employee_count", "department", "status"],
-}
-```
+**Allowlist de campos reais (por endpoint):**
+
+| Endpoint | Campos permitidos ao usuário |
+|---|---|
+| GET /v1/beneficiaries | name, placeName, subtype, isHomeDelivery, products |
+| GET /v1/orders/{orderNumber} | status (traduzido), orderDate, totalOrder, productInfo.productName, paymentMethod, steps |
+| GET /v1/orders | status (traduzido), orderDate, totalOrder, productInfo.productName |
+| GET /v1/orders/{orderNumber}/beneficiaries | total (contagem), name (lista) |
+
+**Campos sempre removidos:**
+- `documentNumber` (CPF), `email`, `phoneNumber`, `motherName`, `beneficiaryId`, `address`
+- `billingDocumentNumber`, `contractNumber`, `idLegalPersonBilling`
+- Qualquer campo com conteúdo base64
+
+**Fluxo para múltiplos colaboradores (INT-001):**
+- Se `total > 1`: apresentar lista de nomes e solicitar escolha (template determinístico)
+- Não enviar lista ao LLM
 
 ---
 
-## 6. Fluxo HYBRID_RAG_API
+## 6. Fluxo REQUIRES_CLARIFICATION
 
-**Características:** RAG + API em paralelo quando não há dependência.  
-**Intents:** Combinações específicas (ex: consulta de pedido + política de cancelamento)
+**Intenções:** INT-006 (fallback definido)
+
+**Comportamento para INT-006:**
+- Mensagem recebida com CPF para rastreamento
+- Resposta determinística: ERR-010
+- "Ainda não consigo rastrear o cartão diretamente apenas pelo CPF do colaborador. Informe o número do pedido para eu consultar as informações disponíveis de rastreamento."
+- Zero LLM, zero API
+
+---
+
+## 7. Fluxo NEEDS_CLIENT_VALIDATION
+
+**Intenções:** INT-007
+
+- Endpoint de rastreamento por orderNumber não inventariado (LAC-001, DP-001)
+- Na POC: responder com ERR-007 ("Não consegui consultar essa informação agora. Tente novamente em alguns instantes.")
+- **Não** classificar como API_ONLY enquanto o contrato não for validado com o time da ma-hr-orch
+- Não inventar campos de resposta
+
+---
+
+## 8. Fluxo RAG_ONLY
+
+**Intenções:** INT-010, INT-013, INT-019, INT-020
+
+**Características:**
+- Uma geração de embedding
+- Uma consulta vetorial
+- Uma chamada de geração
+- Nenhum grader LLM adicional na POC
+- Fallback sem geração quando não houver evidência suficiente
 
 ```
-Entrada (mensagem do usuário)
+Mensagem do usuário
     │
     ▼
 [Classificador Determinístico]
     │
-    ▼ Intent híbrido
-[Análise de dependência]
-    │
-    ├── Sem dependência entre RAG e API?
-    │       │
-    │       ▼ SIM — Execução paralela
-    │   ┌───────────────────────┐
-    │   │  [RAG Retrieve]       │  [HTTP GET → ma-hr-orch]
-    │   │       │               │       │
-    │   │       ▼               │       ▼
-    │   │  [Chunks]             │  [Dados API]
-    │   └───────────────────────┘
-    │               │
-    │               ▼
-    │       [Sanitização de PII]
-    │               │
-    │               ▼
-    │       [Monta prompt combinado]
-    │               │
-    │               ▼
-    │       [Bedrock Claude 3.5 Haiku — Generate]
-    │               │
-    │               ▼
-    │       Retorna resposta unificada
-    │
-    └── Com dependência?
-            │
-            ▼ Execução sequencial (API primeiro, RAG depois)
-```
-
-**Regras:**
-- Paralelismo via asyncio quando possível
-- Se uma das fontes falha, responde com a outra + disclaimer
-- Timeout total: 12s
-- Latência alvo: < 5s (P95)
-
----
-
-## 7. Fluxo REQUIRES_CLARIFICATION
-
-**Características:** Solicita informação adicional ao usuário.
-
-```
-Entrada (mensagem do usuário)
+    ▼ Intent informativo
+[Gera embedding da query — modelo In-Region]
     │
     ▼
-[Classificador Determinístico]
+[Consulta S3 Vectors em sa-east-1]
     │
-    ▼ Intent identificado mas parâmetros insuficientes
-[Identifica parâmetros faltantes]
-    │
-    ▼
-[Gera pergunta de clarificação]
-    │
-    ├── Pergunta determinística disponível?
+    ├── Chunks relevantes? (score ≥ threshold — ASSUMPTION_REQUIRES_EVALUATION)
     │       │
     │       ▼ SIM
-    │   Retorna pergunta padronizada
+    │   [Monta contexto com chunks (limite de tokens)]
+    │       │
+    │       ▼
+    │   [Modelo de geração In-Region — uma chamada]
+    │       │
+    │       ▼
+    │   [Validação final (sem PII)]
+    │       │
+    │       ▼
+    │   Retorna resposta
     │
-    └── NÃO (precisa LLM para formular)
+    └── NÃO (score < threshold)
             │
             ▼
-        [Bedrock Claude 3.5 Haiku — Gera pergunta contextualizada]
-            │
-            ▼
-        Retorna pergunta ao usuário
+        ERR-008: "Ainda não tenho essa informação disponível sobre o MARH."
+        (sem LLM)
 ```
 
-**Regras:**
-- Máximo 1 pergunta de clarificação por turno
-- Preferência por perguntas determinísticas (sem LLM)
-- Se não houver resposta após clarificação, oferece alternativas
+**Fonte da KB:** `discover3/knowledge/marh_feature_knowledge.md` — indexado por seções do markdown.
+**Não indexar:** `discover3/agent_policy.md` — fica no código determinístico.
+
+**Parâmetros (ASSUMPTION_REQUIRES_EVALUATION):**
+- top-k: valor inicial pequeno (ajustar após avaliação)
+- threshold: parâmetro de configuração (não hardcoded)
+- Limite de tokens de contexto: a definir
 
 ---
 
-## 8. Budget de Latência por Fluxo
+## 9. Budget de Latência por Fluxo
 
-| Fluxo | Etapa | P50 | P95 | Timeout |
-|---|---|---|---|---|
-| **STATIC_RESPONSE** | Total | 20ms | 50ms | 1s |
-| **REDIRECT** | Total | 20ms | 50ms | 1s |
-| **RAG_ONLY** | Classificação | 5ms | 10ms | — |
-| | KB Retrieve | 500ms | 1.5s | 5s |
-| | LLM Generate | 800ms | 2s | 8s |
-| | **Total** | **1.3s** | **3.5s** | **10s** |
-| **API_ONLY** | Classificação | 5ms | 10ms | — |
-| | ma-hr-orch GET | 1.5s | 3.3s | 10s |
-| | Sanitização | 5ms | 15ms | — |
-| | LLM Generate | 800ms | 2s | 8s |
-| | **Total** | **2.3s** | **5.3s** | **15s** |
-| **HYBRID_RAG_API** | Classificação | 5ms | 10ms | — |
-| | Paralelo (RAG + API) | 1.5s | 3.3s | 10s |
-| | Sanitização | 5ms | 15ms | — |
-| | LLM Generate | 800ms | 2s | 8s |
-| | **Total** | **2.3s** | **5.3s** | **15s** |
-| **REQUIRES_CLARIFICATION** | Total | 50ms | 1.5s | 8s |
+| Fluxo | Componentes incluídos | Alvo P95 | Timeout Global |
+|---|---|---|---|
+| STATIC_RESPONSE / CLIENT_POLICY | Classificação + template | < 100ms | 1s |
+| REDIRECT | Classificação + template | < 100ms | 1s |
+| API_ONLY (sem LLM) | Classificação + ma-hr-orch + schema + allowlist + template | < 6s | 15s |
+| RAG_ONLY | Classificação + embedding + S3 Vectors + geração | ASSUMPTION_REQUIRES_LOAD_TEST | 12s |
+| REQUIRES_CLARIFICATION | Template determinístico | < 100ms | 1s |
+
+**Budget API_ONLY coerente:**
+
+| Etapa | Orçamento |
+|---|---|
+| Classificação + parse | ≤ 20ms |
+| ma-hr-orch GET | ≤ 10s (timeout) |
+| Schema + allowlist + sanitização | ≤ 20ms |
+| Template | ≤ 10ms |
+| Total | ≤ 10.1s (dentro do timeout global de 15s) |
+
+**Nota:** 3275ms é uma `single_observed_sample_ms` de `/v1/beneficiaries`. Não representa P50/P95/P99.
 
 ---
 
-## 9. Diagrama de Decisão do Classificador
+## 10. Diagrama de Decisão do Classificador
 
 ```
-Mensagem do Usuário
+Mensagem do usuário
     │
     ▼
-[Normalização: lowercase, remove acentos, trim]
+[Normalização: lowercase, sem acentos, trim]
     │
     ▼
-[Match contra padrões fora de escopo]
-    ├── SIM → STATIC_RESPONSE
+[Empresa presente no contexto?]
+    ├── NÃO → ERR-001 (sem nenhum fluxo)
     │
-    ▼
-[Match contra padrões de redirecionamento]
+    ▼ SIM
+[Match contra padrões fora de escopo (Grupo C)]
     ├── SIM → REDIRECT_TO_OFFICIAL_JOURNEY
     │
     ▼
-[Match contra padrões consultivos (requer dados)]
-    ├── SIM → verifica parâmetros
-    │       ├── Completos → API_ONLY ou HYBRID_RAG_API
-    │       └── Incompletos → REQUIRES_CLARIFICATION
+[Match contra padrões CLIENT_POLICY (Grupo B — política)]
+    ├── SIM → CLIENT_POLICY_RESPONSE
     │
     ▼
-[Match contra padrões informativos]
+[Match contra padrões consultivos (Grupo A)]
+    ├── SIM
+    │   ├── Parâmetros completos? → API_ONLY (template determinístico)
+    │   ├── Parâmetros incompletos? → REQUIRES_CLARIFICATION
+    │   └── Endpoint não validado (INT-007)? → NEEDS_CLIENT_VALIDATION
+    │
+    ▼
+[Match contra padrões informativos RAG (Grupo B — KB)]
     ├── SIM → RAG_ONLY
     │
     ▼
-[Fallback] → STATIC_RESPONSE (mensagem genérica de escopo)
+[Fallback] → CLIENT_POLICY_RESPONSE (mensagem de escopo genérica)
 ```
 
 ---
 
-## 10. Mapeamento Intent → Fluxo
+## 11. Mensagens de Erro — Catálogo Obrigatório
 
-| Intent ID | Nome | Fluxo | Usa LLM | Usa RAG | Usa API |
-|---|---|---|---|---|---|
-| INT-001 | Consulta de pedidos | API_ONLY | Sim (format) | Não | Sim |
-| INT-002 | Consulta de saldo | API_ONLY | Sim (format) | Não | Sim |
-| INT-003 | Consulta de colaboradores | API_ONLY | Sim (format) | Não | Sim |
-| INT-004 | Status de pedido | API_ONLY | Sim (format) | Não | Sim |
-| INT-005 | Consulta de benefícios | API_ONLY | Sim (format) | Não | Sim |
-| INT-006 | Consulta de produtos | API_ONLY | Sim (format) | Não | Sim |
-| INT-007 | Dias para crédito | API_ONLY | Sim (format) | Não | Sim |
-| INT-008 | Como cadastrar benefício | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-009 | Política de uso | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-010 | Regras de recarga | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-011 | Prazos e datas | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-012 | Tipos de cartão | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-013 | Rede credenciada | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-014 | Legislação trabalhista | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-015 | Processos internos | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-016 | FAQ geral | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-017 | Tutoriais do portal | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-018 | Configurações de conta | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-019 | Relatórios disponíveis | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-020 | Integrações | RAG_ONLY | Sim (gen) | Sim | Não |
-| INT-021 | Novidades/Atualizações | RAG_ONLY | Sim (gen) | Sim | Não |
-| OUT-001 | Assunto pessoal | STATIC_RESPONSE | Não | Não | Não |
-| OUT-002 | Piada/Entretenimento | STATIC_RESPONSE | Não | Não | Não |
-| OUT-003 | Outro produto/empresa | STATIC_RESPONSE | Não | Não | Não |
-| OUT-004 | Operação de escrita | STATIC_RESPONSE | Não | Não | Não |
-| OUT-005 | Informação sensível | STATIC_RESPONSE | Não | Não | Não |
-| OUT-006 | Ofensivo/Inadequado | STATIC_RESPONSE | Não | Não | Não |
+Usar **exclusivamente** as mensagens ERR-001 a ERR-010 definidas no Discovery.
+Não criar mensagens alternativas com textos diferentes.
+
+| ID | Mensagem | Quando usar |
+|---|---|---|
+| ERR-001 | "Não consegui identificar a empresa selecionada para realizar a consulta. Selecione uma empresa no Espaço RH e tente novamente." | Empresa ausente / 422 |
+| ERR-002 | "Não encontrei nenhum colaborador com os dados informados para a empresa selecionada." | 404 colaborador |
+| ERR-003 | "Não encontrei o pedido informado para a empresa selecionada." | 404 pedido |
+| ERR-004 | "Não reconheci o status informado. Tente consultar por status como pago, pendente, cancelado ou em processamento." | Status não reconhecido |
+| ERR-005 | "Você não tem permissão para consultar informações dessa empresa no Espaço RH." | 403 permissão |
+| ERR-006 | "Não consegui acessar essas informações porque a validação de segurança não foi concluída. Verifique se sua sessão está ativa e tente novamente." | 403 FNP/prova de vida |
+| ERR-007 | "Não consegui consultar essa informação agora. Tente novamente em alguns instantes." | 5xx, timeout, indisponível |
+| ERR-008 | "Ainda não tenho essa informação disponível sobre o MARH. Posso ajudar com consultas de colaboradores, pedidos e rastreamento de cartões." | KB sem resultado |
+| ERR-009 | "Encontrei a informação solicitada, mas não consegui gerar o atalho de navegação para essa tela." | [list_navigation] falhou |
+| ERR-010 | "Ainda não consigo rastrear o cartão diretamente apenas pelo CPF do colaborador. Informe o número do pedido para eu consultar as informações disponíveis de rastreamento." | INT-006 fallback |
+
+---
+
+## 12. Política de Retry por Código HTTP
+
+| Código | Retry | Ação |
+|---|---|---|
+| 400 | ❌ NUNCA | ERR-001 ou mapeamento correspondente |
+| 401 | ❌ NUNCA | Log error + alerta |
+| 403 | ❌ NUNCA | ERR-005 ou ERR-006 |
+| 404 | ❌ NUNCA | ERR-002 ou ERR-003 |
+| 422 | ❌ NUNCA | ERR-001 |
+| 429 | ✅ Máximo 1 retry com jitter | Somente se idempotente e dentro do budget |
+| 500 | ✅ Máximo 1 retry com jitter | Somente se idempotente e dentro do budget |
+| 502/503/504 | ✅ Máximo 1 retry com jitter | Somente se idempotente e dentro do budget |
+| Timeout | ✅ Máximo 1 retry | Somente se houver orçamento de latência restante |

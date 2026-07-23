@@ -1,58 +1,63 @@
 %% Sequence Diagram - HYBRID_RAG_API Flow
-%% Data: 2026-07-23
-%% Fluxo: HYBRID_RAG_API (paralelo quando sem dependência)
+%% Data: 2026-07-23 (revisão corretiva)
+%% Fluxo: HYBRID_RAG_API — somente para intenções catalogadas como híbridas
+%% Nota: INT-013 usa RAG_ONLY (capacidade do agente) — não é híbrido
+%% Modelo: PROPOSED_PENDING_ACCOUNT_VALIDATION
 
 sequenceDiagram
     autonumber
     participant MARH as API MARH
     participant Lambda as Lambda Agent
     participant Classifier as Classificador
-    participant KB as Bedrock KB
+    participant Bedrock as Bedrock (modelo confirmado)
+    participant S3V as S3 Vectors
     participant Orch as ma-hr-orch
-    participant Sanitizer as Sanitizador
-    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
 
-    MARH->>Lambda: Invoke (mensagem + context)
+    MARH->>Lambda: InvokeFunction (mensagem + company_id)
     activate Lambda
-    
-    Lambda->>Classifier: classify(mensagem)
+
+    Lambda->>Lambda: Valida contexto
+    Lambda->>Classifier: classify_deterministic(mensagem)
     activate Classifier
     Classifier-->>Lambda: intent=HYBRID, flow=HYBRID_RAG_API
     deactivate Classifier
-    
-    Lambda->>Lambda: Análise de dependência entre RAG e API
-    
-    Note over Lambda: Sem dependência detectada<br/>→ Execução PARALELA
+
+    Lambda->>Lambda: Verifica dependência entre RAG e API
+
+    Note over Lambda: Sem dependência → execução paralela<br/>RAG e API são independentes
 
     par Execução Paralela
-        Lambda->>KB: Retrieve(query, top_k=5)
-        activate KB
-        KB-->>Lambda: chunks[] com scores
-        deactivate KB
+        Lambda->>Bedrock: InvokeModel(embedding, query)
+        activate Bedrock
+        Bedrock-->>Lambda: query_vector
+        deactivate Bedrock
+        Lambda->>S3V: QueryVectors(query_vector)
+        activate S3V
+        S3V-->>Lambda: chunks + scores
+        deactivate S3V
     and
-        Lambda->>Orch: HTTP GET /endpoint (timeout=10s)
+        Lambda->>Orch: HTTP GET /endpoint (timeout: 3s+8s)
         activate Orch
         Orch-->>Lambda: Response 200 (dados)
         deactivate Orch
     end
-    
-    Lambda->>Sanitizer: sanitize(api_response, allowlist)
-    activate Sanitizer
-    Sanitizer-->>Lambda: Dados API sanitizados
-    deactivate Sanitizer
-    
-    Lambda->>Lambda: Filtra chunks relevantes (score >= 0.7)
-    Lambda->>Lambda: Monta prompt combinado (system + RAG context + API data + user)
-    
-    Note over Lambda: Prompt combina:<br/>- Contexto documental (RAG)<br/>- Dados corporativos (API sanitizado)<br/>- Pergunta do usuário
 
-    Lambda->>Bedrock: InvokeModel(prompt_combinado, max_tokens=600)
-    activate Bedrock
-    Bedrock-->>Lambda: Resposta unificada
-    deactivate Bedrock
-    
-    Lambda->>Lambda: Validação de output
-    Lambda-->>MARH: Response 200 (resposta integrando RAG + dados API)
+    Lambda->>Lambda: Allowlist + sanitização (dados API)
+    Lambda->>Lambda: Filtra chunks por threshold
+
+    alt Chunks e API OK
+        Lambda->>Lambda: Monta prompt (system + RAG context + API sanitizado + user)
+        Note over Lambda: Uma única chamada de geração<br/>Contexto: RAG + API em paralelo
+        Lambda->>Bedrock: InvokeModel(generation_model, prompt_hybrid)
+        activate Bedrock
+        Bedrock-->>Lambda: Resposta integrada
+        deactivate Bedrock
+        Lambda->>Lambda: Validação output (PII re-scan)
+        Lambda-->>MARH: Response 200
+    else RAG falha / API falha
+        Lambda-->>MARH: Resposta parcial (parte que funcionou) + disclaimer ou ERR-007
+    end
+
     deactivate Lambda
-    
-    Note over MARH,Bedrock: Latência total: P50=2.1s, P95=5.3s<br/>Paralelo: max(RAG, API) + LLM<br/>Custo: ~$0.0015 (mais tokens no prompt)
+
+    Note over MARH,S3V: Latência: ASSUMPTION_REQUIRES_LOAD_TEST<br/>LLM: 1 embedding + 1 geração<br/>Paralelo: max(RAG latência, API latência) + geração

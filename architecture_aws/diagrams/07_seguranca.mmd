@@ -1,43 +1,47 @@
 %% Security Layers Diagram - MARH Consultive Agent
-%% Data: 2026-07-23
+%% Data: 2026-07-23 (revisão corretiva)
+%% Nota: RBAC admin/rh/colaborador removido — autorização delegada à ma-hr-orch
 
 graph TB
-    subgraph Layer1["🛡️ Camada 1: Entrada"]
-        Auth["IAM Auth<br/>(Function URL)"]
+    subgraph Layer1["Camada 1: Entrada"]
+        Auth["IAM Auth<br/>(InvokeFunction SDK<br/>ou Function URL AWS_IAM)"]
         Validation["JSON Schema<br/>Validation"]
-        RateLimit["Rate Limiting<br/>(10 req/min/user)"]
-        SizeLimit["Payload Limit<br/>(64KB max)"]
+        CompanyCtx["company_id<br/>obrigatório no payload"]
     end
 
-    subgraph Layer2["🔑 Camada 2: Identidade"]
-        Context["Contexto do Usuário<br/>(company_id, role, permissions)"]
-        RBAC["Controle de Acesso<br/>(admin/rh/colaborador)"]
-        NoElevation["Sem Elevação<br/>de Privilégio"]
+    subgraph Layer2["Camada 2: Empresa Imutável"]
+        CompanyLock["Empresa do contexto<br/>confiável — não alterável<br/>pelo chat"]
+        NoRBAC["Sem RBAC no agente<br/>Autorização: ma-hr-orch"]
+        NoElevation["Sem elevação<br/>de privilégio"]
     end
 
-    subgraph Layer3["🔐 Camada 3: Segredos"]
-        SecretsM["Secrets Manager<br/>(API keys, tokens)"]
-        KMSKeys["KMS CMK<br/>(Criptografia)"]
-        IAMRole["IAM Least Privilege<br/>(Role restritiva)"]
+    subgraph Layer3["Camada 3: Segredos"]
+        SecretsM["Secrets Manager<br/>(token ma-hr-orch)"]
+        KMSKeys["KMS CMK<br/>(S3 + Secrets)"]
+        IAMRole["IAM Least Privilege<br/>(ARN modelo confirmado)"]
     end
 
-    subgraph Layer4["📋 Camada 4: Dados"]
-        Classification["Classificação<br/>(PII/Financeiro/Interno)"]
-        Allowlist["Allowlist por<br/>Endpoint"]
-        PIIRemoval["Remoção de PII<br/>(regex patterns)"]
-        SchemaVal["Schema Validation<br/>(response)"]
+    subgraph Layer4["Camada 4: Dados — 4 Camadas"]
+        SchemaVal["1. Validação de schema"]
+        Allowlist["2. Allowlist campos reais<br/>(inventário API)"]
+        PIIRemoval["3. Sanitização complementar<br/>(regex — complemento)"]
+        OutputVal["4. Validação output<br/>(re-scan PII)"]
     end
 
-    subgraph Layer5["🤖 Camada 5: Modelo"]
+    subgraph Layer4b["CPF como Parâmetro Técnico"]
+        CPFFlow["CPF extraído → parâmetro nameOrCpf<br/>→ nunca no LLM<br/>→ nunca logado<br/>→ nunca na resposta"]
+    end
+
+    subgraph Layer5["Camada 5: Modelo (RAG_ONLY)"]
         PromptInjection["Anti Prompt<br/>Injection"]
-        OutputValidation["Validação de<br/>Output"]
-        URLCheck["URL Allowlist<br/>(apenas Alelo)"]
-        AntiLeak["Anti System<br/>Prompt Leak"]
+        OutputValidation["Re-scan output<br/>antes de retornar"]
+        GETOnly["Somente GET<br/>ao ma-hr-orch"]
+        EndpointAllowlist["Endpoint Allowlist<br/>(hardcoded)"]
     end
 
-    subgraph Layer6["🌐 Camada 6: Rede"]
+    subgraph Layer6["Camada 6: Rede"]
         HTTPS["HTTPS TLS 1.2+<br/>(todos os endpoints)"]
-        NoVPC["Sem VPC<br/>(endpoints regionais)"]
+        NoVPC["Sem VPC<br/>(endpoints regionais HTTPS)"]
         NoEgress["Allowlist de<br/>destinos no código"]
     end
 
@@ -45,7 +49,8 @@ graph TB
     Layer1 --> Layer2
     Layer2 --> Layer3
     Layer3 --> Layer4
-    Layer4 --> Layer5
+    Layer4 --> Layer4b
+    Layer4b --> Layer5
     Layer5 --> Layer6
 
     %% Styling
@@ -53,12 +58,14 @@ graph TB
     classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     classDef secrets fill:#fce4ec,stroke:#c62828,stroke-width:2px
     classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef dataflow fill:#f9fbe7,stroke:#558b2f,stroke-width:2px
     classDef model fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef network fill:#e0f2f1,stroke:#00695c,stroke-width:2px
 
-    class Auth,Validation,RateLimit,SizeLimit entry
-    class Context,RBAC,NoElevation identity
+    class Auth,Validation,CompanyCtx entry
+    class CompanyLock,NoRBAC,NoElevation identity
     class SecretsM,KMSKeys,IAMRole secrets
-    class Classification,Allowlist,PIIRemoval,SchemaVal data
-    class PromptInjection,OutputValidation,URLCheck,AntiLeak model
+    class SchemaVal,Allowlist,PIIRemoval,OutputVal data
+    class CPFFlow dataflow
+    class PromptInjection,OutputValidation,GETOnly,EndpointAllowlist model
     class HTTPS,NoVPC,NoEgress network

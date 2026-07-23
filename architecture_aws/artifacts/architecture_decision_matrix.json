@@ -71,11 +71,17 @@
     {
       "decision_id": "ADR-002",
       "category": "LLM Model",
-      "question": "Which LLM model for response generation?",
+      "status": "PROPOSED_PENDING_VALIDATION",
+      "question": "Which LLM model for response generation? (pending account validation)",
+      "selection_note": "No model declared ACCEPTED. Selection requires verification of ACTIVE In-Region status in sa-east-1 account console. Claude 3.5 Haiku removed from automatic selection.",
+      "validation_command": "aws bedrock list-foundation-models --region sa-east-1 --by-inference-type ON_DEMAND",
+      "selection_criteria": ["ACTIVE", "In-Region sa-east-1 (not cross-region)", "Portuguese support", "Tool use", "Low latency", "Compatible cost"],
       "alternatives": [
         {
           "name": "Claude 3.5 Haiku",
-          "selected": true,
+          "selected": false,
+          "status": "REQUIRES_ACCOUNT_VALIDATION",
+          "removal_note": "Removed from automatic selection. Status ACTIVE In-Region sa-east-1 not confirmed by direct evidence.",
           "scores": {
             "cost": 5,
             "simplicity": 5,
@@ -86,7 +92,7 @@
           },
           "weighted_total": 4.75,
           "pros": ["Lowest cost", "Fastest latency", "Good quality for task"],
-          "cons": ["Less reasoning capability", "May struggle with complex queries"]
+          "cons": ["Status ACTIVE In-Region sa-east-1 not confirmed"]
         },
         {
           "name": "Claude Sonnet 4",

@@ -1,32 +1,40 @@
 %% C4 Context Diagram - MARH Consultive Agent
-%% Data: 2026-07-23
+%% Data: 2026-07-23 (revisão corretiva)
+%% Modelo: PROPOSED_PENDING_ACCOUNT_VALIDATION
 
 graph TB
     %% Actors
-    User["👤 Usuário Final<br/>(Colaborador/RH/Admin)"]
-    
+    User["Usuário Final<br/>(autenticado via app)"]
+
     %% Systems
-    AppMeuAlelo["📱 App Meu Alelo<br/>(Mobile/Web)"]
-    APIMARH["🔗 API MARH<br/>(Orquestrador Principal)"]
-    AgentAPI["🤖 Agent API<br/>(Lambda - Python 3.12)<br/>sa-east-1"]
-    Bedrock["🧠 Amazon Bedrock<br/>(Claude 3.5 Haiku)<br/>sa-east-1"]
-    MaHrOrch["⚙️ ma-hr-orch<br/>(Serviço de Dados)<br/>Externo"]
-    KnowledgeBase["📚 Knowledge Base<br/>(Bedrock KB + S3 Vectors)<br/>sa-east-1"]
-    
+    AppMeuAlelo["App Meu Alelo<br/>(Mobile)"]
+    APIMARH["API MARH<br/>(Orquestrador + Autenticação)"]
+    AgentAPI["Agent API<br/>(Lambda - Python 3.12)<br/>sa-east-1"]
+    Bedrock["Amazon Bedrock<br/>(modelo In-Region confirmado)<br/>RAG_ONLY — sa-east-1"]
+    MaHrOrch["ma-hr-orch<br/>(Dados corporativos + Autorização)<br/>Externo — GET only"]
+    S3Vectors["S3 Vectors<br/>(embeddings RAG)<br/>sa-east-1"]
+    S3Docs["S3 Docs<br/>(marh_feature_knowledge.md)<br/>sa-east-1 — KMS"]
+
     %% Relationships
     User -->|"Interage via app"| AppMeuAlelo
     AppMeuAlelo -->|"REST API"| APIMARH
-    APIMARH -->|"Invoca (SDK/Function URL)"| AgentAPI
-    AgentAPI -->|"InvokeModel<br/>(geração de respostas)"| Bedrock
-    AgentAPI -->|"Retrieve<br/>(busca documentos)"| KnowledgeBase
+    APIMARH -->|"InvokeFunction (SDK)<br/>ou Function URL AWS_IAM"| AgentAPI
+    AgentAPI -->|"InvokeModel (RAG_ONLY)<br/>embedding + geração"| Bedrock
+    AgentAPI -->|"QueryVectors<br/>(retrieval direto)"| S3Vectors
+    AgentAPI -->|"GetObject<br/>(chunks)"| S3Docs
     AgentAPI -->|"HTTP GET<br/>(dados corporativos)"| MaHrOrch
-    MaHrOrch -.->|"Dados sanitizados"| AgentAPI
-    
+    MaHrOrch -.->|"Dados autorizados<br/>(allowlist aplicada no agente)"| AgentAPI
+
+    %% Notes
+    Note1["Autorização: ma-hr-orch<br/>valida token, interlocutor,<br/>FNP, prova de vida"]
+
     %% Styling
-    classDef external fill:#f9f,stroke:#333,stroke-width:2px
+    classDef external fill:#e8e8e8,stroke:#666,stroke-width:2px
     classDef aws fill:#ff9900,stroke:#333,stroke-width:2px,color:#fff
     classDef user fill:#e1f5fe,stroke:#333,stroke-width:2px
-    
+    classDef note fill:#fff9c4,stroke:#f57f17,stroke-width:1px
+
     class User user
     class AppMeuAlelo,APIMARH,MaHrOrch external
-    class AgentAPI,Bedrock,KnowledgeBase aws
+    class AgentAPI,Bedrock,S3Vectors,S3Docs aws
+    class Note1 note

@@ -1,53 +1,62 @@
 %% Sequence Diagram - RAG_ONLY Flow
-%% Data: 2026-07-23
-%% Fluxo: RAG_ONLY (1 retrieve + 1 generate)
-%% Intents: INT-008 a INT-021 (informativos)
+%% Data: 2026-07-23 (revisão corretiva)
+%% Fluxo: RAG_ONLY (1 embedding + 1 S3 Vectors query + 1 generate)
+%% Intents: INT-010, INT-013, INT-019, INT-020
+%% Fonte: marh_feature_knowledge.md
+%% Modelo: PROPOSED_PENDING_ACCOUNT_VALIDATION
 
 sequenceDiagram
     autonumber
     participant MARH as API MARH
     participant Lambda as Lambda Agent
     participant Classifier as Classificador
-    participant KB as Bedrock<br/>Knowledge Base
+    participant Bedrock as Bedrock<br/>(modelo confirmado)
     participant S3V as S3 Vectors
-    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
+    participant S3 as S3 Docs
 
-    MARH->>Lambda: Invoke (mensagem: "como cadastrar benefício?")
+    MARH->>Lambda: InvokeFunction (mensagem: "O que é o MARH?")
     activate Lambda
-    
-    Lambda->>Lambda: Parse + Validação
-    Lambda->>Classifier: classify(mensagem)
+
+    Lambda->>Lambda: Parse + Validação contexto
+    Lambda->>Classifier: classify_deterministic(mensagem)
     activate Classifier
-    Classifier-->>Lambda: intent=INT-008, flow=RAG_ONLY
+    Classifier-->>Lambda: intent=INT-019, flow=RAG_ONLY
     deactivate Classifier
-    
-    Lambda->>KB: Retrieve(query="como cadastrar benefício", top_k=5)
-    activate KB
-    KB->>S3V: Vector search (embedding da query)
+
+    %% Generate embedding for query
+    Lambda->>Bedrock: InvokeModel(embedding_model, "O que é o MARH?")
+    activate Bedrock
+    Bedrock-->>Lambda: query_vector[]
+    deactivate Bedrock
+
+    %% Query S3 Vectors directly
+    Lambda->>S3V: QueryVectors(query_vector, topK=ASSUMPTION_REQUIRES_EVALUATION)
     activate S3V
-    S3V-->>KB: Top 5 chunks + scores
+    S3V-->>Lambda: matches + scores
     deactivate S3V
-    KB-->>Lambda: chunks[5] com scores
-    deactivate KB
-    
-    Lambda->>Lambda: Filtra chunks (score >= 0.7)
-    
-    alt Chunks relevantes encontrados
-        Lambda->>Lambda: Monta prompt (system + context + user)
-        
-        Note over Lambda: System: "Responda APENAS com<br/>base no contexto fornecido"<br/>Context: [chunks filtrados]<br/>User: "como cadastrar benefício?"
-        
-        Lambda->>Bedrock: InvokeModel(prompt, max_tokens=500)
+
+    %% Get chunks from S3
+    Lambda->>S3: GetObject(chunks above threshold)
+    activate S3
+    S3-->>Lambda: chunk content
+    deactivate S3
+
+    alt Chunks acima do threshold (ASSUMPTION_REQUIRES_EVALUATION)
+        Lambda->>Lambda: Monta prompt (system + context limitado + user)
+
+        Note over Lambda: System: "Responda APENAS com<br/>base no contexto fornecido"<br/>Context: [chunks relevantes]<br/>User: mensagem original
+
+        Lambda->>Bedrock: InvokeModel(generation_model, prompt)
         activate Bedrock
-        Bedrock-->>Lambda: Resposta gerada (~500 tokens)
+        Bedrock-->>Lambda: Resposta gerada
         deactivate Bedrock
-        
-        Lambda->>Lambda: Validação de output (PII scan, URL check)
-        Lambda-->>MARH: Response 200 (resposta natural)
-    else Nenhum chunk relevante (score < 0.7)
-        Lambda-->>MARH: Response 200 (mensagem: "Não encontrei informação sobre isso")
+
+        Lambda->>Lambda: Validação de output (PII re-scan)
+        Lambda-->>MARH: Response 200 (resposta informativa)
+    else Nenhum chunk acima do threshold
+        Lambda-->>MARH: Response 200 (ERR-008 sem LLM)
     end
-    
+
     deactivate Lambda
-    
-    Note over MARH,Bedrock: Latência total: P50=1.1s, P95=3.5s<br/>Custo: ~$0.001 (embedding + generate)
+
+    Note over MARH,S3: Latência: ASSUMPTION_REQUIRES_LOAD_TEST<br/>LLM: 1 embedding + 1 geração<br/>Fonte: marh_feature_knowledge.md
