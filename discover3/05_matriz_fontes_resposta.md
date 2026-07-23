@@ -56,7 +56,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|
 | INT-001 | Consultar colaborador por nome | A | API_ONLY | ma-hr-orch | GET /v1/beneficiaries?nameOrCpf={nome} | name, placeName, subtype, isHomeDelivery, products[] | documentNumber, email, phoneNumber, motherName, beneficiaryId, address | ERR-002 se total=0; ERR-005/ERR-006 se 403 | PARTIALLY_COVERED | `#/employees` (ROUTE-003) |
 | INT-002 | Consultar colaborador por CPF | A | API_ONLY | ma-hr-orch | GET /v1/beneficiaries?nameOrCpf={cpf} | name, placeName, subtype, isHomeDelivery, products[] | documentNumber, email, phoneNumber, motherName, beneficiaryId, address | ERR-002 se total=0 | PARTIALLY_COVERED | `#/employees` (ROUTE-003) |
-| INT-003 | Consultar pedido por número | A | API_ONLY | ma-hr-orch | GET /v1/orders/{orderNumber} | status, orderDate, totalOrder, productInfo.productName, paymentMethod, steps[] | billingDocumentNumber, contractNumber, idLegalPersonBilling | ERR-003 se 404 | PARTIALLY_COVERED | `#/order-detail/:orderNumber` (ROUTE-014); auxiliar: ROUTE-015 |
+| INT-003 | Consultar pedido por número | A | API_ONLY | ma-hr-orch | GET /v1/orders/{orderNumber} | status (label PT-BR via order_status_catalog.json), orderDate, totalOrder, productInfo.productName, paymentMethod, steps[] | billingDocumentNumber, contractNumber, idLegalPersonBilling, idOrder | ERR-003 se 404 | PARTIALLY_COVERED | `#/order-detail/{orderNumber}` (ROUTE-014); auxiliar: ROUTE-015; solicitação: ROUTE-013-V2 (decisão padrão DP-003-B) |
 | INT-004 | Consultar último pedido | A | API_ONLY | ma-hr-orch | GET /v1/orders?page=0&size=1 | status, orderDate, totalOrder, productInfo.productName | billingDocumentNumber, contractNumber, idLegalPersonBilling | ERR-007 se indisponível | PARTIALLY_COVERED | `#/order-detail/:orderNumber` (ROUTE-014) ou `#/orders` (ROUTE-012 fallback) |
 | INT-005 | Consultar pedidos por status | A | API_ONLY | ma-hr-orch | GET /v1/orders | status, orderDate, totalOrder, productInfo.productName | billingDocumentNumber, contractNumber, idLegalPersonBilling | ERR-004 se status não reconhecido | PARTIALLY_COVERED | `#/orders` (ROUTE-012) |
 | INT-006 | Rastrear cartão por CPF | A | REQUIRES_CLARIFICATION | 00_Agente_Consultivo_MARH.html s.8.5 | Endpoint NOT_FOUND | — | — | ERR-010 (fallback: pedir orderNumber) | NOT_VALIDATED | `#/card-tracking` (ROUTE-024 — frontend CONFIRMED; backend NOT_VALIDATED) |
@@ -110,11 +110,18 @@
 Usuário informa nome ou CPF
   → Agente não inventa o identificador
   → ma-hr-orch recebe {empresa_selecionada, nameOrCpf}
-  → Filtra campos PII da resposta
+  → Filtra campos PII da resposta (incluindo beneficiaryId)
   → Envia ao modelo: name, placeName, subtype, products[]
   → Se total > 1: apresentar lista, pedir escolha
   → Se total = 0: ERR-002
+  → Navegação: #/employees (ROUTE-003) — sempre, independente de escolha individual
+  → Proibido: #/employees/{id}/edit, expor beneficiaryId, inventar deeplink individual
 ```
+
+**Restrição de navegação de colaborador (DP-003-A):**
+- `#/employees/:id/edit` **não é deeplink-safe** — depende de `location.state`, não há endpoint de detalhe por id.
+- A rota segura é sempre `#/employees` (ROUTE-003), mesmo após o usuário escolher um colaborador específico.
+- Deeplink individual é uma **feature futura** fora do escopo da POC.
 
 ---
 
@@ -128,8 +135,9 @@ Usuário informa nome ou CPF
 | **Parâmetros obrigatórios** | orderNumber (fornecido pelo usuário — nunca inventado pelo modelo) |
 | **Campos permitidos** | status (traduzido), orderDate, totalOrder, productInfo.productName, paymentMethod, steps[] |
 | **Campos restritos** | billingDocumentNumber, contractNumber, idLegalPersonBilling |
-| **Mapeamento de status** | PAID→"Pago", PENDING→"Aguardando pagamento", CREDITED→"Pedido creditado", CANCELLED→"Cancelado", IN_PROCESSING→"Em processamento", RELEASED→"Liberado", REJECTED→"Rejeitado", IN_BILLING_PROCESSING→"Em processamento de faturamento", REFUNDED→"Estornado", PARTIAL_REFUNDED→"Parcialmente estornado" |
-| **Conflito de status** | 4 status sem mapeamento validado pela KB (CF-KB-001) — requer DP-004 |
+| **Mapeamento de status** | Ver `discover3/artifacts/order_status_catalog.json` — tabela completa com labels completed/not_completed e tipos visuais. Status com labels confirmados: IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, INVOICE, RELEASED, IN_BILLING_PROCESSING, CANCEL_PROCESSING, REFUNDED, PARTIAL_REFUNDED. Gaps: aliases de INVOICE e CANCEL_PROCESSING, label concluído de PARTIAL_REFUNDED, contexto da tabela. |
+| **Regra orderNumber vs idOrder** | Usar sempre `orderNumber` nas rotas. `idOrder` é proibido no path, query string e deeplink. |
+| **Status de CF-KB-001** | RESOLVIDO — resposta técnica 2026-07-23 forneceu labels para todos os status. Gaps residuais registrados em DP-004. |
 | **Qtd. colaboradores/cartões** | Campo total de /beneficiaries — requer chamada adicional (LAC-009) |
 | **Ausência de dados** | HTTP 404 → ERR-003 |
 | **Status técnico** | API_TESTED |

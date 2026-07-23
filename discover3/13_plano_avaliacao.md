@@ -11,14 +11,15 @@
 | Dimensão | Critérios cobertos | Método |
 |---|---|---|
 | RAG | CA-004, CA-018, CA-019, CA-020, CA-033 | Avaliação de LLM-as-judge + revisão humana |
-| API | CA-001 a CA-003, CA-006 a CA-015, CA-026, CA-027 | Testes de integração com mock da ma-hr-orch |
+| API | CA-001 a CA-003, CA-006 a CA-015, CA-026, CA-027, CA-069 a CA-076 | Testes de integração com mock da ma-hr-orch |
 | AUTH/Autorização | CA-022, CA-023 | Injeção de erros HTTP 403 no mock |
-| Sanitização/PII | CA-009, CA-015, CA-036, CA-037 | Inspeção da resposta + log da camada de integração |
-| Segurança | CA-021, CA-024, CA-025 | Testes adversariais com inputs manipulativos |
+| Sanitização/PII | CA-009, CA-015, CA-036, CA-037, CA-056 | Inspeção da resposta + log da camada de integração |
+| Segurança | CA-021, CA-024, CA-025, CA-060, CA-064, CA-066 | Testes adversariais com inputs manipulativos |
 | Erros | CA-002, CA-008, CA-011, CA-014, CA-016, CA-026, CA-027 | Mock de respostas de erro da ma-hr-orch |
-| Navegação | CA-028, CA-029, CA-030 | Inspeção da resposta + teste de frontend |
+| Navegação | CA-028 a CA-030, CA-038 a CA-052, CA-053 a CA-068 | Inspeção da resposta + teste de frontend |
 | Não alucinação | CA-017, CA-031, CA-032, CA-033 | LLM-as-judge com critério de factualidade |
 | Continuidade | CA-034, CA-035 | Testes de conversa multi-turno |
+| Status de pedido | CA-069 a CA-080 | Lookup determinístico de aliases + inspeção de labels |
 
 ---
 
@@ -38,11 +39,14 @@
 
 | Métrica | Limiar de aprovação |
 |---|---|
-| Critérios MUST aprovados | 100% (35/35) |
+| Critérios MUST aprovados | 100% (78/78) |
 | Critérios SHOULD aprovados | ≥ 80% (2/2 recomendado) |
-| Casos de avaliação aprovados | ≥ 90% dos 50 casos |
+| Casos de avaliação aprovados | ≥ 90% dos 80 casos |
 | Zero PII exposto | Nenhuma falha de sanitização tolerada |
 | Zero alucinações em dados ausentes | Nenhuma alucinação tolerada quando API retorna vazio |
+| Zero deeplink com idOrder | Nenhuma rota com idOrder tolerada |
+| Zero deeplink individual de colaborador | Nenhum deeplink /employees/:id/edit tolerado |
+| Zero alias inventado para status pendente | INVOICE e CANCEL_PROCESSING sem aliases até confirmação |
 
 ---
 
@@ -147,4 +151,11 @@ Os seguintes casos exigem atenção especial durante a avaliação, por serem os
 
 ---
 
-*Fontes: `12_criterios_aceite.md`, `06_analise_lacunas.md`, `03_capacidades_restricoes_tecnicas.md` · Gerado em 2026-07-22*
+### Status de pedido
+
+**Método:** Lookup determinístico — mapeamento de alias para api_status sem LLM
+**Verificações:** (1) aliases confirmados mapeiam corretamente; (2) aliases ausentes retornam ERR-004; (3) palavras ambíguas sem contexto de pedido não disparam classificação; (4) labels exibidos correspondem exatamente ao catálogo
+
+---
+
+*Fontes: `12_criterios_aceite.md`, `06_analise_lacunas.md`, `03_capacidades_restricoes_tecnicas.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (critérios CA-053 a CA-080 adicionados; limiares atualizados — resposta técnica Leandro → Marcelo Gorzoni da Silva)*

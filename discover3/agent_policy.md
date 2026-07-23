@@ -193,17 +193,22 @@ Apenas rotas da allowlist abaixo podem ser usadas. Rotas externas ou não listad
 
 | Rota | Situação | Parâmetro |
 |---|---|---|
-| `#/employees` | Autorizada | Nenhum |
+| `#/employees` | Autorizada — rota segura de colaborador | Nenhum |
 | `#/orders` | Autorizada | Nenhum |
-| `#/order-detail/:orderNumber` | Autorizada | orderNumber |
-| `#/order-detail/:orderNumber/beneficiaries` | Autorizada | orderNumber |
+| `#/order-detail/{orderNumber}` | Autorizada | orderNumber (PATH) — nunca idOrder |
+| `#/order-detail/{orderNumber}/beneficiaries` | Autorizada | orderNumber |
+| `#/order-request-group?orderNumber={orderNumbers}` | Autorizada — contexto de solicitação agrupadora | orderNumber (QUERY) — 1 ou 2 valores, separados por vírgula; nunca idOrder |
 | `#/new-order/products` | Autorizada — apenas redirecionamento | Nenhum |
 | `#/card-tracking` | Autorizada | Nenhum |
 | `#/card-tracking/:orderNumber` | Autorizada | orderNumber |
 | `#/card-tracking/:orderNumber/:arNumber` | Autorizada | orderNumber + arNumber |
-| `#/employees/:id/edit` | **BLOQUEADA** — pendente validação de segurança NAV-SEC-001 | :id |
+| `#/employees/:id/edit` | **NÃO SUPORTADA** — rota não é deeplink-safe (DP-003-A) | :id (proibido no deeplink) |
 
-**Enquanto NAV-SEC-001 não for resolvida**, usar `#/employees` ao invés de `#/employees/:id/edit`.
+**Colaborador — regra definitiva (DP-003-A):** `#/employees/:id/edit` não é deeplink-safe. A tela depende de `location.state`. Não há endpoint de detalhe por id. Usar sempre `#/employees`. `beneficiaryId` nunca deve aparecer no deeplink.
+
+**Pedidos — regra orderNumber vs. idOrder:** Os dois campos coexistem no objeto do pedido mas são identificadores distintos. Usar sempre `orderNumber`. `idOrder` é proibido em path, query string e deeplink.
+
+**Rota de solicitação agrupadora:** `#/order-request-group?orderNumber={orderNumbers}` aceita 1 ou 2 orderNumbers separados por vírgula. Máximo de 2 valores. Usar somente quando o contexto for a solicitação agrupadora. Decisão sobre qual rota é o destino padrão está pendente de confirmação de produto (DP-003-B). POC: usar ROUTE-014 para pedido individual.
 
 ### 7.5 Regras de identificadores dinâmicos
 
@@ -359,26 +364,64 @@ O acesso a boleto e nota fiscal está **fora do escopo da POC inicial**. Regras 
 
 ---
 
-## 15. Novas fontes incorporadas
+## 15. Status de pedido — mapeamento e labels
+
+O agente **nunca exibe** o valor canônico da API (ex.: `PAID`, `CANCELLED`) diretamente ao usuário. Deve usar os labels do catálogo de status.
+
+**Fonte:** `discover3/artifacts/order_status_catalog.json` — confirmado em resposta técnica 2026-07-23.
+
+### 15.1 Separação de conceitos obrigatória
+
+| Conceito | Descrição |
+|---|---|
+| `api_status` | Valor canônico da API — uso interno apenas |
+| `input_aliases` | Expressões que o usuário digita — mapeadas deterministicamente ao `api_status` |
+| `display_labels` | Textos exibidos ao usuário — usar `completed` ou `not_completed` conforme contexto |
+
+### 15.2 Regras de mapeamento de input
+
+- **Não classificar** com base em palavras isoladas como "aguardando", "disponível", "processando", "processado".
+- **Exigir contexto** de pedidos/status para acionar o mapeamento.
+- **Mapeamento determinístico** — nunca usar LLM para inferir status.
+- Aliases de INVOICE e CANCEL_PROCESSING estão **pendentes de confirmação** — não inventar.
+
+### 15.3 Labels com pendências
+
+| Status | Pendência |
+|---|---|
+| INVOICE | Aliases não confirmados |
+| CANCEL_PROCESSING | Aliases não confirmados |
+| PARTIAL_REFUNDED | Label e type do estado concluído não confirmados |
+| REFUNDED | Label "Processado" marcado como ambíguo — não substituir sem aprovação |
+
+---
+
+## 16. Novas fontes incorporadas
 
 | Fonte | Tipo | Data | Impacto |
 |---|---|---|---|
 | `docs/cliente/Rotas_hr_space.html` | CLIENT_NAVIGATION_CONTRACT | 2026-07-21 | Contrato de navegação, rotas, deeplink, bases por ambiente |
+| Resposta técnica Leandro → Marcelo Gorzoni da Silva | CLIENT_TECHNICAL_RESPONSE | 2026-07-23 | Rotas de pedido; deeplink de colaborador não suportado; orderNumber vs. idOrder; labels de status |
 
-Esta fonte **não altera**:
+Estas fontes **não alteram**:
 - Runtime AWS (Lambda)
 - Modelo de linguagem
 - Estratégia RAG
 - Integração com ma-hr-orch
 - Classificação de intenções
 
-Esta fonte **altera**:
+Estas fontes **alteram**:
 - Contrato de saída do agente (elemento `[list_navigation]`)
 - Formato exato do deeplink
-- Allowlist de rotas autorizadas
+- Allowlist de rotas autorizadas (nova: ROUTE-013-V2 `#/order-request-group?orderNumber=...`)
+- Política de navegação de colaborador (`#/employees` como único destino seguro)
+- Regras de parâmetros de rota (`orderNumber` obrigatório; `idOrder` proibido)
+- Catálogo de labels de status de pedido (`order_status_catalog.json`)
 - Configuração por ambiente (HML/PRD)
 - Testes de segurança de navegação
 
+**topology_changed = false** — nenhuma alteração de infraestrutura AWS.
+
 ---
 
-*Fontes: `docs/cliente/00_Agente_Consultivo_MARH.html` (2026-07-22) · `docs/cliente/Rotas_hr_space.html` (2026-07-21) · Atualizado em 2026-07-23*
+*Fontes: `docs/cliente/00_Agente_Consultivo_MARH.html` (2026-07-22) · `docs/cliente/Rotas_hr_space.html` (2026-07-21) · Resposta técnica 2026-07-23 (Leandro → Marcelo Gorzoni da Silva) · Atualizado em 2026-07-23*

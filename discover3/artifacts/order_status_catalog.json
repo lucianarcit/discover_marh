@@ -1,0 +1,286 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-07-23",
+    "project": "Agente Consultivo MARH",
+    "source": "Resposta técnica do cliente/time técnico — Leandro para Marcelo Gorzoni da Silva (2026-07-23)",
+    "source_type": "CLIENT_TECHNICAL_RESPONSE",
+    "description": "Catálogo de status de pedido: valores canônicos da API, labels visuais (completed/not_completed), tipos visuais e aliases de input do usuário. Separação obrigatória entre os três conceitos.",
+    "status": "PARTIALLY_CONFIRMED",
+    "data_classification": "SYNTHETIC_TEST_DATA",
+    "pending_gaps": [
+      "Aliases de INVOICE — aguardando confirmação do cliente",
+      "Aliases de CANCEL_PROCESSING — aguardando confirmação do cliente",
+      "Label e type do estado concluído de PARTIAL_REFUNDED — aguardando confirmação",
+      "Contexto de uso da tabela completed/not_completed: timeline, resumo do chat ou ambos — aguardando confirmação (DP-004 item 4)",
+      "Confirmação do label genérico 'Processado' para REFUNDED concluído (DP-004 item 5)"
+    ],
+    "display_context": "PENDING_CONFIRMATION",
+    "display_context_note": "A tabela completed/not_completed foi fornecida pelo cliente. Ainda não foi confirmado se aplica somente à timeline do pedido, também ao resumo do chat, ou a ambos os contextos. Enquanto não houver resposta, usar o label completed quando semanticamente seguro.",
+    "classification_rules": {
+      "description": "Regras para evitar falsos positivos na classificação de input do usuário",
+      "rule_1": "Não classificar somente pela presença isolada de palavras amplas como 'aguardando', 'disponível', 'processando' ou 'processado'",
+      "rule_2": "Exigir contexto de pedidos/status para acionar o mapeamento",
+      "examples_safe": [
+        "pedidos aguardando pagamento → PAID / not_completed",
+        "pedidos pagos → PAID",
+        "pedido rejeitado → REJECTED",
+        "pedidos com pagamento realizado → PAID"
+      ],
+      "examples_ambiguous": [
+        "estou aguardando (não classifica PENDING)",
+        "o colaborador está disponível? (não classifica RELEASED)",
+        "o sistema está processando (não classifica IN_PROCESSING)",
+        "documento processado (não classifica REFUNDED)"
+      ],
+      "rule_no_llm": "Não usar LLM para o mapeamento básico de aliases — usar lookup determinístico"
+    },
+    "follow_up_question": "Recebemos os mappings. Para fechar a tabela, poderiam confirmar: (1) quais variações de texto devem mapear para INVOICE; (2) quais variações devem mapear para CANCEL_PROCESSING; (3) qual label e tipo usar quando PARTIAL_REFUNDED estiver concluído; (4) se as colunas Concluído/Não concluído são da timeline, do resumo do chat ou de ambos; (5) se REFUNDED concluído deve permanecer como 'Processado'?"
+  },
+  "concept_separation": {
+    "api_status": "Valor canônico retornado/aceito pela API (ex.: PAID, PENDING). Nunca exibir diretamente ao usuário.",
+    "input_aliases": "Expressões que o usuário pode digitar ao filtrar pedidos por status. Mapeadas deterministicamente para o api_status correspondente.",
+    "display_labels": "Textos exibidos ao usuário (na timeline do pedido ou no resumo do chat). Separados em completed e not_completed conforme o contexto da tela."
+  },
+  "statuses": [
+    {
+      "api_status": "IN_PROCESSING",
+      "completed": {
+        "label": "Em Processamento",
+        "type": "INFORMATIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando Processamento",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "em processamento",
+        "processando",
+        "em andamento"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "PENDING",
+      "completed": {
+        "label": "Pedido criado",
+        "type": "INFORMATIVE"
+      },
+      "not_completed": {
+        "label": "Em processamento",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "pendente",
+        "aguardando",
+        "na fila"
+      ],
+      "input_aliases_note": "O alias 'aguardando' isolado não deve classificar PENDING. Exigir contexto de pedido (ex.: 'pedidos aguardando', 'pedido pendente').",
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "PAID",
+      "completed": {
+        "label": "Pagamento confirmado",
+        "type": "POSITIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando pagamento",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "pago",
+        "foi pago",
+        "pagamento realizado"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "CREDITED",
+      "completed": {
+        "label": "Pedido creditado",
+        "type": "POSITIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando disponibilização",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "creditado",
+        "crédito realizado",
+        "saldo creditado"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "CANCELLED",
+      "completed": {
+        "label": "Pedido cancelado",
+        "type": "NEGATIVE"
+      },
+      "not_completed": {
+        "label": null,
+        "type": null
+      },
+      "input_aliases": [
+        "cancelado",
+        "cancelamento",
+        "anulado"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "REJECTED",
+      "completed": {
+        "label": "Pedido rejeitado",
+        "type": "NEGATIVE"
+      },
+      "not_completed": {
+        "label": null,
+        "type": null
+      },
+      "input_aliases": [
+        "rejeitado",
+        "rejeição",
+        "recusado"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "INVOICE",
+      "completed": {
+        "label": "Nota fiscal emitida",
+        "type": "POSITIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando emissão de nota fiscal",
+        "type": "WARNING"
+      },
+      "input_aliases": [],
+      "input_aliases_status": "PENDING_CLIENT_VALIDATION",
+      "input_aliases_note": "Aliases não fornecidos pelo cliente. Não inventar. Aguardando confirmação.",
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED_LABELS_ALIASES_PENDING"
+    },
+    {
+      "api_status": "RELEASED",
+      "completed": {
+        "label": "Pedido liberado",
+        "type": "POSITIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando data de liberação",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "liberado",
+        "desbloqueado",
+        "disponível"
+      ],
+      "input_aliases_note": "O alias 'disponível' isolado não deve classificar RELEASED. Exigir contexto de pedido (ex.: 'pedidos disponíveis', 'pedido liberado').",
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "IN_BILLING_PROCESSING",
+      "completed": {
+        "label": "Cobrança gerada",
+        "type": "POSITIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando geração de cobrança",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "em faturamento",
+        "processando fatura"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED"
+    },
+    {
+      "api_status": "CANCEL_PROCESSING",
+      "completed": {
+        "label": "Cancelamento em proc.",
+        "type": "INFORMATIVE"
+      },
+      "not_completed": {
+        "label": "Aguardando cancelamento",
+        "type": "WARNING"
+      },
+      "input_aliases": [],
+      "input_aliases_status": "PENDING_CLIENT_VALIDATION",
+      "input_aliases_note": "Aliases não fornecidos pelo cliente. Não inventar. Aguardando confirmação.",
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED_LABELS_ALIASES_PENDING"
+    },
+    {
+      "api_status": "REFUNDED",
+      "completed": {
+        "label": "Processado",
+        "type": "POSITIVE"
+      },
+      "completed_note": "Label fornecido pelo cliente como 'Processado'. Marcado como ambíguo — não substituir por 'Estorno processado' ou equivalente sem aprovação explícita do cliente.",
+      "label_clarity": "CLIENT_PROVIDED_AMBIGUOUS_LABEL",
+      "not_completed": {
+        "label": "Aguardando estorno",
+        "type": "WARNING"
+      },
+      "input_aliases": [
+        "reembolsado",
+        "reembolso",
+        "dinheiro devolvido"
+      ],
+      "input_aliases_note": "O alias 'processado' isolado não deve classificar REFUNDED. Exigir contexto de estorno/reembolso.",
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "CONFIRMED_PENDING_LABEL_CLARIFICATION"
+    },
+    {
+      "api_status": "PARTIAL_REFUNDED",
+      "completed": {
+        "label": null,
+        "type": null
+      },
+      "completed_status": "PENDING_CLIENT_VALIDATION",
+      "completed_note": "Label e type para o estado concluído não foram fornecidos pelo cliente. Aguardando confirmação.",
+      "not_completed": {
+        "label": "Processado parcialmente",
+        "type": "INFORMATIVE"
+      },
+      "input_aliases": [
+        "reembolso parcial",
+        "parcialmente reembolsado"
+      ],
+      "source": "Resposta técnica do cliente 2026-07-23",
+      "status": "PARTIALLY_CONFIRMED"
+    }
+  ],
+  "visual_types": {
+    "POSITIVE": "Indica sucesso ou conclusão positiva — exibir em verde ou equivalente",
+    "NEGATIVE": "Indica falha, cancelamento ou rejeição — exibir em vermelho ou equivalente",
+    "INFORMATIVE": "Indica estado neutro ou informativo — exibir em azul ou equivalente",
+    "WARNING": "Indica estado pendente ou aguardando ação — exibir em amarelo/laranja ou equivalente"
+  },
+  "forbidden_in_routes": {
+    "field": "idOrder",
+    "reason": "idOrder coexiste com orderNumber no objeto do pedido mas representa um identificador diferente. Nunca usar idOrder no path, na query string, no deeplink ou como substituto de orderNumber.",
+    "affected_routes": ["ROUTE-013-V2", "ROUTE-014", "ROUTE-015"],
+    "rule": "SEMPRE usar orderNumber nas rotas. NUNCA usar idOrder."
+  },
+  "summary": {
+    "total_statuses": 12,
+    "fully_confirmed": 8,
+    "confirmed_labels_aliases_pending": 2,
+    "partially_confirmed": 1,
+    "confirmed_pending_clarification": 1,
+    "statuses_without_not_completed_label": ["CANCELLED", "REJECTED"],
+    "statuses_without_completed_label": ["PARTIAL_REFUNDED"],
+    "statuses_with_pending_aliases": ["INVOICE", "CANCEL_PROCESSING"]
+  }
+}

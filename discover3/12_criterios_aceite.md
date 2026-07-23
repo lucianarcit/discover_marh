@@ -715,9 +715,326 @@
 | CA-051 | NAVEGACAO, API | MUST | LAC-001; DP-001 |
 | CA-052 | NAVEGACAO, SEGURANCA | MUST | SEG-003 |
 
-**Total: 52 critérios de aceite** — 50 MUST, 2 SHOULD.
-(15 novos critérios adicionados pela fonte `docs/cliente/Rotas_hr_space.html`)
+---
+
+## Bloco 13 — Colaboradores: deeplink e navegação (resposta técnica 2026-07-23)
+
+### CA-053 — INT-001 retorna navegação para `#/employees`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A; deeplink_routes_catalog.json `collaborator_deeplink_constraints` |
+| **Entrada** | "Consultar colaborador Wesley Fabrete." — colaborador encontrado |
+| **Resultado esperado** | [list_navigation] aponta para `#/employees` (ROUTE-003). Nenhum `:id` no deeplink. |
+| **Falha** | Qualquer rota com `:id` ou `edit` no deeplink |
+
+### CA-054 — INT-002 retorna navegação para `#/employees`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A |
+| **Entrada** | "Consultar colaborador CPF-SINTETICO-001." — colaborador encontrado |
+| **Resultado esperado** | [list_navigation] aponta para `#/employees`. Nenhum `:id` no deeplink. |
+| **Falha** | Deeplink com `:id` ou `beneficiaryId` |
+
+### CA-055 — Rota `#/employees/:id/edit` nunca aparece em resposta do agente
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A; ROUTE-008 `allowed_for_agent: false` |
+| **Resultado esperado** | Nenhuma resposta do agente contém `#/employees/` seguido de identificador e `/edit` |
+| **Falha** | Qualquer deeplink com padrão `#/employees/{id}/edit` |
+
+### CA-056 — `beneficiaryId` nunca aparece no deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA, SANITIZACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A; TEC-017; SEG-003 |
+| **Resultado esperado** | `beneficiaryId` não aparece em nenhum deeplink retornado |
+| **Falha** | Qualquer forma de `beneficiaryId` no deeplink (encoded ou não) |
+
+### CA-057 — Ausência de deeplink individual não impede resposta de consulta de colaborador
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, API |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A; RN-007 |
+| **Resultado esperado** | Agente retorna dados do colaborador encontrado + [list_navigation] para `#/employees`. Resposta completa mesmo sem deeplink individual. |
+| **Falha** | Agente recusa responder ou retorna erro por não conseguir montar deeplink individual |
+
+### CA-058 — Abertura externa de rota individual de colaborador não é declarada suportada
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-A |
+| **Resultado esperado** | Agente não afirma que é possível abrir diretamente o perfil de um colaborador via deeplink |
+| **Falha** | Agente afirma que o deeplink abrirá o colaborador específico quando a rota não é suportada |
 
 ---
 
-*Fontes: `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `04_catalogo_intencoes.md`, `06_analise_lacunas.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (CA-038 a CA-052 — navegação)*
+## Bloco 14 — Pedidos: parâmetros de rota (resposta técnica 2026-07-23)
+
+### CA-059 — Rota de detalhe de pedido usa `orderNumber` no PATH
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-014; DP-003-B |
+| **Entrada** | "Consultar pedido PEDIDO-SINTETICO-001." |
+| **Resultado esperado** | Deeplink contém `#/order-detail/PEDIDO-SINTETICO-001` (PATH) |
+| **Falha** | Parâmetro na query string; uso de `idOrder`; orderNumber ausente ou inventado |
+
+### CA-060 — `idOrder` é rejeitado pelo Navigation Builder
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | order_number_vs_id_order_rule; DP-003-B |
+| **Resultado esperado** | Nenhum deeplink contém `idOrder` como parâmetro de rota, query string ou valor encoded |
+| **Falha** | `idOrder` aparece em qualquer posição do deeplink |
+
+### CA-061 — Rota de solicitação usa `orderNumber` como query parameter
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 |
+| **Entrada** | Contexto de solicitação agrupadora com orderNumber disponível |
+| **Resultado esperado** | Deeplink contém `#/order-request-group?orderNumber=PEDIDO-SINTETICO-001` |
+| **Falha** | orderNumber no PATH; uso de `idOrder`; parâmetro ausente |
+
+### CA-062 — Rota de solicitação aceita um `orderNumber`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 `minimum_values: 1` |
+| **Entrada** | Solicitação com um pedido |
+| **Resultado esperado** | `?orderNumber=PEDIDO-SINTETICO-001` — um valor, sem vírgula |
+| **Falha** | Rota rejeitada com um único valor |
+
+### CA-063 — Rota de solicitação aceita dois `orderNumbers` separados por vírgula
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 `maximum_values: 2` |
+| **Entrada** | Solicitação agrupadora com dois pedidos |
+| **Resultado esperado** | `?orderNumber=PEDIDO-SINTETICO-001,PEDIDO-SINTETICO-002` |
+| **Falha** | Segundo número rejeitado; vírgula não aplicada; valor não encoded |
+
+### CA-064 — Rota de solicitação rejeita três ou mais `orderNumbers`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 `maximum_values: 2` |
+| **Resultado esperado** | Navigation Builder não gera deeplink com três ou mais orderNumbers — usa fallback ou omite [list_navigation] |
+| **Falha** | Deeplink com três ou mais valores |
+
+### CA-065 — Rota de solicitação rejeita valor vazio
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 `minimum_values: 1` |
+| **Resultado esperado** | `?orderNumber=` sem valor não gera deeplink |
+| **Falha** | Deeplink com query string vazia |
+
+### CA-066 — Caracteres de injeção rejeitados em `orderNumber`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-013-V2 e ROUTE-014 `path_injection_note` |
+| **Entrada** | orderNumber contendo `../`, `%2F`, `%2E`, `#`, `?` ou outros caracteres de injeção |
+| **Resultado esperado** | Navigation Builder rejeita o valor e não gera deeplink |
+| **Falha** | Deeplink com caracteres de injeção |
+
+### CA-067 — INT-003 usa rota de pedido específico (ROUTE-014) na POC
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | DP-003-B `poc_recommendation`; ROUTE-014 |
+| **Resultado esperado** | Consulta de pedido individual gera deeplink para `#/order-detail/{orderNumber}` |
+| **Falha** | Deeplink para `#/order-request-group` em consulta de pedido individual sem contexto de solicitação |
+
+### CA-068 — INT-005 usa `#/orders`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | ROUTE-012; INT-005 |
+| **Entrada** | "Pedidos com status pago" |
+| **Resultado esperado** | [list_navigation] aponta para `#/orders`. Não seleciona pedido específico automaticamente. |
+| **Falha** | Deeplink para pedido específico em resposta de lista por status |
+
+---
+
+## Bloco 15 — Status de pedido: mapeamento e aliases (resposta técnica 2026-07-23)
+
+### CA-069 — Alias confirmado mapeia para status correto
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json; RF-014 |
+| **Entrada** | "pedidos pagos" / "pedidos com pagamento realizado" / "pedidos pago" |
+| **Resultado esperado** | Classificado como PAID. Label exibido: "Pagamento confirmado" ou "Aguardando pagamento" conforme estado. |
+| **Falha** | Status não reconhecido ou label errado |
+
+### CA-070 — Aliases ausentes não são inventados
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `input_aliases_status: PENDING_CLIENT_VALIDATION` |
+| **Resultado esperado** | INVOICE e CANCEL_PROCESSING não são mapeados por expressões não confirmadas. ERR-004 para input não reconhecido. |
+| **Falha** | Agente inventa aliases para INVOICE ou CANCEL_PROCESSING |
+
+### CA-071 — "aguardando" isolado não classifica PENDING
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `classification_rules` |
+| **Entrada** | "estou aguardando" / "aguardando resposta" sem contexto de pedido |
+| **Resultado esperado** | Não classifica como PENDING. Pede esclarecimento ou trata como pergunta fora do escopo de status. |
+| **Falha** | PENDING disparado por "aguardando" isolado |
+
+### CA-072 — "disponível" isolado não classifica RELEASED
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `classification_rules` |
+| **Entrada** | "o colaborador está disponível?" |
+| **Resultado esperado** | Não classifica como RELEASED |
+| **Falha** | RELEASED disparado por "disponível" isolado |
+
+### CA-073 — "processado" isolado não classifica REFUNDED
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `classification_rules` |
+| **Entrada** | "documento processado" / "o sistema está processando" |
+| **Resultado esperado** | Não classifica como REFUNDED |
+| **Falha** | REFUNDED disparado por "processado" isolado |
+
+### CA-074 — PAID reconhece alias "pago"
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `PAID.input_aliases` |
+| **Entrada** | "pedidos pagos" |
+| **Resultado esperado** | Mapeado para PAID |
+| **Falha** | ERR-004 para alias confirmado |
+
+### CA-075 — REJECTED reconhece alias "recusado"
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `REJECTED.input_aliases` |
+| **Entrada** | "pedidos recusados" |
+| **Resultado esperado** | Mapeado para REJECTED |
+| **Falha** | ERR-004 para alias confirmado |
+
+### CA-076 — CANCELLED reconhece alias "anulado"
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `CANCELLED.input_aliases` |
+| **Entrada** | "pedidos anulados" |
+| **Resultado esperado** | Mapeado para CANCELLED |
+| **Falha** | ERR-004 para alias confirmado |
+
+### CA-077 — INVOICE permanece sem aliases até confirmação
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `INVOICE.input_aliases_status: PENDING_CLIENT_VALIDATION` |
+| **Resultado esperado** | Nenhum input é mapeado para INVOICE enquanto aliases não forem confirmados |
+| **Falha** | INVOICE disparado por alias não confirmado |
+
+### CA-078 — CANCEL_PROCESSING permanece sem aliases até confirmação
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API, ESCOPO |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `CANCEL_PROCESSING.input_aliases_status: PENDING_CLIENT_VALIDATION` |
+| **Resultado esperado** | Nenhum input é mapeado para CANCEL_PROCESSING enquanto aliases não forem confirmados |
+| **Falha** | CANCEL_PROCESSING disparado por alias não confirmado |
+
+### CA-079 — PARTIAL_REFUNDED concluído permanece pendente
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json `PARTIAL_REFUNDED.completed_status: PENDING_CLIENT_VALIDATION` |
+| **Resultado esperado** | Agente não exibe label de estado concluído para PARTIAL_REFUNDED enquanto não confirmado pelo cliente |
+| **Falha** | Agente exibe label inventado para PARTIAL_REFUNDED concluído |
+
+### CA-080 — Templates preservam labels exatamente como aprovados
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | API |
+| **Prioridade** | MUST |
+| **Requisitos** | order_status_catalog.json; `label_clarity: CLIENT_PROVIDED_AMBIGUOUS_LABEL` |
+| **Resultado esperado** | Label "Processado" para REFUNDED exibido exatamente como fornecido, sem substituição por "Estorno processado" ou equivalente |
+| **Falha** | Label modificado sem aprovação do cliente |
+
+---
+
+**Total: 80 critérios de aceite** — 78 MUST, 2 SHOULD.
+(15 critérios adicionados pela fonte `docs/cliente/Rotas_hr_space.html`; 28 critérios adicionados pela resposta técnica 2026-07-23)
+
+| Bloco | Critérios | Fonte |
+|---|---|---|
+| 1–12 (CA-001 a CA-037) | 37 | `00_Agente_Consultivo_MARH.html` |
+| 9b (CA-038 a CA-052) | 15 | `Rotas_hr_space.html` (2026-07-21) |
+| 13 (CA-053 a CA-058) | 6 | Resposta técnica 2026-07-23 — colaboradores |
+| 14 (CA-059 a CA-068) | 10 | Resposta técnica 2026-07-23 — pedidos/rotas |
+| 15 (CA-069 a CA-080) | 12 | Resposta técnica 2026-07-23 — status |
+
+---
+
+*Fontes: `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `04_catalogo_intencoes.md`, `06_analise_lacunas.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (CA-038 a CA-052 — navegação; CA-053 a CA-080 — resposta técnica Leandro → Marcelo Gorzoni da Silva)*

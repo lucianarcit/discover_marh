@@ -231,18 +231,59 @@
       "notes": "Rota para lista de pedidos. Recomendada para INT-004 (fallback quando orderNumber não disponível) e INT-005 (pedidos por status). Não requer parâmetro."
     },
     {
-      "route_id": "ROUTE-013",
-      "route_pattern": "#/order-request-group",
-      "screen": "Detalhes da solicitação",
+      "route_id": "ROUTE-013-V2",
+      "route_pattern": "#/order-request-group?orderNumber={orderNumbers}",
+      "screen": "Detalhe da solicitação (agrupadora)",
       "category": "ORDERS",
       "required_parameters": [],
-      "dynamic_parameters": [],
+      "dynamic_parameters": [
+        {
+          "name": "orderNumbers",
+          "parameter_location": "QUERY",
+          "parameter_name": "orderNumber",
+          "description": "Um ou dois orderNumbers separados por vírgula",
+          "allowed_sources": ["TRUSTED_API_RESPONSE_OR_VALIDATED_USER_INPUT"],
+          "forbidden_sources": ["LLM_INVENTED", "RAG_CONTENT"],
+          "supports_multiple_values": true,
+          "separator": ",",
+          "minimum_values": 1,
+          "maximum_values": 2,
+          "forbidden_parameter_aliases": ["idOrder"],
+          "validation_rules": [
+            "Cada orderNumber deve ser validado individualmente antes de montar a query string",
+            "Não aceitar valor vazio",
+            "Não aceitar mais de dois valores",
+            "Não aceitar vírgulas ou caracteres adicionais dentro de um número",
+            "Aplicar URL encoding correto na query string",
+            "Nunca aceitar idOrder",
+            "Nunca permitir path/query injection"
+          ],
+          "path_injection_note": "Validar que nenhum valor contém '/', '..', '%2F', '%2E' ou caracteres de injeção."
+        }
+      ],
       "related_intents": [],
-      "allowed_for_agent": false,
-      "recommended_by_client_doc": false,
+      "allowed_for_agent": true,
+      "recommended_by_client_doc": true,
       "transactional_screen": false,
+      "requires_parameter_for_agent_use": true,
+      "source": "Resposta técnica do cliente 2026-07-23",
       "source_section": "4.4",
-      "notes": "Tela de detalhes da solicitação. Sem intenção correspondente no catálogo. Não recomendada para uso pelo agente no momento."
+      "agent_use_context": "Usar somente quando a resposta estiver tratando a solicitação agrupadora (que pode conter um ou dois pedidos). Não usar para consulta de pedido individual — usar ROUTE-014 para esse caso.",
+      "navigation_default_decision": "ORDER_NAVIGATION_DEFAULT = PENDING_PRODUCT_CONFIRMATION",
+      "navigation_default_note": "Decisão sobre qual tela deve ser o destino padrão da resposta do agente (pedido específico ROUTE-014 vs. solicitação agrupadora ROUTE-013-V2) está pendente de confirmação do produto. POC recomenda: consulta de pedido único → ROUTE-014; resposta sobre solicitação agrupadora → ROUTE-013-V2.",
+      "examples": [
+        {
+          "description": "Solicitação com um pedido",
+          "url_prd": "https://meualelo-webviews.alelo.com.br/#/order-request-group?orderNumber=PEDIDO-SINTETICO-001",
+          "encoded": "https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-request-group%3ForderNumber%3DPEDIDO-SINTETICO-001"
+        },
+        {
+          "description": "Solicitação com dois pedidos",
+          "url_prd": "https://meualelo-webviews.alelo.com.br/#/order-request-group?orderNumber=PEDIDO-SINTETICO-001,PEDIDO-SINTETICO-002",
+          "encoded": "https%3A%2F%2Fmeualelo-webviews.alelo.com.br%2F%23%2Forder-request-group%3ForderNumber%3DPEDIDO-SINTETICO-001%2CPEDIDO-SINTETICO-002"
+        }
+      ],
+      "notes": "Tela de detalhe da solicitação agrupadora. Confirmada em resposta técnica 2026-07-23. Aceita um ou dois orderNumbers via query parameter. idOrder é proibido. Decisão de navegação padrão (vs. ROUTE-014) pendente de confirmação de produto."
     },
     {
       "route_id": "ROUTE-014",
@@ -556,15 +597,51 @@
     }
   ],
   "routes_allowed_for_agent_summary": [
-    {"route_id": "ROUTE-003", "pattern": "#/employees", "requires_param": false},
+    {"route_id": "ROUTE-003", "pattern": "#/employees", "requires_param": false, "note": "Rota segura de colaborador — deeplink individual não suportado"},
     {"route_id": "ROUTE-012", "pattern": "#/orders", "requires_param": false},
-    {"route_id": "ROUTE-014", "pattern": "#/order-detail/:orderNumber", "requires_param": true},
+    {"route_id": "ROUTE-013-V2", "pattern": "#/order-request-group?orderNumber={orderNumbers}", "requires_param": true, "param_location": "QUERY", "max_values": 2, "forbidden_param": "idOrder", "decision_pending": "ORDER_NAVIGATION_DEFAULT"},
+    {"route_id": "ROUTE-014", "pattern": "#/order-detail/:orderNumber", "requires_param": true, "param_location": "PATH", "forbidden_param": "idOrder"},
     {"route_id": "ROUTE-015", "pattern": "#/order-detail/:orderNumber/beneficiaries", "requires_param": true},
     {"route_id": "ROUTE-017", "pattern": "#/new-order/products", "requires_param": false, "restriction": "REDIRECT_ONLY"},
     {"route_id": "ROUTE-024", "pattern": "#/card-tracking", "requires_param": false},
     {"route_id": "ROUTE-025", "pattern": "#/card-tracking/:orderNumber", "requires_param": true},
     {"route_id": "ROUTE-026", "pattern": "#/card-tracking/:orderNumber/:arNumber", "requires_param": true}
   ],
+  "order_number_vs_id_order_rule": {
+    "rule": "orderNumber e idOrder são campos distintos que coexistem no objeto do pedido mas representam identificadores diferentes.",
+    "forbidden_field": "idOrder",
+    "forbidden_contexts": ["path", "query_string", "deeplink", "substituto_de_orderNumber"],
+    "required_field": "orderNumber",
+    "required_field_note": "Sempre usar orderNumber nas rotas de pedido. Nunca usar idOrder como substituto.",
+    "source": "Resposta técnica do cliente 2026-07-23"
+  },
+  "collaborator_deeplink_constraints": {
+    "route_safe": "#/employees",
+    "route_safe_id": "ROUTE-003",
+    "route_individual_status": "NOT_SUPPORTED_CURRENTLY",
+    "route_individual": "#/employees/:id/edit",
+    "route_individual_id": "ROUTE-008",
+    "reason_not_supported": [
+      "A rota #/employees/:id/edit existe como rota interna, mas não é deeplink-safe",
+      "A tela depende de location.state para receber os dados — não busca via API por :id",
+      "Abertura direta por URL externa quebra porque os dados esperados não estão em memória",
+      "Não existe endpoint de detalhe de beneficiário por id na ma-hr-orch"
+    ],
+    "external_deeplink_supported": false,
+    "requires_location_state": true,
+    "backend_detail_endpoint": "NOT_AVAILABLE",
+    "agent_navigation_route": "#/employees",
+    "future_feature_required": true,
+    "future_feature_items": [
+      "Endpoint GET de beneficiário por id",
+      "Adaptação da tela para carregamento por parâmetro (sem dependência de location.state)",
+      "Validação de autorização",
+      "Validação de exposição do identificador"
+    ],
+    "future_feature_note": "Feature futura identificada mas fora do escopo da POC atual.",
+    "forbidden_in_deeplink": ["beneficiaryId"],
+    "source": "Resposta técnica do cliente 2026-07-23 (Leandro → Marcelo Gorzoni da Silva)"
+  },
   "pending_security_decisions": [
     {
       "id": "NAV-SEC-001",
@@ -572,7 +649,16 @@
       "affected_routes": ["ROUTE-008", "ROUTE-009", "ROUTE-010", "ROUTE-011"],
       "current_behavior": "Usar #/employees (ROUTE-003) enquanto não houver aprovação.",
       "risk": "beneficiaryId é campo restrito (TEC-017, TEC-018). Expô-lo no deeplink pode violar a política de PII.",
-      "status": "AGUARDANDO_DECISAO"
+      "status": "RESOLVED_NOT_SUPPORTED — rota individual não é deeplink-safe. A tela depende de location.state e não há endpoint de detalhe por id. Feature futura necessária."
+    }
+  ],
+  "pending_navigation_decisions": [
+    {
+      "id": "ORDER_NAVIGATION_DEFAULT",
+      "question": "O botão da resposta de consulta de pedido deve abrir por padrão o detalhe do pedido específico (#/order-detail/:orderNumber) ou o detalhe da solicitação agrupadora (#/order-request-group?orderNumber=...)?",
+      "status": "PENDING_PRODUCT_CONFIRMATION",
+      "poc_recommendation": "Consulta de um único pedido → ROUTE-014 (#/order-detail/:orderNumber). Resposta sobre solicitação/grupo → ROUTE-013-V2. Não transformar em regra sem confirmação.",
+      "source": "Resposta técnica do cliente 2026-07-23"
     }
   ],
   "routing_rules": [

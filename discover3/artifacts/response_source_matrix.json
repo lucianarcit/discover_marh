@@ -73,7 +73,7 @@
     "gaps": [
       "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
     ],
-    "notes": "Se total > 1, apresentar lista e solicitar escolha ao usuário (RF-011).",
+    "notes": "Se total > 1, apresentar lista e solicitar escolha ao usuário (RF-011). Mesmo após escolha individual, a navegação permanece em #/employees — deeplink individual não suportado (DP-003-A).",
     "navigation": {
       "supported": true,
       "source_type": "CLIENT_NAVIGATION_CONTRACT",
@@ -82,7 +82,10 @@
       "route_pattern": "#/employees",
       "required_parameters": [],
       "parameter_source": "NOT_REQUIRED",
-      "status": "CONFIRMED"
+      "status": "CONFIRMED",
+      "individual_deeplink": "NOT_SUPPORTED",
+      "individual_deeplink_reason": "Rota #/employees/:id/edit depende de location.state. Não há endpoint de detalhe por id. Feature futura necessária (DP-003-A).",
+      "forbidden": ["#/employees/:id/edit", "beneficiaryId no deeplink"]
     },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
@@ -149,7 +152,7 @@
     "gaps": [
       "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
     ],
-    "notes": "Mesmo endpoint que INT-001. Parâmetro nameOrCpf aceita CPF.",
+    "notes": "Mesmo endpoint que INT-001. Parâmetro nameOrCpf aceita CPF. Deeplink individual não suportado (DP-003-A).",
     "navigation": {
       "supported": true,
       "source_type": "CLIENT_NAVIGATION_CONTRACT",
@@ -158,7 +161,10 @@
       "route_pattern": "#/employees",
       "required_parameters": [],
       "parameter_source": "NOT_REQUIRED",
-      "status": "CONFIRMED"
+      "status": "CONFIRMED",
+      "individual_deeplink": "NOT_SUPPORTED",
+      "individual_deeplink_reason": "DP-003-A — rota não é deeplink-safe",
+      "forbidden": ["#/employees/:id/edit", "beneficiaryId no deeplink"]
     },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
@@ -246,17 +252,29 @@
       "supported": true,
       "source_type": "CLIENT_NAVIGATION_CONTRACT",
       "source_path": "docs/cliente/Rotas_hr_space.html",
-      "route_pattern": "#/order-detail/:orderNumber",
+      "route_pattern": "#/order-detail/{orderNumber}",
       "route_id": "ROUTE-014",
       "required_parameters": ["orderNumber"],
+      "forbidden_parameters": ["idOrder"],
       "parameter_source": "USER_VALIDATED_OR_API_RESPONSE",
+      "parameter_location": "PATH",
       "status": "CONFIRMED",
       "auxiliary_route": {
         "route_id": "ROUTE-015",
-        "route_pattern": "#/order-detail/:orderNumber/beneficiaries",
+        "route_pattern": "#/order-detail/{orderNumber}/beneficiaries",
         "condition": "Quando a resposta incluir colaboradores do pedido"
+      },
+      "solicitation_route": {
+        "route_id": "ROUTE-013-V2",
+        "route_pattern": "#/order-request-group?orderNumber={orderNumbers}",
+        "condition": "Quando o contexto for a solicitação agrupadora (1-2 pedidos)",
+        "parameter_location": "QUERY",
+        "max_values": 2,
+        "decision_pending": "ORDER_NAVIGATION_DEFAULT (DP-003-B)"
       }
     },
+    "restricted_fields": ["billingDocumentNumber", "contractNumber", "idLegalPersonBilling", "idOrder"],
+    "status_mapping_source": "discover3/artifacts/order_status_catalog.json",
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {

@@ -138,20 +138,20 @@
 
 ---
 
-## L8 — Mapeamento de status da API para português não especificado
+## L8 — Mapeamento de status da API para português
 
 | Campo | Valor |
 |---|---|
 | **LAC ID** | LAC-008 |
 | **Momento** | NECESSARIO_PILOTO |
-| **Status** | ABERTA |
+| **Status** | **PARTIALLY_RESOLVED** (2026-07-23) |
 | **Afeta** | INT-003, INT-004, INT-005 |
-| **Descrição** | Os status retornados pela API de pedidos são em inglês (IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED — TEC-022). A KB documenta 6 status em português (KB-025): "Aguardando pagamento", "Pagamento confirmado", "Nota Fiscal Emitida", "Aguardando Disponibilização", "Pedido creditado", "Cancelado". Há discrepância: a API tem 10 status, a KB tem 6. |
-| **Impacto** | O agente pode exibir status em inglês ao usuário ou usar mapeamento incorreto (CONFLITANTE). |
-| **Evidências** | TEC-022, KB-025; conflito entre lista de status da API e lista da KB |
-| **Ação necessária** | Criar tabela de mapeamento completa: status da API → label em português. Definir o que exibir para status não presentes na KB (REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED). |
+| **Resolução parcial** | Resposta técnica 2026-07-23 forneceu labels completed/not_completed e tipos visuais para 12 status da API. Catálogo registrado em `discover3/artifacts/order_status_catalog.json`. |
+| **Gaps restantes** | (1) Aliases de INVOICE — pending; (2) Aliases de CANCEL_PROCESSING — pending; (3) Label e type concluído de PARTIAL_REFUNDED — pending; (4) Contexto de uso da tabela (timeline vs. chat vs. ambos) — pending; (5) Confirmação do label "Processado" para REFUNDED. Registrados em DP-004. |
+| **Evidências** | TEC-022, KB-025; `order_status_catalog.json`; Resposta técnica 2026-07-23 |
+| **Ação necessária** | Fechar os 5 gaps listados acima com o cliente. |
 | **Requisitos relacionados** | TEC-022, KB-025, RF-014 |
-| **Tipo** | CONFLITANTE (documentação vs. KB) |
+| **Tipo** | CONFLITANTE (resolvido parcialmente) |
 
 ---
 
@@ -187,18 +187,35 @@
 
 ---
 
+## L11 — Deeplink individual de colaborador não suportado
+
+| Campo | Valor |
+|---|---|
+| **LAC ID** | LAC-011 |
+| **Momento** | MELHORIA_FUTURA |
+| **Status** | ABERTA (feature futura) |
+| **Afeta** | INT-001, INT-002 |
+| **Descrição** | A rota `#/employees/:id/edit` existe como rota interna mas não é deeplink-safe. A tela depende de `location.state` para receber os dados do colaborador — não busca pela API usando o `:id`. Abertura externa direta quebra. Não existe endpoint de detalhe de beneficiário por id na ma-hr-orch. |
+| **Impacto atual** | O agente navega para `#/employees` (lista) após consulta de colaborador, sem link direto ao registro individual. Funcional para a POC. |
+| **Impacto futuro** | Experiência de navegação limitada — usuário vê a lista e precisa localizar o colaborador manualmente. |
+| **Ação necessária para feature futura** | (1) Endpoint GET de beneficiário por id na ma-hr-orch; (2) Adaptação da tela para carregamento por parâmetro; (3) Validação de autorização; (4) Revisão de exposição do identificador. |
+| **Requisitos relacionados** | DP-003-A, NAV-SEC-001 |
+| **Fonte** | Resposta técnica 2026-07-23 (Leandro → Marcelo Gorzoni da Silva) |
+
+---
+
 ## Conflitos entre fontes
 
-### CF-001 — Status de pedidos: API (10 status em inglês) vs. KB (6 status em português)
+### CF-001 — Status de pedidos: API (12 status em inglês) vs. KB (6 status em português)
 
 | Campo | Valor |
 |---|---|
 | **CF ID** | CF-001 |
+| **Status** | **PARTIALLY_RESOLVED** (2026-07-23) |
 | **Fontes em conflito** | `docs\cliente\Gestao_de_Pedidos.html` seção 3 (TEC-022) vs. `docs\kb\6ACOMPA_PEDIDO_STATUS.md` (KB-025) |
-| **Descrição** | A API retorna 10 valores de status em inglês. A KB documenta 6 status em português. Não há mapeamento explícito entre os dois conjuntos. Quatro status da API (REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED) não aparecem na KB. |
-| **Impacto** | O agente pode usar labels inconsistentes com o que o usuário vê no portal. |
-| **Resolução necessária** | Criar mapeamento completo (LAC-008). Validar com cliente quais labels devem ser exibidos ao usuário. |
-| **Classificação** | CONFLITANTE |
+| **Resolução** | Resposta técnica 2026-07-23 forneceu labels completed/not_completed e tipos visuais para todos os status. Catálogo criado em `discover3/artifacts/order_status_catalog.json`. Aliases confirmados para 10 status; INVOICE e CANCEL_PROCESSING sem aliases (pendente). Label "Processado" de REFUNDED marcado como CLIENT_PROVIDED_AMBIGUOUS_LABEL. |
+| **Impacto restante** | Gaps residuais (aliases INVOICE/CANCEL_PROCESSING, label concluído PARTIAL_REFUNDED, contexto da tabela, confirmação de REFUNDED) documentados em DP-004. |
+| **Classificação** | PARCIALMENTE_RESOLVIDO |
 
 ### CF-002 — Rastreamento de cartão: KB descreve portal web, não endpoint de API
 
@@ -263,14 +280,17 @@
 
 ## Contagem final
 
-| Categoria | Qtd |
-|---|---|
-| Lacunas bloqueadoras do MVP | 3 (LAC-001, LAC-003, LAC-006) |
-| Lacunas necessárias para o piloto | 6 (LAC-002, LAC-004, LAC-005, LAC-007, LAC-008, LAC-009) |
-| Lacunas necessárias para produção | 1 (LAC-010) |
-| Conflitos entre fontes | 3 (CF-001, CF-002, CF-003) |
-| **Total** | **13** |
+| Categoria | Qtd | IDs |
+|---|---|---|
+| Lacunas bloqueadoras do MVP | 3 | LAC-001, LAC-003, LAC-006 |
+| Lacunas necessárias para o piloto | 6 | LAC-002, LAC-004, LAC-005, LAC-007 (partial), LAC-008 (partial), LAC-009 |
+| Lacunas necessárias para produção | 1 | LAC-010 |
+| Melhorias futuras | 1 | LAC-011 (deeplink individual de colaborador) |
+| Conflitos entre fontes | 3 | CF-001 (partial), CF-002, CF-003 |
+| **Total** | **14** | |
+
+**Lacunas parcialmente resolvidas:** LAC-007 (URL webview — formato confirmado, BFF pendente), LAC-008 (status — labels confirmados, gaps residuais), CF-001 (status API vs. KB — mapeamento fornecido, aliases incompletos).
 
 ---
 
-*Fontes: `01_requisitos_cliente.md`, `02_conhecimento_rag.md`, `03_capacidades_restricoes_tecnicas.md`, `03_matriz_cobertura_escopo.md`, `04_catalogo_intencoes.md`, `05_matriz_fontes_resposta.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (LAC-007 PARTIALLY_RESOLVED por `Rotas_hr_space.html`)*
+*Fontes: `01_requisitos_cliente.md`, `02_conhecimento_rag.md`, `03_capacidades_restricoes_tecnicas.md`, `04_catalogo_intencoes.md`, `05_matriz_fontes_resposta.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (LAC-007 PARTIALLY_RESOLVED; LAC-008 PARTIALLY_RESOLVED; LAC-011 nova; CF-001 PARTIALLY_RESOLVED — resposta técnica Leandro → Marcelo Gorzoni da Silva)*

@@ -56,18 +56,39 @@
 
 ---
 
-## DP-003 — Camada responsável pela URL final da webview ([list_navigation])
+## DP-003 — Deeplink de navegação — subdividido em DP-003-A e DP-003-B
+
+### DP-003-A — Deeplink de colaborador
 
 | Campo | Valor |
 |---|---|
-| **ID** | DP-003 |
-| **Impacto** | ~~BLOQUEADOR_PILOTO~~ → **PARTIALLY_RESOLVED** |
-| **Responsável** | ARQUITETURA (API MARH + Frontend) |
+| **ID** | DP-003-A |
+| **Impacto** | MELHORIA (não bloqueia POC) |
+| **Responsável** | ARQUITETURA + MA_HR_ORCH |
+| **Origem** | LAC-007, AMB-002, NAV-SEC-001, DP-008 |
+| **Status** | **RESOLVED_NOT_SUPPORTED_CURRENTLY** |
+| **O que foi resolvido** | A rota `#/employees/:id/edit` existe como rota interna mas **não é deeplink-safe**. A tela depende de `location.state` (dados passados pela listagem) — não busca dados pela API usando o `:id`. Abrir a URL diretamente quebra porque os dados esperados não estão em memória. Não existe endpoint de detalhe de beneficiário por id. `beneficiaryId` nunca deve aparecer no deeplink. |
+| **Navegação segura disponível** | `#/employees` (ROUTE-003) — lista de colaboradores. Funciona sem parâmetro. |
+| **Feature futura necessária** | (1) Endpoint GET de beneficiário por id; (2) Adaptação da tela para carregamento por parâmetro; (3) Validação de autorização; (4) Validação de exposição do identificador. Esta feature está fora do escopo da POC atual. |
+| **Referência** | `discover3/artifacts/deeplink_routes_catalog.json` campo `collaborator_deeplink_constraints` |
+| **Fonte** | Resposta técnica 2026-07-23 (Leandro → Marcelo Gorzoni da Silva) |
+
+### DP-003-B — Deeplink de pedido
+
+| Campo | Valor |
+|---|---|
+| **ID** | DP-003-B |
+| **Impacto** | ~~BLOQUEADOR_PILOTO~~ → **PARTIALLY_RESOLVED_PENDING_DEFAULT_SCREEN** |
+| **Responsável** | ARQUITETURA + PRODUTO |
 | **Origem** | LAC-007, AMB-002, RNF-004 |
-| **Status** | **PARTIALLY_RESOLVED** — `Rotas_hr_space.html` (2026-07-21) confirmou formato, bases por ambiente, deeplink e parâmetros. |
-| **O que foi resolvido** | Formato da URL (`{BASE_URL}/#{ROTA}`); bases HML e PRD; template do deeplink; casing dos parâmetros (`isModal`, `showNavbar`, `authRequired`); rotas autorizadas; responsabilidade de montar o deeplink atribuída ao Agente/Backend; Frontend identifica `[list_navigation]` e abre o deeplink. |
-| **O que ainda está em aberto** | Se há camada intermediária (BFF) entre o Agente e o Frontend para casos específicos. Para a POC, o agente monta o deeplink diretamente. |
+| **Status** | **PARTIALLY_RESOLVED_PENDING_DEFAULT_SCREEN** |
+| **O que foi resolvido** | Formato das rotas; parâmetro `orderNumber`; diferença para `idOrder`; suporte a múltiplos números na solicitação; bases HML e PRD; template do deeplink; casing dos parâmetros; responsabilidade de montar o deeplink. |
+| **Rotas confirmadas** | `#/order-detail/{orderNumber}` (ROUTE-014) — detalhe do pedido específico (PATH); `#/order-request-group?orderNumber={orderNumbers}` (ROUTE-013-V2) — detalhe da solicitação agrupadora (QUERY, máximo 2 valores). |
+| **Regra crítica** | `orderNumber` ≠ `idOrder`. Nunca usar `idOrder` no path, query string ou deeplink. |
+| **O que ainda está pendente** | Qual tela deve ser o destino padrão da resposta do agente ao consultar um pedido: detalhe do pedido específico (ROUTE-014) ou detalhe da solicitação agrupadora (ROUTE-013-V2)? |
+| **Recomendação técnica para POC** | Consulta de pedido único → ROUTE-014. Resposta sobre solicitação agrupadora → ROUTE-013-V2. Não transformar em regra sem confirmação. |
 | **Referência** | `discover3/artifacts/deeplink_routes_catalog.json`; `discover3/agent_policy.md` seção 7 |
+| **Fonte** | `Rotas_hr_space.html` (2026-07-21); Resposta técnica 2026-07-23 |
 | **Backlog afetado** | BL-016 (Piloto — desbloqueado para POC) |
 
 ---
@@ -80,12 +101,9 @@
 | **Impacto** | MELHORIA (não bloqueia POC) |
 | **Responsável** | ARQUITETURA + TIME DE SEGURANÇA |
 | **Origem** | NAV-SEC-001, `Rotas_hr_space.html` s.4.3 e s.5 |
-| **Pergunta** | O identificador do colaborador (`beneficiaryId` / `:id`) pode ser incluído no deeplink retornado ao frontend pelo agente? |
-| **Contexto** | O documento `Rotas_hr_space.html` menciona `#/employees/:id/edit` como opção quando houver identificador disponível. Porém, `beneficiaryId` é campo restrito no contrato da API (TEC-017, TEC-018) — não deve ir ao modelo de linguagem. Incluí-lo no deeplink pode representar exposição de dado restrito ao frontend, ao app e potencialmente ao usuário. |
-| **O que é necessário** | Confirmação do time de segurança se `beneficiaryId` pode aparecer no deeplink ou se deve ser substituído por outro identificador não restrito. |
-| **Comportamento atual** | Usar `#/employees` (ROUTE-003) enquanto não houver aprovação. Não usar `#/employees/:id/edit`. |
-| **Impacto se não respondida** | O agente continua funcionando com `#/employees`. Navegação para colaborador individual não será implementada até resolução. |
-| **Backlog afetado** | BL-novo (Piloto — desejável) |
+| **Status** | **RESOLVED_NOT_SUPPORTED** — A resposta técnica de 2026-07-23 confirmou que a rota não é deeplink-safe e não existe endpoint de detalhe por id. A questão de segurança sobre `beneficiaryId` no deeplink tornou-se secundária: o deeplink individual não é possível independentemente. |
+| **Comportamento atual** | Usar `#/employees` (ROUTE-003). Não usar `#/employees/:id/edit`. Não expor `beneficiaryId` em nenhuma circunstância. |
+| **Feature futura** | Deeplink individual de colaborador depende de feature futura (endpoint + adaptação da tela). Registrado em DP-003-A. |
 
 ---
 
@@ -94,14 +112,16 @@
 | Campo | Valor |
 |---|---|
 | **ID** | DP-004 |
-| **Impacto** | BLOQUEADOR_PILOTO |
+| **Impacto** | ~~BLOQUEADOR_PILOTO~~ → **PARTIALLY_RESOLVED_PENDING_GAPS** |
 | **Responsável** | CLIENTE |
 | **Origem** | LAC-008, CF-001, TEC-022, KB-025 |
-| **Pergunta** | Quais são os labels em português a serem exibidos ao usuário para cada status retornado pela API? |
-| **Contexto** | A API retorna 10 status em inglês. A KB documenta 6 status em português, mas há discrepância — 4 status da API (REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED) não têm correspondência validada na KB. O status "Nota Fiscal Emitida" e "Aguardando Disponibilização" da KB não têm correspondência clara na API. |
-| **O que é necessário** | Tabela de mapeamento completa validada pelo cliente: status API → label exibido ao usuário. |
-| **Impacto se não respondida** | O agente pode exibir status em inglês ou usar labels incorretos que não correspondem ao que o usuário vê no portal. |
-| **Backlog afetado** | BL-014 (Piloto) |
+| **Status** | **PARTIALLY_RESOLVED_PENDING_GAPS** — Resposta técnica 2026-07-23 forneceu labels completed/not_completed e aliases para 10 status. |
+| **O que foi resolvido** | Labels completed e not_completed para 12 status; tipos visuais (POSITIVE, NEGATIVE, INFORMATIVE, WARNING); aliases de 10 status (INVOICE e CANCEL_PROCESSING sem aliases). |
+| **Gaps restantes** | (1) Aliases de INVOICE; (2) Aliases de CANCEL_PROCESSING; (3) Label e type concluído de PARTIAL_REFUNDED; (4) Contexto de uso da tabela (timeline, resumo do chat ou ambos); (5) Confirmação do label genérico "Processado" para REFUNDED. |
+| **Pergunta de acompanhamento** | "Recebemos os mappings. Para fechar a tabela, poderiam confirmar: (1) quais variações de texto devem mapear para INVOICE; (2) quais variações devem mapear para CANCEL_PROCESSING; (3) qual label e tipo usar quando PARTIAL_REFUNDED estiver concluído; (4) se as colunas Concluído/Não concluído são da timeline, do resumo do chat ou de ambos; (5) se REFUNDED concluído deve permanecer como 'Processado'?" |
+| **Referência** | `discover3/artifacts/order_status_catalog.json` |
+| **Fonte** | Resposta técnica 2026-07-23 (Leandro → Marcelo Gorzoni da Silva) |
+| **Backlog afetado** | BL-014 (Piloto — parcialmente desbloqueado) |
 
 ---
 
@@ -184,17 +204,26 @@
 |---|---|---|
 | **DP-001** | Endpoint de rastreamento por orderNumber existe? | MA_HR_ORCH |
 | **DP-002** | Rastreamento por CPF é viável na ma-hr-orch? | MA_HR_ORCH |
-| **DP-003** | Quem monta a URL da webview para [list_navigation]? | ARQUITETURA |
-| **DP-004** | Quais labels em português para cada status da API? | CLIENTE |
+| **DP-003-B** | Qual tela padrão: pedido específico ou solicitação agrupadora? | PRODUTO |
+| **DP-004** | Fechar gaps restantes de status (aliases, PARTIAL_REFUNDED, contexto da tabela) | CLIENTE |
 | **DP-005** | Estratégia de paginação para filtro de status? | ARQUITETURA |
+
+### Decisões parcialmente resolvidas
+
+| ID | Status | Pendência restante |
+|---|---|---|
+| **DP-003-A** | RESOLVED_NOT_SUPPORTED_CURRENTLY | Feature futura (endpoint + tela) necessária para deeplink individual |
+| **DP-003-B** | PARTIALLY_RESOLVED_PENDING_DEFAULT_SCREEN | Tela padrão do botão de navegação de pedido |
+| **DP-004** | PARTIALLY_RESOLVED_PENDING_GAPS | 5 gaps listados na seção DP-004 |
+| **DP-008** | RESOLVED_NOT_SUPPORTED | Deeplink individual não possível — feature futura |
 
 ### Decisões de melhoria (não bloqueiam, mas melhoram a experiência)
 
 | ID | Pergunta central | Responsável |
 |---|---|---|
 | **DP-007** | GET /v1/orders suporta ordenação por data? | MA_HR_ORCH |
-| **DP-008** | total de beneficiaries = total de cartões? | MA_HR_ORCH |
+| **DP-008-B** | total de beneficiaries = total de cartões? | MA_HR_ORCH |
 
 ---
 
-*Fontes: `06_analise_lacunas.md`, `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `14_backlog_mvp.md` · Gerado em 2026-07-22*
+*Fontes: `06_analise_lacunas.md`, `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `14_backlog_mvp.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (DP-003 subdividido em A/B; DP-004 PARTIALLY_RESOLVED; resposta técnica Leandro → Marcelo Gorzoni da Silva)*
