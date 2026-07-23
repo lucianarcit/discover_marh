@@ -44,6 +44,10 @@ docs/sample/
 .DS_Store
 Thumbs.db
 
-# ─── CDK ─────────────────────────────────────────────────────────────────────
+# ─── CDK / Terraform ─────────────────────────────────────────────────────────
 infra/cdk.out/
+infra/.build/
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
 *.js.map
