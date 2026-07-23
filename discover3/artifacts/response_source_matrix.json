@@ -74,6 +74,16 @@
       "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
     ],
     "notes": "Se total > 1, apresentar lista e solicitar escolha ao usuário (RF-011).",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "route_id": "ROUTE-003",
+      "route_pattern": "#/employees",
+      "required_parameters": [],
+      "parameter_source": "NOT_REQUIRED",
+      "status": "CONFIRMED"
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -140,6 +150,16 @@
       "LAC-006 — sanitização de PII não confirmada na ma-hr-orch"
     ],
     "notes": "Mesmo endpoint que INT-001. Parâmetro nameOrCpf aceita CPF.",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "route_id": "ROUTE-003",
+      "route_pattern": "#/employees",
+      "required_parameters": [],
+      "parameter_source": "NOT_REQUIRED",
+      "status": "CONFIRMED"
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -222,6 +242,21 @@
       "LAC-006 — sanitização não confirmada"
     ],
     "notes": "Não permitir ações sobre o pedido. rpsLink da NF requer sanitização adicional (LAC-010).",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "route_pattern": "#/order-detail/:orderNumber",
+      "route_id": "ROUTE-014",
+      "required_parameters": ["orderNumber"],
+      "parameter_source": "USER_VALIDATED_OR_API_RESPONSE",
+      "status": "CONFIRMED",
+      "auxiliary_route": {
+        "route_id": "ROUTE-015",
+        "route_pattern": "#/order-detail/:orderNumber/beneficiaries",
+        "condition": "Quando a resposta incluir colaboradores do pedido"
+      }
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -284,6 +319,28 @@
       "LAC-006 — sanitização não confirmada"
     ],
     "notes": "Se a ordenação não for confiável, informar: 'Estou exibindo o pedido mais recente retornado pela consulta.'",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "routes": [
+        {
+          "route_id": "ROUTE-014",
+          "route_pattern": "#/order-detail/:orderNumber",
+          "condition": "Quando orderNumber disponível via API",
+          "required_parameters": ["orderNumber"],
+          "parameter_source": "API_RESPONSE_CONFIRMED"
+        },
+        {
+          "route_id": "ROUTE-012",
+          "route_pattern": "#/orders",
+          "condition": "Fallback quando orderNumber não disponível",
+          "required_parameters": [],
+          "parameter_source": "NOT_REQUIRED"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -350,6 +407,16 @@
       "CF-KB-001"
     ],
     "notes": "Status reconhecidos pela API: IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED.",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "route_id": "ROUTE-012",
+      "route_pattern": "#/orders",
+      "required_parameters": [],
+      "parameter_source": "NOT_REQUIRED",
+      "status": "CONFIRMED"
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -385,6 +452,19 @@
       "AMB-001"
     ],
     "notes": "O único caminho confirmado para rastreamento é pelo número do pedido (INT-007). Esta intenção não bloqueia o MVP pois o fallback está definido.",
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "route_id": "ROUTE-024",
+      "route_pattern": "#/card-tracking",
+      "required_parameters": [],
+      "parameter_source": "NOT_REQUIRED",
+      "frontend_route_status": "CONFIRMED",
+      "backend_api_status": "NOT_VALIDATED",
+      "status": "CONFIRMED",
+      "note": "Rota frontend confirmada. Não implica disponibilidade de endpoint de backend."
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {
@@ -439,6 +519,39 @@
     "notes": "Endpoint nao inventariado. Nao classificar como API_ONLY enquanto o contrato nao for validado. KB (8RASTREIO_CARTOES.md) descreve rastreamento no portal web — nao e fonte de dados da API.",
     "blocks_technical_poc": false,
     "blocks_client_mvp": true,
+    "navigation": {
+      "supported": true,
+      "source_type": "CLIENT_NAVIGATION_CONTRACT",
+      "source_path": "docs/cliente/Rotas_hr_space.html",
+      "routes": [
+        {
+          "route_id": "ROUTE-025",
+          "route_pattern": "#/card-tracking/:orderNumber",
+          "condition": "Quando orderNumber estiver disponível",
+          "required_parameters": ["orderNumber"],
+          "parameter_source": "USER_VALIDATED"
+        },
+        {
+          "route_id": "ROUTE-026",
+          "route_pattern": "#/card-tracking/:orderNumber/:arNumber",
+          "condition": "Quando orderNumber e arNumber disponíveis via API",
+          "required_parameters": ["orderNumber", "arNumber"],
+          "parameter_source": "API_RESPONSE_CONFIRMED"
+        },
+        {
+          "route_id": "ROUTE-024",
+          "route_pattern": "#/card-tracking",
+          "condition": "Fallback quando parâmetros não disponíveis",
+          "required_parameters": [],
+          "parameter_source": "NOT_REQUIRED"
+        }
+      ],
+      "frontend_route_status": "CONFIRMED",
+      "backend_api_status": "NOT_VALIDATED",
+      "navigation_available": true,
+      "status": "CONFIRMED",
+      "separation_note": "navigation_available=true NÃO implica backend_api_available=true. LAC-001 e DP-001 permanecem abertos."
+    },
     "data_classification": "SYNTHETIC_TEST_DATA"
   },
   {

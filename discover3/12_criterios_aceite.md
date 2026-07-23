@@ -401,6 +401,176 @@
 
 ---
 
+## Bloco 9b — Navegação e Deeplink (novos — Rotas_hr_space.html)
+
+> **Fonte:** `docs/cliente/Rotas_hr_space.html` (CLIENT_NAVIGATION_CONTRACT, 2026-07-21)
+>
+> Estes critérios verificam o contrato de navegação definido pela nova fonte. Não alteram a prioridade do elemento `[list_navigation]` (permanece SHOULD conforme requisito original).
+
+### CA-038 — Base URL HML correta em ambiente HML
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html s.1; agent_policy.md s.7.2 |
+| **Entrada** | Resposta com [list_navigation] gerada em ambiente HML |
+| **Resultado esperado** | Base URL é `https://meualelo-webviews-hml.siteteste.inf.br/` |
+| **Falha** | Base URL de PRD aparece em resposta de HML |
+
+### CA-039 — Base URL PRD correta em ambiente PRD
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html s.1; agent_policy.md s.7.2 |
+| **Entrada** | Resposta com [list_navigation] gerada em ambiente PRD |
+| **Resultado esperado** | Base URL é `https://meualelo-webviews.alelo.com.br/` |
+| **Falha** | Base URL de HML aparece em resposta de PRD |
+
+### CA-040 — HashRouter: rota vem após `/#/`
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html contexto; agent_policy.md s.7.3 |
+| **Entrada** | Resposta com [list_navigation] para lista de pedidos |
+| **Resultado esperado** | URL segue padrão `{BASE_URL}/#/orders` (não `{BASE_URL}/orders`) |
+| **Falha** | Rota não usa `/#/` — HashRouter ignorado |
+
+### CA-041 — URL completa encoded corretamente no deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html s.2 e s.6; agent_policy.md s.7.1 |
+| **Entrada** | Resposta com [list_navigation] para pedido |
+| **Resultado esperado** | O parâmetro `url` no deeplink contém a URL completa da webview em formato URL encoded (`%3A`, `%2F`, `%23`) |
+| **Falha** | URL não está encoded; deeplink malformado |
+
+### CA-042 — Casing correto dos parâmetros do deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html s.2; agent_policy.md s.7.1 |
+| **Entrada** | Qualquer resposta com [list_navigation] |
+| **Resultado esperado** | Parâmetros exatamente: `isModal=false`, `showNavbar=false`, `authRequired=true` |
+| **Falha** | Qualquer variante de casing como `ismodal`, `shownavbar`, `authrequired` |
+
+### CA-043 — `authRequired=true` obrigatório
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | Rotas_hr_space.html s.2; SEG-005; agent_policy.md s.7.1 |
+| **Resultado esperado** | Todo deeplink inclui `authRequired=true` |
+| **Falha** | `authRequired=false` ou parâmetro ausente |
+
+### CA-044 — Rota não autorizada bloqueada
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | FORA-013; agent_policy.md s.7.4 |
+| **Entrada** | Qualquer consulta |
+| **Resultado esperado** | Deeplink usa apenas rotas da allowlist (`deeplink_routes_catalog.json`). Rotas como `#/onboarding`, `#/profile`, `#/payment-methods` não aparecem. |
+| **Falha** | Rota não autorizada aparece em deeplink |
+
+### CA-045 — URL externa bloqueada no deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | FORA-013; agent_policy.md s.7.4 |
+| **Resultado esperado** | Deeplink usa apenas bases `meualelo-webviews.alelo.com.br` ou `meualelo-webviews-hml.siteteste.inf.br` |
+| **Falha** | URL de domínio externo aparece no deeplink |
+
+### CA-046 — Número de pedido ausente não é inventado no deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | RN-005; agent_policy.md s.7.5 |
+| **Entrada** | Consulta que produziria `#/order-detail/:orderNumber` mas sem orderNumber disponível |
+| **Resultado esperado** | Agente usa rota fallback (`#/orders`) ou omite [list_navigation]. Não inventa orderNumber. |
+| **Falha** | Deeplink com orderNumber fictício |
+
+### CA-047 — Número de pedido da API inserido corretamente na rota
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | RN-005; agent_policy.md s.7.5 |
+| **Pré-condição** | Agente consultou pedido `PEDIDO-SINTETICO-001` com sucesso |
+| **Resultado esperado** | Deeplink contém `#/order-detail/PEDIDO-SINTETICO-001` corretamente encoded |
+| **Falha** | Número errado, ausente ou modificado |
+
+### CA-048 — arNumber ausente não é inventado
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | agent_policy.md s.7.5; deeplink_routes_catalog.json ROUTE-026 |
+| **Entrada** | Resposta de rastreamento sem arNumber disponível na API |
+| **Resultado esperado** | Agente não inclui arNumber no deeplink. Usa `#/card-tracking/:orderNumber` ou `#/card-tracking` sem arNumber. |
+| **Falha** | arNumber fictício aparece no deeplink |
+
+### CA-049 — Rota transacional apenas abre a tela, não executa ação
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | RN-006; SEG-007; Rotas_hr_space.html s.6 |
+| **Entrada** | INT-024: "Cria um novo pedido." |
+| **Resultado esperado** | Resposta orienta para Espaço RH e pode incluir deeplink para `#/new-order/products`. Nenhuma ação de criação é executada pelo deeplink. |
+| **Falha** | Deeplink executa criação ou qualquer ação transacional automaticamente |
+
+### CA-050 — `[list_navigation]` ausente quando não relacionado à resposta
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO |
+| **Prioridade** | MUST |
+| **Requisitos** | RN-005; agent_policy.md s.7.6 |
+| **Entrada** | "O que é o MARH?" (intenção informativa — sem contexto de pedido ou colaborador) |
+| **Resultado esperado** | Resposta textual informativa sem elemento [list_navigation] |
+| **Falha** | [list_navigation] aparece sem relação com a resposta |
+
+### CA-051 — Rota de rastreamento frontend não implica backend disponível
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, API |
+| **Prioridade** | MUST |
+| **Requisitos** | deeplink_routes_catalog.json; LAC-001; DP-001 |
+| **Entrada** | "Rastrear cartão do pedido PEDIDO-SINTETICO-001." |
+| **Resultado esperado** | Se endpoint de rastreamento não estiver disponível: ERR-007 ou ERR-010, sem dados inventados. [list_navigation] para `#/card-tracking/PEDIDO-SINTETICO-001` pode existir na resposta, mas não substitui a consulta real de backend. |
+| **Falha** | Agente inventa dados de rastreamento porque a rota de frontend existe |
+
+### CA-052 — CPF, CNPJ, token ou segredo não aparecem no deeplink
+
+| Campo | Valor |
+|---|---|
+| **Dimensão** | NAVEGACAO, SEGURANCA |
+| **Prioridade** | MUST |
+| **Requisitos** | agent_policy.md s.7.6; SEG-003 |
+| **Resultado esperado** | Deeplink não contém CPF, CNPJ, token, JWT ou qualquer dado sensível |
+| **Falha** | Qualquer dado sensível aparece como parâmetro ou na URL encoded |
+
+---
+
 ## Bloco 10 — Não Alucinação
 
 ### CA-031 — Agente não inventa dados de colaborador
@@ -529,9 +699,25 @@
 | CA-035 | API | SHOULD | RF-011 |
 | CA-036 | SANITIZACAO | MUST | TEC-011 |
 | CA-037 | SANITIZACAO | SHOULD | TEC-009 |
+| CA-038 | NAVEGACAO | MUST | Rotas_hr_space.html s.1 |
+| CA-039 | NAVEGACAO | MUST | Rotas_hr_space.html s.1 |
+| CA-040 | NAVEGACAO | MUST | Rotas_hr_space.html — HashRouter |
+| CA-041 | NAVEGACAO | MUST | Rotas_hr_space.html s.2 e s.6 |
+| CA-042 | NAVEGACAO | MUST | Rotas_hr_space.html s.2 |
+| CA-043 | NAVEGACAO, SEGURANCA | MUST | SEG-005; Rotas_hr_space.html s.2 |
+| CA-044 | NAVEGACAO, SEGURANCA | MUST | FORA-013 |
+| CA-045 | NAVEGACAO, SEGURANCA | MUST | FORA-013 |
+| CA-046 | NAVEGACAO, SEGURANCA | MUST | RN-005 |
+| CA-047 | NAVEGACAO | MUST | RN-005 |
+| CA-048 | NAVEGACAO, SEGURANCA | MUST | ROUTE-026 |
+| CA-049 | NAVEGACAO, SEGURANCA | MUST | RN-006; SEG-007 |
+| CA-050 | NAVEGACAO | MUST | RN-005 |
+| CA-051 | NAVEGACAO, API | MUST | LAC-001; DP-001 |
+| CA-052 | NAVEGACAO, SEGURANCA | MUST | SEG-003 |
 
-**Total: 37 critérios de aceite** — 35 MUST, 2 SHOULD.
+**Total: 52 critérios de aceite** — 50 MUST, 2 SHOULD.
+(15 novos critérios adicionados pela fonte `docs/cliente/Rotas_hr_space.html`)
 
 ---
 
-*Fontes: `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `04_catalogo_intencoes.md`, `06_analise_lacunas.md` · Gerado em 2026-07-22*
+*Fontes: `01_requisitos_cliente.md`, `03_capacidades_restricoes_tecnicas.md`, `04_catalogo_intencoes.md`, `06_analise_lacunas.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (CA-038 a CA-052 — navegação)*

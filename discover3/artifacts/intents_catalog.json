@@ -1,7 +1,8 @@
 {
   "meta": {
-    "version": "1.0",
+    "version": "2.0",
     "generated_at": "2026-07-22",
+    "updated_at": "2026-07-23",
     "project": "Agente Consultivo MARH",
     "description": "Catálogo completo de intenções extraídas do documento do cliente, com exemplos, variações e comportamentos esperados.",
     "source": "docs/cliente/00_Agente_Consultivo_MARH.html",
@@ -50,6 +51,17 @@
       },
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-003",
+        "route_pattern": "#/employees",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -81,6 +93,17 @@
       },
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-003",
+        "route_pattern": "#/employees",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -130,6 +153,29 @@
       },
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "routes": [
+          {
+            "route_id": "ROUTE-014",
+            "route_pattern": "#/order-detail/:orderNumber",
+            "condition": "Quando orderNumber estiver disponível na resposta da consulta",
+            "required_route_parameters": [":orderNumber"],
+            "parameter_source": "USER_VALIDATED"
+          },
+          {
+            "route_id": "ROUTE-015",
+            "route_pattern": "#/order-detail/:orderNumber/beneficiaries",
+            "condition": "Quando a resposta incluir colaboradores do pedido",
+            "required_route_parameters": [":orderNumber"],
+            "parameter_source": "USER_VALIDATED"
+          }
+        ],
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -159,6 +205,29 @@
       },
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "routes": [
+          {
+            "route_id": "ROUTE-014",
+            "route_pattern": "#/order-detail/:orderNumber",
+            "condition": "Quando orderNumber do último pedido estiver disponível via API",
+            "required_route_parameters": [":orderNumber"],
+            "parameter_source": "API_RESPONSE_CONFIRMED"
+          },
+          {
+            "route_id": "ROUTE-012",
+            "route_pattern": "#/orders",
+            "condition": "Fallback — quando orderNumber não estiver disponível",
+            "required_route_parameters": [],
+            "parameter_source": "NOT_REQUIRED"
+          }
+        ],
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -206,6 +275,17 @@
       },
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-012",
+        "route_pattern": "#/orders",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -234,6 +314,21 @@
       "priority": "MUST",
       "status": "AMBIGUOUS",
       "note": "Depende de validação técnica — AMB-001. Fallback INT-007 é suficiente para POC.",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-024",
+        "route_pattern": "#/card-tracking",
+        "condition": "Fallback informativo — quando endpoint de rastreamento por CPF não está disponível",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "frontend_route_status": "CONFIRMED",
+        "backend_api_status": "NOT_VALIDATED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "COULD",
+        "navigation_fallback": "Resposta textual com ERR-010 sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html",
+        "separation_note": "A rota frontend ROUTE-024 está confirmada. Isso NÃO altera o status NOT_VALIDATED do endpoint de backend de rastreamento."
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -273,6 +368,40 @@
       "priority": "MUST",
       "status": "CONFIRMED",
       "note": "Rota confirmada para rastreamento. Endpoint precisa ser inventariado (LAC-001).",
+      "navigation": {
+        "supported": true,
+        "routes": [
+          {
+            "route_id": "ROUTE-025",
+            "route_pattern": "#/card-tracking/:orderNumber",
+            "condition": "Quando orderNumber estiver disponível",
+            "required_route_parameters": [":orderNumber"],
+            "parameter_source": "USER_VALIDATED"
+          },
+          {
+            "route_id": "ROUTE-026",
+            "route_pattern": "#/card-tracking/:orderNumber/:arNumber",
+            "condition": "Quando orderNumber e arNumber estiverem disponíveis via API",
+            "required_route_parameters": [":orderNumber", ":arNumber"],
+            "parameter_source": "API_RESPONSE_CONFIRMED",
+            "arNumber_note": "arNumber deve vir exclusivamente de fonte confiável (API). Nunca inventado."
+          },
+          {
+            "route_id": "ROUTE-024",
+            "route_pattern": "#/card-tracking",
+            "condition": "Fallback — quando orderNumber não estiver disponível",
+            "required_route_parameters": [],
+            "parameter_source": "NOT_REQUIRED"
+          }
+        ],
+        "frontend_route_status": "CONFIRMED",
+        "backend_api_status": "NOT_VALIDATED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "SHOULD",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html",
+        "separation_note": "Rotas de frontend confirmadas. Endpoint de backend de rastreamento permanece NOT_VALIDATED (LAC-001, DP-001). Navigation_available=true não implica backend_api_available=true."
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -316,6 +445,18 @@
       "note": "Resposta informativa — agente não executa a ação",
       "priority": "MUST",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-017",
+        "route_pattern": "#/new-order/products",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "COULD",
+        "restriction": "REDIRECT_ONLY — apenas abre a tela. Não executa criação.",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -492,6 +633,11 @@
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
       "priority": "NOT_APPLICABLE",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": false,
+        "reason": "Cancelamento é ação transacional proibida (FORA-002). Sem rota de redirecionamento seguro para esta ação específica no catálogo.",
+        "navigation_priority": "NOT_APPLICABLE"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {
@@ -522,6 +668,18 @@
       "static_response": "No momento eu consigo apenas consultar informações. Para realizar essa ação, acesse a jornada correspondente no Espaço RH.",
       "priority": "NOT_APPLICABLE",
       "status": "CONFIRMED",
+      "navigation": {
+        "supported": true,
+        "route_id": "ROUTE-017",
+        "route_pattern": "#/new-order/products",
+        "required_route_parameters": [],
+        "parameter_source": "NOT_REQUIRED",
+        "deeplink_status": "CONFIRMED",
+        "navigation_priority": "COULD",
+        "restriction": "REDIRECT_ONLY — apenas abre a tela da jornada oficial. Não executa criação.",
+        "navigation_fallback": "Resposta textual sem [list_navigation]",
+        "source": "docs/cliente/Rotas_hr_space.html"
+      },
       "data_classification": "SYNTHETIC_TEST_DATA"
     },
     {

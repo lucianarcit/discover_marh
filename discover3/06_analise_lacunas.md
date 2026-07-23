@@ -123,18 +123,17 @@
 
 ---
 
-## L7 — Camada responsável pela URL final da webview não definida
+## L7 — Camada responsável pela URL final da webview
 
 | Campo | Valor |
 |---|---|
 | **LAC ID** | LAC-007 |
 | **Momento** | NECESSARIO_PILOTO |
-| **Status** | AGUARDANDO_DECISAO |
+| **Status** | **PARTIALLY_RESOLVED** (2026-07-23) |
 | **Afeta** | RF-018 (elemento [list_navigation]) |
-| **Descrição** | A especificação não define qual camada (API MARH, frontend ou BFF) é responsável por compor a URL final da webview que o elemento [list_navigation] deve carregar. Sem essa decisão, o elemento não pode ser implementado. O fluxo textual do agente funciona sem o componente visual (RN-007). |
-| **Impacto** | Para a POC: sem impacto — o agente pode entregar respostas textuais completas. Para o piloto com app real: o elemento de navegação precisa estar funcional para a experiência completa. |
-| **Evidências** | AMB-002; RNF-004; RF-018 |
-| **Ação necessária** | Definir em reunião técnica (API MARH + frontend): qual camada compõe a URL e como o agente recebe ou constrói o deeplink. |
+| **Resolução parcial** | `docs/cliente/Rotas_hr_space.html` (CLIENT_NAVIGATION_CONTRACT, 2026-07-21) confirmou: formato da URL (`{BASE_URL}/#{ROTA}`); bases HML e PRD; template do deeplink (`meualelo://app/webview?url={URL_ENCODED}&isModal=false&showNavbar=false&authRequired=true`); casing dos parâmetros; lista de rotas autorizadas; responsabilidade de montar o deeplink atribuída ao Agente/Backend. |
+| **Pendência restante** | Confirmar se há camada intermediária (BFF) para casos específicos. Para a POC, o agente monta o deeplink diretamente. |
+| **Referência** | `discover3/artifacts/deeplink_routes_catalog.json`; `discover3/agent_policy.md` seção 7 |
 | **Requisitos relacionados** | RF-018, RNF-003, RNF-004, AMB-002 |
 
 ---
@@ -242,7 +241,7 @@
 | LAC-002 | Rastreamento por CPF não confirmado | Decisão técnica com time da ma-hr-orch |
 | LAC-004 | Filtro de status sem suporte na API | Definir estratégia de paginação no agente |
 | LAC-005 | Ordenação do último pedido não garantida | Verificar parâmetro de ordenação na ma-hr-orch |
-| LAC-007 | URL da webview não definida | Decisão de arquitetura (API MARH vs. frontend) |
+| LAC-007 | URL da webview — **PARTIALLY_RESOLVED** | Formato, bases, deeplink e rotas confirmadas por `Rotas_hr_space.html`. Pendente: BFF intermediário. |
 | LAC-008 | Mapeamento de status API→português | Criar tabela de mapeamento com validação do cliente |
 | LAC-009 | Qtd. cartões requer chamada adicional | Confirmar campo correto com time técnico |
 
@@ -274,4 +273,4 @@
 
 ---
 
-*Fontes: `01_requisitos_cliente.md`, `02_conhecimento_rag.md`, `03_capacidades_restricoes_tecnicas.md`, `03_matriz_cobertura_escopo.md`, `04_catalogo_intencoes.md`, `05_matriz_fontes_resposta.md` · Gerado em 2026-07-22*
+*Fontes: `01_requisitos_cliente.md`, `02_conhecimento_rag.md`, `03_capacidades_restricoes_tecnicas.md`, `03_matriz_cobertura_escopo.md`, `04_catalogo_intencoes.md`, `05_matriz_fontes_resposta.md` · Gerado em 2026-07-22 · Atualizado em 2026-07-23 (LAC-007 PARTIALLY_RESOLVED por `Rotas_hr_space.html`)*

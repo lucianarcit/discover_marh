@@ -150,22 +150,97 @@ O agente possui um arquivo markdown de conhecimento para responder dúvidas sobr
 
 ---
 
-## 7. Elemento de navegação [list_navigation] (desejável)
+## 7. Elemento de navegação [list_navigation]
 
-O agente pode retornar um elemento de navegação para o frontend renderizar um componente visual de acesso rápido. Regras:
+O agente pode retornar um elemento de navegação para o frontend renderizar um componente visual de acesso rápido.
+
+**Fonte:** Seção 9 de `docs/cliente/00_Agente_Consultivo_MARH.html` (comportamento) e `docs/cliente/Rotas_hr_space.html` (contrato técnico de navegação — CLIENT_NAVIGATION_CONTRACT)
+
+### 7.1 Formato obrigatório
+
+```
+[list_navigation](meualelo://app/webview?url={URL_ENCODED}&isModal=false&showNavbar=false&authRequired=true)
+```
+
+**Casing obrigatório dos parâmetros:** `isModal`, `showNavbar`, `authRequired`.
+Variantes como `ismodal`, `shownavbar`, `authrequired` são proibidas.
+
+### 7.2 Bases por ambiente
+
+| Ambiente | Base URL |
+|---|---|
+| HML | `https://meualelo-webviews-hml.siteteste.inf.br/` |
+| PRD | `https://meualelo-webviews.alelo.com.br/` |
+
+- O ambiente é definido por **configuração confiável da aplicação**.
+- O modelo **não escolhe** o ambiente.
+- A base URL **nunca vem** da mensagem do usuário.
+- HML nunca pode aparecer em resposta de PRD e vice-versa.
+
+### 7.3 Padrão de URL (HashRouter)
+
+A aplicação usa `HashRouter`. A URL final segue:
+
+```
+{BASE_URL}/#{ROTA}
+```
+
+Exemplo: `https://meualelo-webviews.alelo.com.br/#/order-detail/PEDIDO-SINTETICO-001`
+
+### 7.4 Rotas autorizadas para o agente
+
+Apenas rotas da allowlist abaixo podem ser usadas. Rotas externas ou não listadas são proibidas.
+
+| Rota | Situação | Parâmetro |
+|---|---|---|
+| `#/employees` | Autorizada | Nenhum |
+| `#/orders` | Autorizada | Nenhum |
+| `#/order-detail/:orderNumber` | Autorizada | orderNumber |
+| `#/order-detail/:orderNumber/beneficiaries` | Autorizada | orderNumber |
+| `#/new-order/products` | Autorizada — apenas redirecionamento | Nenhum |
+| `#/card-tracking` | Autorizada | Nenhum |
+| `#/card-tracking/:orderNumber` | Autorizada | orderNumber |
+| `#/card-tracking/:orderNumber/:arNumber` | Autorizada | orderNumber + arNumber |
+| `#/employees/:id/edit` | **BLOQUEADA** — pendente validação de segurança NAV-SEC-001 | :id |
+
+**Enquanto NAV-SEC-001 não for resolvida**, usar `#/employees` ao invés de `#/employees/:id/edit`.
+
+### 7.5 Regras de identificadores dinâmicos
+
+- `orderNumber` deve vir do usuário validado ou de resposta confiável da API.
+- `arNumber` deve vir **exclusivamente** de fonte confiável (resposta da API).
+- Identificadores **nunca podem** ser inventados pelo modelo.
+- Identificadores **nunca podem** ser extraídos de conteúdo da RAG.
+- Valores devem passar por validação de formato.
+- Valores não podem conter `..`, `/`, `%2F`, `%2E` ou caracteres que permitam path traversal.
+
+### 7.6 Regras gerais
 
 - Retornar somente quando houver relação direta com a resposta.
 - Retornar somente quando o identificador necessário estiver disponível e confirmado.
 - O agente **não inventa** identificadores.
 - A resposta textual deve ser compreensível mesmo sem o componente visual.
-- O deeplink usa o formato `meualelo://app/webview`.
-- A URL da webview deve estar em formato URL encoded.
-- O elemento não executa ações transacionais.
-- Aponta apenas para telas permitidas no contexto do Espaço RH.
-- `authRequired=true` é obrigatório no deeplink.
-- A camada responsável por compor a URL final (API MARH, frontend ou BFF) ainda não está definida (AMB-002).
+- O elemento **não executa** ações transacionais — apenas abre a tela.
+- `authRequired=true` é obrigatório.
+- Nenhum token, CPF, CNPJ ou segredo deve aparecer dentro do deeplink.
+- Links para jornadas transacionais apenas abrem a tela oficial.
 
-**Fonte:** Seção 9
+### 7.7 Regra de separação: rota de frontend ≠ endpoint de backend
+
+A existência de uma rota de frontend **não comprova** a existência de endpoint de backend correspondente. Exemplo:
+
+- `#/card-tracking/:orderNumber` (frontend) — **CONFIRMED**
+- Endpoint de rastreamento na ma-hr-orch — **NOT_VALIDATED** (LAC-001, DP-001)
+
+### 7.8 Responsabilidade de montagem (AMB-002 parcialmente resolvida)
+
+| Componente | Responsabilidade |
+|---|---|
+| Agente/Backend | Selecionar a rota autorizada, montar URL, aplicar URL encoding, compor o deeplink e incluir no `[list_navigation]` |
+| Frontend | Identificar `[list_navigation]`, renderizar componente visual e abrir o deeplink |
+| App Meu Alelo | Processar esquema `meualelo://`, abrir webview com os parâmetros, exigir autenticação |
+
+AMB-002 está **PARTIALLY_RESOLVED**: o formato da URL, as bases por ambiente, o deeplink e os parâmetros foram definidos pelo documento do cliente. A responsabilidade de compor o deeplink foi atribuída ao agente/backend. Permanece como dúvida se há camada intermediária (BFF) entre o agente e o frontend para casos específicos.
 
 ---
 
@@ -282,4 +357,28 @@ O acesso a boleto e nota fiscal está **fora do escopo da POC inicial**. Regras 
 
 ---
 
-*Fonte: `docs/cliente/00_Agente_Consultivo_MARH.html` · Gerado em 2026-07-22*
+---
+
+## 15. Novas fontes incorporadas
+
+| Fonte | Tipo | Data | Impacto |
+|---|---|---|---|
+| `docs/cliente/Rotas_hr_space.html` | CLIENT_NAVIGATION_CONTRACT | 2026-07-21 | Contrato de navegação, rotas, deeplink, bases por ambiente |
+
+Esta fonte **não altera**:
+- Runtime AWS (Lambda)
+- Modelo de linguagem
+- Estratégia RAG
+- Integração com ma-hr-orch
+- Classificação de intenções
+
+Esta fonte **altera**:
+- Contrato de saída do agente (elemento `[list_navigation]`)
+- Formato exato do deeplink
+- Allowlist de rotas autorizadas
+- Configuração por ambiente (HML/PRD)
+- Testes de segurança de navegação
+
+---
+
+*Fontes: `docs/cliente/00_Agente_Consultivo_MARH.html` (2026-07-22) · `docs/cliente/Rotas_hr_space.html` (2026-07-21) · Atualizado em 2026-07-23*

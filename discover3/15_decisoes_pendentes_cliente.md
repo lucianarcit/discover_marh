@@ -61,15 +61,31 @@
 | Campo | Valor |
 |---|---|
 | **ID** | DP-003 |
-| **Impacto** | BLOQUEADOR_PILOTO |
+| **Impacto** | ~~BLOQUEADOR_PILOTO~~ → **PARTIALLY_RESOLVED** |
 | **Responsável** | ARQUITETURA (API MARH + Frontend) |
 | **Origem** | LAC-007, AMB-002, RNF-004 |
-| **Pergunta** | Qual camada é responsável por compor e entregar a URL final da webview no deeplink do elemento `[list_navigation]`? |
-| **Opções** | (a) API MARH: compõe a URL com base no contexto e a envia ao agente; (b) Frontend: o agente retorna apenas o identificador e o frontend monta a URL; (c) BFF (Backend for Frontend): camada intermediária. |
-| **Contexto** | O cliente define (seção 9): "A URL final da webview deve ser definida pela API MARH, pelo frontend ou pela camada responsável pela navegação, conforme estratégia técnica." A decisão não foi tomada. |
-| **O que é necessário** | Definição de qual camada é responsável + formato exato da URL + lista de telas autorizadas no Espaço RH. |
-| **Impacto se não respondida** | O elemento [list_navigation] não pode ser implementado. O agente funciona apenas com resposta textual. |
-| **Backlog afetado** | BL-016 (Piloto) |
+| **Status** | **PARTIALLY_RESOLVED** — `Rotas_hr_space.html` (2026-07-21) confirmou formato, bases por ambiente, deeplink e parâmetros. |
+| **O que foi resolvido** | Formato da URL (`{BASE_URL}/#{ROTA}`); bases HML e PRD; template do deeplink; casing dos parâmetros (`isModal`, `showNavbar`, `authRequired`); rotas autorizadas; responsabilidade de montar o deeplink atribuída ao Agente/Backend; Frontend identifica `[list_navigation]` e abre o deeplink. |
+| **O que ainda está em aberto** | Se há camada intermediária (BFF) entre o Agente e o Frontend para casos específicos. Para a POC, o agente monta o deeplink diretamente. |
+| **Referência** | `discover3/artifacts/deeplink_routes_catalog.json`; `discover3/agent_policy.md` seção 7 |
+| **Backlog afetado** | BL-016 (Piloto — desbloqueado para POC) |
+
+---
+
+## DP-008 — Confirmação de segurança para `#/employees/:id/edit` (NAV-SEC-001)
+
+| Campo | Valor |
+|---|---|
+| **ID** | DP-008 |
+| **Impacto** | MELHORIA (não bloqueia POC) |
+| **Responsável** | ARQUITETURA + TIME DE SEGURANÇA |
+| **Origem** | NAV-SEC-001, `Rotas_hr_space.html` s.4.3 e s.5 |
+| **Pergunta** | O identificador do colaborador (`beneficiaryId` / `:id`) pode ser incluído no deeplink retornado ao frontend pelo agente? |
+| **Contexto** | O documento `Rotas_hr_space.html` menciona `#/employees/:id/edit` como opção quando houver identificador disponível. Porém, `beneficiaryId` é campo restrito no contrato da API (TEC-017, TEC-018) — não deve ir ao modelo de linguagem. Incluí-lo no deeplink pode representar exposição de dado restrito ao frontend, ao app e potencialmente ao usuário. |
+| **O que é necessário** | Confirmação do time de segurança se `beneficiaryId` pode aparecer no deeplink ou se deve ser substituído por outro identificador não restrito. |
+| **Comportamento atual** | Usar `#/employees` (ROUTE-003) enquanto não houver aprovação. Não usar `#/employees/:id/edit`. |
+| **Impacto se não respondida** | O agente continua funcionando com `#/employees`. Navegação para colaborador individual não será implementada até resolução. |
+| **Backlog afetado** | BL-novo (Piloto — desejável) |
 
 ---
 

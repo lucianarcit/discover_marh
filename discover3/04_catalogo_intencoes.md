@@ -32,6 +32,8 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Endpoint necessário** | `GET /v1/beneficiaries?nameOrCpf={nome}` |
 | **Comportamento esperado** | Buscar na empresa selecionada; exibir dados disponíveis; se múltiplos, pedir escolha; se não encontrar, informar |
 | **Resposta de fallback** | ERR-002 — "Não encontrei nenhum colaborador com os dados informados para a empresa selecionada." |
+| **Navegação** | `#/employees` (ROUTE-003) — rota segura sem parâmetro; uso de `#/employees/:id/edit` suspenso (NAV-SEC-001) |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
 | **Seção do cliente** | 8.1 e 10 |
 | **Prioridade MVP** | MUST |
 
@@ -49,6 +51,8 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Endpoint necessário** | `GET /v1/beneficiaries?nameOrCpf={cpf}` |
 | **Comportamento esperado** | Buscar na empresa selecionada; exibir dados disponíveis; se não encontrar, informar |
 | **Resposta de fallback** | ERR-002 — "Não encontrei nenhum colaborador com os dados informados para a empresa selecionada." |
+| **Navegação** | `#/employees` (ROUTE-003) — rota segura sem parâmetro |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
 | **Seção do cliente** | 8.1 (implícito em 8.5) |
 | **Prioridade MVP** | MUST |
 
@@ -67,6 +71,8 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Comportamento esperado** | Exibir status, data, produto, valor, qtd. colaboradores, cartões e etapas quando disponíveis. Não permitir ações. |
 | **Campos a exibir** | status, orderDate, productInfo, totalOrder, qtd. colaboradores, qtd. cartões, steps[] |
 | **Resposta de fallback** | ERR-003 — "Não encontrei o pedido informado para a empresa selecionada." |
+| **Navegação** | `#/order-detail/:orderNumber` (ROUTE-014); auxiliar: `#/order-detail/:orderNumber/beneficiaries` (ROUTE-015) quando incluir colaboradores |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
 | **Seção do cliente** | 8.2 e 10 |
 | **Prioridade MVP** | MUST |
 
@@ -85,6 +91,8 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Comportamento esperado** | Retornar pedido mais recente disponível; se ordenação incerta, avisar sobre isso |
 | **Aviso obrigatório** | "Se não houver ordenação confiável nos dados, informar que está exibindo o pedido mais recente retornado pela consulta." |
 | **Resposta de fallback** | ERR-007 genérico se indisponível |
+| **Navegação** | `#/order-detail/:orderNumber` (ROUTE-014) quando orderNumber disponível via API; fallback: `#/orders` (ROUTE-012) |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
 | **Seção do cliente** | 8.3 e 10 |
 | **Prioridade MVP** | MUST |
 
@@ -103,6 +111,8 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Comportamento esperado** | Identificar o status; listar pedidos; se status não reconhecido, pedir esclarecimento; se não houver pedidos, responder amigavelmente |
 | **Status reconhecidos pela API** | IN_PROCESSING, PENDING, PAID, CREDITED, CANCELLED, REJECTED, RELEASED, IN_BILLING_PROCESSING, REFUNDED, PARTIAL_REFUNDED |
 | **Resposta de fallback** | ERR-004 — "Não reconheci o status informado. Tente consultar por status como pago, pendente, cancelado ou em processamento." |
+| **Navegação** | `#/orders` (ROUTE-012) — lista de pedidos, sem parâmetro |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
 | **Seção do cliente** | 8.4 e 10 |
 | **Prioridade MVP** | MUST |
 
@@ -120,6 +130,9 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Comportamento esperado (fallback confirmado)** | Solicitar número do pedido ao usuário para continuar o rastreamento |
 | **Resposta obrigatória de fallback** | "Ainda não consigo rastrear o cartão diretamente apenas pelo CPF do colaborador. Informe o número do pedido para eu consultar as informações disponíveis de rastreamento." |
 | **Status** | AMBIGUOUS — depende de validação técnica com o time |
+| **Navegação (fallback informativo)** | `#/card-tracking` (ROUTE-024) — rota frontend CONFIRMADA; backend NOT_VALIDATED |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
+| **Separação rota/API** | Existência da rota de frontend NÃO confirma endpoint de backend (LAC-002, DP-002 permanecem abertos) |
 | **Seção do cliente** | 8.5 e 10 |
 | **Prioridade MVP** | MUST (com fallback) |
 
@@ -138,6 +151,10 @@ Estas intenções exigem chamada à `ma-hr-orch`. Fontes: Seções 7.1, 8.1, 8.2
 | **Campos a exibir** | status, data última atualização, endereço de entrega, código de rastreio |
 | **Resposta de fallback** | ERR-007 se indisponível |
 | **Status** | CONFIRMED (única rota confirmada para rastreamento) |
+| **Navegação** | `#/card-tracking/:orderNumber` (ROUTE-025); com arNumber: `#/card-tracking/:orderNumber/:arNumber` (ROUTE-026); fallback: `#/card-tracking` (ROUTE-024) |
+| **navigation_source** | `docs/cliente/Rotas_hr_space.html` |
+| **frontend_route_status** | CONFIRMED |
+| **backend_api_status** | NOT_VALIDATED (LAC-001, DP-001 permanecem abertos) |
 | **Seção do cliente** | 8.5 |
 | **Prioridade MVP** | MUST |
 
@@ -203,4 +220,29 @@ Estas intenções recebem redirecionamento para o Espaço RH. Fontes: Seções 7
 
 ---
 
-*Fonte: `docs\cliente\00_Agente_Consultivo_MARH.html` (seções 6, 7.1, 7.2, 7.3, 8.1–8.5, 10) · Gerado em 2026-07-22*
+## Navegação por intenção — resumo
+
+> **Fonte:** `docs/cliente/Rotas_hr_space.html` (CLIENT_NAVIGATION_CONTRACT, 2026-07-21)
+>
+> A existência de uma rota de frontend **não comprova** endpoint de backend. Rotas e APIs são conceitos separados.
+
+| INT ID | Rota de navegação | Requer parâmetro | Parâmetro | Status da rota |
+|---|---|---|---|---|
+| INT-001 | `#/employees` | Não | — | CONFIRMED |
+| INT-002 | `#/employees` | Não | — | CONFIRMED |
+| INT-003 | `#/order-detail/:orderNumber` | Sim | orderNumber (usuário) | CONFIRMED |
+| INT-003 | `#/order-detail/:orderNumber/beneficiaries` | Sim | orderNumber (usuário) | CONFIRMED |
+| INT-004 | `#/order-detail/:orderNumber` (se disponível via API) | Sim | orderNumber (API) | CONFIRMED |
+| INT-004 | `#/orders` (fallback) | Não | — | CONFIRMED |
+| INT-005 | `#/orders` | Não | — | CONFIRMED |
+| INT-006 | `#/card-tracking` (fallback informativo) | Não | — | CONFIRMED (frontend); backend NOT_VALIDATED |
+| INT-007 | `#/card-tracking/:orderNumber` | Sim | orderNumber (usuário) | CONFIRMED (frontend); backend NOT_VALIDATED |
+| INT-007 | `#/card-tracking/:orderNumber/:arNumber` | Sim | orderNumber + arNumber (API) | CONFIRMED (frontend); backend NOT_VALIDATED |
+| INT-010 | `#/new-order/products` (redirect apenas) | Não | — | CONFIRMED |
+| INT-024 | `#/new-order/products` (redirect apenas) | Não | — | CONFIRMED |
+
+**Rota suspensa (NAV-SEC-001):** `#/employees/:id/edit` — uso suspenso até validação de segurança sobre `beneficiaryId` no deeplink. Fallback: `#/employees`.
+
+---
+
+*Fontes: `docs\cliente\00_Agente_Consultivo_MARH.html` (seções 6, 7.1, 7.2, 7.3, 8.1–8.5, 10) · `docs/cliente/Rotas_hr_space.html` (navegação) · Atualizado em 2026-07-23*
