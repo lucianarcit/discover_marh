@@ -1,0 +1,84 @@
+%% Detailed Sequence Diagram - RAG Question (INT-008)
+%% Data: 2026-07-23
+%% Intent: INT-008 (Como cadastrar benefício)
+%% Fluxo: RAG_ONLY
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant KB as Bedrock KB
+    participant S3V as S3 Vectors
+    participant S3 as S3 Docs
+    participant Bedrock as Bedrock Haiku
+    participant CW as CloudWatch
+    participant XR as X-Ray
+
+    Note over MARH,XR: INT-008: "como faço para cadastrar um novo benefício?"
+
+    MARH->>Lambda: POST /invoke<br/>{"message": "como faço para cadastrar um novo benefício?",<br/>"context": {"company_id": "uuid-co", "role": "rh"}}
+    activate Lambda
+
+    Lambda->>XR: Begin trace segment
+    Lambda->>CW: Log: request_received, correlation_id=uuid-456
+
+    %% Input sanitization
+    Lambda->>Lambda: sanitize_input("como faço para cadastrar um novo benefício?")
+    Note over Lambda: ✅ Sem PII no input<br/>Input limpo
+
+    %% Classification
+    Lambda->>Lambda: classify(mensagem)
+    Note over Lambda: Pattern: "cadastrar" + "benefício"<br/>→ INT-008 (Como cadastrar benefício)<br/>→ flow=RAG_ONLY
+
+    Lambda->>CW: Log: intent=INT-008, flow=RAG_ONLY
+
+    %% Knowledge Base Retrieve
+    Lambda->>KB: Retrieve(query="como cadastrar novo benefício",<br/>knowledgeBaseId="kb-marh-001",<br/>retrievalConfig={topK: 5})
+    activate KB
+
+    KB->>KB: Generate embedding da query (Titan Embeddings v2)
+    KB->>S3V: Vector similarity search
+    activate S3V
+    S3V-->>KB: Top 5 vector matches + scores
+    deactivate S3V
+
+    KB->>S3: Get source chunks (metadata)
+    activate S3
+    S3-->>KB: Chunk content + source docs
+    deactivate S3
+
+    KB-->>Lambda: RetrievalResults[5]<br/>[{content: "Para cadastrar...", score: 0.92, source: "guia_beneficios.md"},<br/> {content: "O processo de...", score: 0.87, source: "tutorial_portal.md"},<br/> {content: "Tipos disponíveis...", score: 0.78, source: "catalogo.md"},<br/> {content: "Requisitos para...", score: 0.73, source: "requisitos.md"},<br/> {content: "Unrelated content", score: 0.45, source: "faq.md"}]
+    deactivate KB
+
+    Lambda->>CW: Log: kb_retrieve_complete, chunks=5, duration_ms=480
+
+    %% Filter by relevance
+    Lambda->>Lambda: filter_chunks(score_threshold=0.7)
+    Note over Lambda: ✅ Chunk 1: 0.92 (pass)<br/>✅ Chunk 2: 0.87 (pass)<br/>✅ Chunk 3: 0.78 (pass)<br/>✅ Chunk 4: 0.73 (pass)<br/>❌ Chunk 5: 0.45 (filtered out)
+
+    %% Build prompt
+    Lambda->>Lambda: build_rag_prompt(chunks[4], user_query)
+    Note over Lambda: System: "Você é o assistente de RH<br/>da Alelo. Responda APENAS com<br/>base no contexto fornecido.<br/>Se não houver informação<br/>suficiente, diga isso."<br/><br/>Context: [4 chunks relevantes]<br/><br/>User: "como faço para cadastrar<br/>um novo benefício?"
+
+    %% Generate response
+    Lambda->>Bedrock: InvokeModel(prompt,<br/>model="anthropic.claude-3-5-haiku-20241022-v1:0",<br/>max_tokens=500, temperature=0.1)
+    activate Bedrock
+    
+    Note over Bedrock: Gera resposta baseada<br/>nos chunks fornecidos...<br/>~600ms
+
+    Bedrock-->>Lambda: "Para cadastrar um novo benefício no portal Meu Alelo,<br/>siga os passos:<br/>1. Acesse o menu Benefícios > Novo Cadastro<br/>2. Selecione o tipo de benefício desejado<br/>3. Preencha os dados obrigatórios<br/>4. Confirme e aguarde aprovação (até 2 dias úteis)<br/><br/>Requisitos: ter perfil RH ou Admin ativo."
+    deactivate Bedrock
+
+    Lambda->>CW: Log: bedrock_generate_complete,<br/>input_tokens=1200, output_tokens=95, duration_ms=620
+
+    %% Output validation
+    Lambda->>Lambda: validate_output(response)
+    Note over Lambda: ✅ Sem PII<br/>✅ URLs OK (nenhuma)<br/>✅ Tamanho OK (< 2000 chars)<br/>✅ Não menciona "não sei" (tem info)
+
+    Lambda->>CW: Log: request_complete,<br/>total_duration_ms=1150, status=success, chunks_used=4
+    Lambda->>XR: End trace segment
+
+    Lambda-->>MARH: 200 OK<br/>{"response": "Para cadastrar um novo benefício...",<br/>"intent": "INT-008",<br/>"flow": "RAG_ONLY",<br/>"sources": ["guia_beneficios.md", "tutorial_portal.md"],<br/>"confidence": 0.92}
+    deactivate Lambda
+
+    Note over MARH,XR: Latência total: ~1.15s<br/>Custo: ~$0.001<br/>Chunks: 4/5 relevantes

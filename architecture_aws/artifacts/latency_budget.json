@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "project": "MARH Consultive Agent POC",
+    "date": "2026-07-23",
+    "region": "sa-east-1",
+    "description": "Latency budget per route/flow type",
+    "units": "milliseconds"
+  },
+  "stages": {
+    "request_parse": {
+      "description": "JSON parse + schema validation",
+      "p50": 3,
+      "p95": 8,
+      "p99": 15,
+      "timeout": null
+    },
+    "classification": {
+      "description": "Deterministic intent classification (regex + keywords)",
+      "p50": 5,
+      "p95": 12,
+      "p99": 20,
+      "timeout": null
+    },
+    "kb_retrieve": {
+      "description": "Bedrock Knowledge Base retrieve (top-k=5)",
+      "p50": 400,
+      "p95": 1500,
+      "p99": 3000,
+      "timeout": 5000
+    },
+    "llm_generate": {
+      "description": "Bedrock Claude 3.5 Haiku invocation (~500 tokens out)",
+      "p50": 600,
+      "p95": 2000,
+      "p99": 4000,
+      "timeout": 8000
+    },
+    "ma_hr_orch_call": {
+      "description": "HTTP GET to ma-hr-orch (observed latency)",
+      "p50": 1500,
+      "p95": 3275,
+      "p99": 4500,
+      "timeout": 10000,
+      "observed_data": {
+        "source": "API discovery runs 2026-07-22",
+        "sample_size": "multiple runs",
+        "note": "P95=3275ms is the primary bottleneck"
+      }
+    },
+    "sanitization": {
+      "description": "PII removal via regex + allowlist filtering",
+      "p50": 3,
+      "p95": 10,
+      "p99": 20,
+      "timeout": null
+    },
+    "output_validation": {
+      "description": "Re-scan for PII, URL check, size check",
+      "p50": 2,
+      "p95": 5,
+      "p99": 10,
+      "timeout": null
+    },
+    "response_serialize": {
+      "description": "JSON serialization + response formatting",
+      "p50": 2,
+      "p95": 5,
+      "p99": 8,
+      "timeout": null
+    }
+  },
+  "flows": {
+    "STATIC_RESPONSE": {
+      "description": "Out-of-scope intents, deterministic response",
+      "stages_involved": ["request_parse", "classification", "response_serialize"],
+      "uses_llm": false,
+      "uses_rag": false,
+      "uses_api": false,
+      "latency": {
+        "p50": 15,
+        "p95": 40,
+        "p99": 60,
+        "timeout": 1000
+      }
+    },
+    "REDIRECT": {
+      "description": "Redirect to official journey, deterministic",
+      "stages_involved": ["request_parse", "classification", "response_serialize"],
+      "uses_llm": false,
+      "uses_rag": false,
+      "uses_api": false,
+      "latency": {
+        "p50": 15,
+        "p95": 40,
+        "p99": 60,
+        "timeout": 1000
+      }
+    },
+    "RAG_ONLY": {
+      "description": "Knowledge Base retrieve + LLM generate",
+      "stages_involved": ["request_parse", "classification", "kb_retrieve", "llm_generate", "output_validation", "response_serialize"],
+      "uses_llm": true,
+      "uses_rag": true,
+      "uses_api": false,
+      "latency": {
+        "p50": 1100,
+        "p95": 3500,
+        "p99": 5000,
+        "timeout": 10000
+      }
+    },
+    "API_ONLY": {
+      "description": "ma-hr-orch call + sanitize + LLM format",
+      "stages_involved": ["request_parse", "classification", "ma_hr_orch_call", "sanitization", "llm_generate", "output_validation", "response_serialize"],
+      "uses_llm": true,
+      "uses_rag": false,
+      "uses_api": true,
+      "latency": {
+        "p50": 2100,
+        "p95": 5300,
+        "p99": 7000,
+        "timeout": 15000
+      },
+      "bottleneck": "ma_hr_orch_call"
+    },
+    "HYBRID_RAG_API": {
+      "description": "RAG + API in parallel, then LLM generate",
+      "stages_involved": ["request_parse", "classification", "kb_retrieve", "ma_hr_orch_call", "sanitization", "llm_generate", "output_validation", "response_serialize"],
+      "uses_llm": true,
+      "uses_rag": true,
+      "uses_api": true,
+      "parallel_stages": ["kb_retrieve", "ma_hr_orch_call"],
+      "latency": {
+        "p50": 2100,
+        "p95": 5300,
+        "p99": 7500,
+        "timeout": 15000
+      },
+      "bottleneck": "ma_hr_orch_call",
+      "note": "Parallel execution means total = max(RAG, API) + LLM, not sum"
+    },
+    "REQUIRES_CLARIFICATION": {
+      "description": "Request clarification from user",
+      "stages_involved": ["request_parse", "classification", "response_serialize"],
+      "uses_llm": false,
+      "uses_rag": false,
+      "uses_api": false,
+      "latency": {
+        "p50": 50,
+        "p95": 1500,
+        "p99": 3000,
+        "timeout": 8000
+      },
+      "note": "P95 higher because some clarifications use LLM"
+    }
+  },
+  "global_timeout": 30000,
+  "lambda_timeout": 30000,
+  "sla_target": {
+    "p95_all_flows": 6000,
+    "error_rate": 0.01,
+    "availability": 0.99
+  }
+}

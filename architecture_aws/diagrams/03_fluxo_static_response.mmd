@@ -1,0 +1,33 @@
+%% Sequence Diagram - Static/Policy Response Flow
+%% Data: 2026-07-23
+%% Fluxo: CLIENT_POLICY / STATIC_RESPONSE
+%% Características: Sem LLM, sem RAG, sem API
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant Classifier as Classificador<br/>Determinístico
+
+    MARH->>Lambda: Invoke (mensagem: "me conta uma piada")
+    activate Lambda
+    
+    Lambda->>Lambda: Parse + Validação JSON
+    Lambda->>Classifier: classify(mensagem)
+    activate Classifier
+    
+    Note over Classifier: Normaliza: lowercase, trim<br/>Match regex: piada|humor|engraçado<br/>→ OUT-002 (Entretenimento)
+    
+    Classifier-->>Lambda: intent=OUT-002, flow=STATIC_RESPONSE
+    deactivate Classifier
+    
+    Lambda->>Lambda: Seleciona mensagem padronizada[OUT-002]
+    
+    Note over Lambda: Resposta: "Sou o assistente de RH<br/>da Alelo. Posso ajudar com<br/>informações sobre benefícios,<br/>pedidos e colaboradores."
+    
+    Lambda->>Lambda: Log structured (intent, flow, duration)
+    
+    Lambda-->>MARH: Response 200 (mensagem padronizada)
+    deactivate Lambda
+    
+    Note over MARH,Lambda: Latência total: ~20-50ms<br/>Custo: $0 (sem LLM, sem API, sem RAG)

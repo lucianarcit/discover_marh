@@ -1,0 +1,53 @@
+%% Sequence Diagram - RAG_ONLY Flow
+%% Data: 2026-07-23
+%% Fluxo: RAG_ONLY (1 retrieve + 1 generate)
+%% Intents: INT-008 a INT-021 (informativos)
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant Classifier as Classificador
+    participant KB as Bedrock<br/>Knowledge Base
+    participant S3V as S3 Vectors
+    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
+
+    MARH->>Lambda: Invoke (mensagem: "como cadastrar benefício?")
+    activate Lambda
+    
+    Lambda->>Lambda: Parse + Validação
+    Lambda->>Classifier: classify(mensagem)
+    activate Classifier
+    Classifier-->>Lambda: intent=INT-008, flow=RAG_ONLY
+    deactivate Classifier
+    
+    Lambda->>KB: Retrieve(query="como cadastrar benefício", top_k=5)
+    activate KB
+    KB->>S3V: Vector search (embedding da query)
+    activate S3V
+    S3V-->>KB: Top 5 chunks + scores
+    deactivate S3V
+    KB-->>Lambda: chunks[5] com scores
+    deactivate KB
+    
+    Lambda->>Lambda: Filtra chunks (score >= 0.7)
+    
+    alt Chunks relevantes encontrados
+        Lambda->>Lambda: Monta prompt (system + context + user)
+        
+        Note over Lambda: System: "Responda APENAS com<br/>base no contexto fornecido"<br/>Context: [chunks filtrados]<br/>User: "como cadastrar benefício?"
+        
+        Lambda->>Bedrock: InvokeModel(prompt, max_tokens=500)
+        activate Bedrock
+        Bedrock-->>Lambda: Resposta gerada (~500 tokens)
+        deactivate Bedrock
+        
+        Lambda->>Lambda: Validação de output (PII scan, URL check)
+        Lambda-->>MARH: Response 200 (resposta natural)
+    else Nenhum chunk relevante (score < 0.7)
+        Lambda-->>MARH: Response 200 (mensagem: "Não encontrei informação sobre isso")
+    end
+    
+    deactivate Lambda
+    
+    Note over MARH,Bedrock: Latência total: P50=1.1s, P95=3.5s<br/>Custo: ~$0.001 (embedding + generate)

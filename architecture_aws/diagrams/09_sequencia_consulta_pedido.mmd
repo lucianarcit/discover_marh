@@ -1,0 +1,76 @@
+%% Detailed Sequence Diagram - Order Query (INT-003)
+%% Data: 2026-07-23
+%% Intent: INT-003 (Consulta de colaboradores)
+%% Fluxo: API_ONLY
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant Secrets as Secrets Manager
+    participant Orch as ma-hr-orch
+    participant Sanitizer as Sanitizador
+    participant Bedrock as Bedrock Haiku
+    participant CW as CloudWatch
+    participant XR as X-Ray
+
+    Note over MARH,XR: INT-003: "quantos colaboradores ativos temos?"
+
+    MARH->>Lambda: POST /invoke<br/>{"message": "quantos colaboradores ativos temos?",<br/>"context": {"company_id": "uuid-co", "role": "admin"}}
+    activate Lambda
+    
+    Lambda->>XR: Begin trace segment
+    Lambda->>CW: Log: request_received, correlation_id=uuid-123
+    
+    %% Classification
+    Lambda->>Lambda: classify("quantos colaboradores ativos temos?")
+    Note over Lambda: Pattern match: "colaborador" + "quantos|ativos"<br/>→ INT-003 (Consulta colaboradores)<br/>→ flow=API_ONLY<br/>→ endpoint=/employees
+    
+    Lambda->>CW: Log: intent=INT-003, flow=API_ONLY
+
+    %% Get API credentials
+    Lambda->>Secrets: GetSecretValue("marh-agent/ma-hr-orch-api-key")
+    activate Secrets
+    Secrets-->>Lambda: api_key (cached in memory)
+    deactivate Secrets
+
+    %% Call ma-hr-orch
+    Lambda->>Orch: GET /employees?company_id=uuid-co&status=active<br/>Headers: Authorization: Bearer {api_key}<br/>Timeout: 10s
+    activate Orch
+    
+    Note over Orch: Processa consulta...<br/>Latência: ~1.5s (P50)
+    
+    Orch-->>Lambda: 200 OK<br/>{"employees": [{"cpf": "123.*", "name": "João...",<br/>"department": "TI", "status": "active"}, ...],<br/>"total_count": 45, "active_count": 42}
+    deactivate Orch
+    
+    Lambda->>CW: Log: ma_hr_orch_success, duration_ms=1523, status=200
+
+    %% Sanitization
+    Lambda->>Sanitizer: sanitize(response, allowlist="consulta_colaboradores")
+    activate Sanitizer
+    
+    Note over Sanitizer: Allowlist: employee_count,<br/>department_summary, status_summary<br/><br/>REMOVIDO: cpf, name, email,<br/>phone, address, birth_date
+    
+    Sanitizer-->>Lambda: {"total_count": 45, "active_count": 42,<br/>"departments": ["TI", "RH", "Financeiro"]}
+    deactivate Sanitizer
+
+    %% LLM Generation
+    Lambda->>Lambda: Monta prompt
+    Note over Lambda: System: "Formate os dados...<br/>Não invente informações."<br/>Data: {sanitized_response}<br/>User: "quantos colaboradores<br/>ativos temos?"
+
+    Lambda->>Bedrock: InvokeModel(prompt, model=claude-3-5-haiku, max_tokens=200)
+    activate Bedrock
+    Bedrock-->>Lambda: "Sua empresa possui 42 colaboradores<br/>ativos de um total de 45, distribuídos<br/>nos departamentos de TI, RH e Financeiro."
+    deactivate Bedrock
+    
+    Lambda->>CW: Log: bedrock_complete, input_tokens=850, output_tokens=45, duration_ms=620
+
+    %% Output validation
+    Lambda->>Lambda: validate_output(response)
+    Note over Lambda: ✅ Sem PII detectado<br/>✅ Sem URLs externas<br/>✅ Tamanho OK
+
+    Lambda->>CW: Log: request_complete, total_duration_ms=2180, status=success
+    Lambda->>XR: End trace segment
+
+    Lambda-->>MARH: 200 OK<br/>{"response": "Sua empresa possui 42 colaboradores<br/>ativos de um total de 45...",<br/>"intent": "INT-003",<br/>"confidence": 0.95}
+    deactivate Lambda

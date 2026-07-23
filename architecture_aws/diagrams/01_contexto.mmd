@@ -1,0 +1,32 @@
+%% C4 Context Diagram - MARH Consultive Agent
+%% Data: 2026-07-23
+
+graph TB
+    %% Actors
+    User["👤 Usuário Final<br/>(Colaborador/RH/Admin)"]
+    
+    %% Systems
+    AppMeuAlelo["📱 App Meu Alelo<br/>(Mobile/Web)"]
+    APIMARH["🔗 API MARH<br/>(Orquestrador Principal)"]
+    AgentAPI["🤖 Agent API<br/>(Lambda - Python 3.12)<br/>sa-east-1"]
+    Bedrock["🧠 Amazon Bedrock<br/>(Claude 3.5 Haiku)<br/>sa-east-1"]
+    MaHrOrch["⚙️ ma-hr-orch<br/>(Serviço de Dados)<br/>Externo"]
+    KnowledgeBase["📚 Knowledge Base<br/>(Bedrock KB + S3 Vectors)<br/>sa-east-1"]
+    
+    %% Relationships
+    User -->|"Interage via app"| AppMeuAlelo
+    AppMeuAlelo -->|"REST API"| APIMARH
+    APIMARH -->|"Invoca (SDK/Function URL)"| AgentAPI
+    AgentAPI -->|"InvokeModel<br/>(geração de respostas)"| Bedrock
+    AgentAPI -->|"Retrieve<br/>(busca documentos)"| KnowledgeBase
+    AgentAPI -->|"HTTP GET<br/>(dados corporativos)"| MaHrOrch
+    MaHrOrch -.->|"Dados sanitizados"| AgentAPI
+    
+    %% Styling
+    classDef external fill:#f9f,stroke:#333,stroke-width:2px
+    classDef aws fill:#ff9900,stroke:#333,stroke-width:2px,color:#fff
+    classDef user fill:#e1f5fe,stroke:#333,stroke-width:2px
+    
+    class User user
+    class AppMeuAlelo,APIMARH,MaHrOrch external
+    class AgentAPI,Bedrock,KnowledgeBase aws

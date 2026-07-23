@@ -1,0 +1,64 @@
+%% Security Layers Diagram - MARH Consultive Agent
+%% Data: 2026-07-23
+
+graph TB
+    subgraph Layer1["🛡️ Camada 1: Entrada"]
+        Auth["IAM Auth<br/>(Function URL)"]
+        Validation["JSON Schema<br/>Validation"]
+        RateLimit["Rate Limiting<br/>(10 req/min/user)"]
+        SizeLimit["Payload Limit<br/>(64KB max)"]
+    end
+
+    subgraph Layer2["🔑 Camada 2: Identidade"]
+        Context["Contexto do Usuário<br/>(company_id, role, permissions)"]
+        RBAC["Controle de Acesso<br/>(admin/rh/colaborador)"]
+        NoElevation["Sem Elevação<br/>de Privilégio"]
+    end
+
+    subgraph Layer3["🔐 Camada 3: Segredos"]
+        SecretsM["Secrets Manager<br/>(API keys, tokens)"]
+        KMSKeys["KMS CMK<br/>(Criptografia)"]
+        IAMRole["IAM Least Privilege<br/>(Role restritiva)"]
+    end
+
+    subgraph Layer4["📋 Camada 4: Dados"]
+        Classification["Classificação<br/>(PII/Financeiro/Interno)"]
+        Allowlist["Allowlist por<br/>Endpoint"]
+        PIIRemoval["Remoção de PII<br/>(regex patterns)"]
+        SchemaVal["Schema Validation<br/>(response)"]
+    end
+
+    subgraph Layer5["🤖 Camada 5: Modelo"]
+        PromptInjection["Anti Prompt<br/>Injection"]
+        OutputValidation["Validação de<br/>Output"]
+        URLCheck["URL Allowlist<br/>(apenas Alelo)"]
+        AntiLeak["Anti System<br/>Prompt Leak"]
+    end
+
+    subgraph Layer6["🌐 Camada 6: Rede"]
+        HTTPS["HTTPS TLS 1.2+<br/>(todos os endpoints)"]
+        NoVPC["Sem VPC<br/>(endpoints regionais)"]
+        NoEgress["Allowlist de<br/>destinos no código"]
+    end
+
+    %% Flow
+    Layer1 --> Layer2
+    Layer2 --> Layer3
+    Layer3 --> Layer4
+    Layer4 --> Layer5
+    Layer5 --> Layer6
+
+    %% Styling
+    classDef entry fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef secrets fill:#fce4ec,stroke:#c62828,stroke-width:2px
+    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef model fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef network fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+
+    class Auth,Validation,RateLimit,SizeLimit entry
+    class Context,RBAC,NoElevation identity
+    class SecretsM,KMSKeys,IAMRole secrets
+    class Classification,Allowlist,PIIRemoval,SchemaVal data
+    class PromptInjection,OutputValidation,URLCheck,AntiLeak model
+    class HTTPS,NoVPC,NoEgress network

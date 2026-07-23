@@ -1,0 +1,63 @@
+%% Sequence Diagram - API_ONLY Flow
+%% Data: 2026-07-23
+%% Fluxo: API_ONLY (ma-hr-orch → sanitize → Bedrock)
+%% Intents: INT-001 a INT-007 (consultivos)
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant Classifier as Classificador
+    participant Sanitizer as Sanitizador PII
+    participant Orch as ma-hr-orch
+    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
+
+    MARH->>Lambda: Invoke (mensagem + context{company_id, user_id})
+    activate Lambda
+    
+    Lambda->>Lambda: Parse + Validação
+    Lambda->>Classifier: classify(mensagem)
+    activate Classifier
+    Classifier-->>Lambda: intent=INT-001, flow=API_ONLY, params={order_id}
+    deactivate Classifier
+    
+    Lambda->>Lambda: Valida parâmetros obrigatórios
+    
+    alt Parâmetros completos
+        Lambda->>Orch: HTTP GET /orders/{order_id} (timeout=10s)
+        activate Orch
+        
+        alt Sucesso (200)
+            Orch-->>Lambda: Response 200 (dados do pedido)
+            deactivate Orch
+            
+            Lambda->>Sanitizer: sanitize(response, allowlist="consulta_pedidos")
+            activate Sanitizer
+            
+            Note over Sanitizer: Allowlist: order_id, status,<br/>created_at, total_value<br/>Remove: cpf, full_name, email,<br/>phone, address, bank_account
+            
+            Sanitizer-->>Lambda: Dados sanitizados (apenas campos permitidos)
+            deactivate Sanitizer
+            
+            Lambda->>Lambda: Monta prompt (system + dados sanitizados + user)
+            Lambda->>Bedrock: InvokeModel(prompt, max_tokens=300)
+            activate Bedrock
+            Bedrock-->>Lambda: Resposta formatada em linguagem natural
+            deactivate Bedrock
+            
+            Lambda->>Lambda: Validação de output (re-scan PII)
+            Lambda-->>MARH: Response 200 (resposta natural com dados)
+            
+        else Erro HTTP (4xx/5xx)
+            Orch-->>Lambda: Response 4xx/5xx
+            Lambda->>Lambda: Mapeia erro → mensagem padronizada (ERR-001 a ERR-010)
+            Lambda-->>MARH: Response 200 (mensagem de erro amigável)
+        end
+        
+    else Parâmetros insuficientes
+        Lambda-->>MARH: Response 200 (pergunta de clarificação)
+    end
+    
+    deactivate Lambda
+    
+    Note over MARH,Bedrock: Latência total: P50=2.1s, P95=5.3s<br/>Gargalo: ma-hr-orch (P95=3.3s)<br/>Custo: ~$0.001 (LLM) + $0 (API)

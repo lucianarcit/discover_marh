@@ -1,0 +1,166 @@
+{
+  "metadata": {
+    "project": "MARH Consultive Agent POC",
+    "date": "2026-07-23",
+    "region": "sa-east-1",
+    "description": "Service availability matrix for sa-east-1 (São Paulo)",
+    "status": "DRAFT"
+  },
+  "target_region": "sa-east-1",
+  "services": [
+    {
+      "service_name": "AWS Lambda",
+      "service_id": "lambda",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "runtime_required": "python3.12",
+      "runtime_available": true,
+      "features_required": ["function-url", "x-ray-tracing", "arm64"],
+      "features_available": true,
+      "max_concurrency_default": 1000,
+      "notes": "Full feature parity with us-east-1 for required features"
+    },
+    {
+      "service_name": "Amazon Bedrock",
+      "service_id": "bedrock",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "models_required": [
+        {
+          "model_id": "anthropic.claude-3-5-haiku-20241022-v1:0",
+          "model_name": "Claude 3.5 Haiku",
+          "available": true,
+          "status": "VERIFY_BEFORE_POC",
+          "quota_rpm": "100 (estimated, verify actual)",
+          "quota_tpm": "100000 (estimated, verify actual)"
+        },
+        {
+          "model_id": "anthropic.claude-sonnet-4-20250514-v1:0",
+          "model_name": "Claude Sonnet 4",
+          "available": true,
+          "status": "VERIFY_BEFORE_POC",
+          "usage": "alternative/fallback"
+        },
+        {
+          "model_id": "amazon.titan-embed-text-v2:0",
+          "model_name": "Titan Embeddings v2",
+          "available": true,
+          "status": "VERIFY_BEFORE_POC",
+          "usage": "knowledge-base-embeddings"
+        }
+      ],
+      "features_required": ["invoke-model", "knowledge-bases", "retrieve"],
+      "features_available": true,
+      "cross_region_inference": false,
+      "notes": "Quotas may be lower than us-east-1; request increase before POC"
+    },
+    {
+      "service_name": "Bedrock Knowledge Bases",
+      "service_id": "bedrock-knowledge-bases",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "vector_stores_supported": ["s3-vectors", "opensearch-serverless", "aurora-pgvector"],
+      "chosen_vector_store": "s3-vectors",
+      "status": "VERIFY_BEFORE_POC",
+      "notes": "Verify S3 Vectors GA status in sa-east-1"
+    },
+    {
+      "service_name": "Amazon S3",
+      "service_id": "s3",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "features_required": ["versioning", "kms-encryption", "lifecycle-rules"],
+      "features_available": true,
+      "notes": "Full feature parity"
+    },
+    {
+      "service_name": "S3 Vectors",
+      "service_id": "s3-vectors",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "status": "VERIFY_GA_STATUS",
+      "notes": "Relatively new service; verify GA status in sa-east-1 before POC start"
+    },
+    {
+      "service_name": "AWS Secrets Manager",
+      "service_id": "secretsmanager",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "features_required": ["automatic-rotation", "kms-encryption"],
+      "features_available": true,
+      "notes": "Full feature parity"
+    },
+    {
+      "service_name": "AWS KMS",
+      "service_id": "kms",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "features_required": ["symmetric-cmk", "envelope-encryption"],
+      "features_available": true,
+      "notes": "Full feature parity"
+    },
+    {
+      "service_name": "Amazon CloudWatch",
+      "service_id": "cloudwatch",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "features_required": ["logs", "metrics", "log-insights", "custom-metrics"],
+      "features_available": true,
+      "notes": "Full feature parity"
+    },
+    {
+      "service_name": "AWS X-Ray",
+      "service_id": "xray",
+      "available_in_sa_east_1": true,
+      "verified_date": "2026-07-23",
+      "features_required": ["active-tracing", "service-map", "annotations"],
+      "features_available": true,
+      "notes": "Full feature parity"
+    }
+  ],
+  "services_not_used": [
+    {
+      "service_name": "API Gateway",
+      "reason": "Not needed; API MARH invokes Lambda directly"
+    },
+    {
+      "service_name": "VPC",
+      "reason": "Not needed for POC; all services accessible via HTTPS"
+    },
+    {
+      "service_name": "NAT Gateway",
+      "reason": "Not needed; Lambda outside VPC"
+    },
+    {
+      "service_name": "DynamoDB",
+      "reason": "Stateless POC; no session storage"
+    },
+    {
+      "service_name": "OpenSearch Serverless",
+      "reason": "Cost prohibitive ($700/month); using S3 Vectors instead"
+    }
+  ],
+  "regional_risks": [
+    {
+      "risk_id": "REG-001",
+      "description": "Bedrock model quotas may be lower in sa-east-1 than us-east-1",
+      "probability": "high",
+      "impact": "high",
+      "mitigation": "Request quota increase before POC start"
+    },
+    {
+      "risk_id": "REG-002",
+      "description": "S3 Vectors may not be GA in sa-east-1",
+      "probability": "low",
+      "impact": "high",
+      "mitigation": "Verify availability; fallback to FAISS in Lambda layer"
+    },
+    {
+      "risk_id": "REG-003",
+      "description": "New Bedrock features may launch in us-east-1 first",
+      "probability": "medium",
+      "impact": "low",
+      "mitigation": "Use only GA features; no dependency on preview features"
+    }
+  ]
+}

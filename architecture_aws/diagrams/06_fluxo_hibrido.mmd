@@ -1,0 +1,58 @@
+%% Sequence Diagram - HYBRID_RAG_API Flow
+%% Data: 2026-07-23
+%% Fluxo: HYBRID_RAG_API (paralelo quando sem dependência)
+
+sequenceDiagram
+    autonumber
+    participant MARH as API MARH
+    participant Lambda as Lambda Agent
+    participant Classifier as Classificador
+    participant KB as Bedrock KB
+    participant Orch as ma-hr-orch
+    participant Sanitizer as Sanitizador
+    participant Bedrock as Bedrock<br/>Claude 3.5 Haiku
+
+    MARH->>Lambda: Invoke (mensagem + context)
+    activate Lambda
+    
+    Lambda->>Classifier: classify(mensagem)
+    activate Classifier
+    Classifier-->>Lambda: intent=HYBRID, flow=HYBRID_RAG_API
+    deactivate Classifier
+    
+    Lambda->>Lambda: Análise de dependência entre RAG e API
+    
+    Note over Lambda: Sem dependência detectada<br/>→ Execução PARALELA
+
+    par Execução Paralela
+        Lambda->>KB: Retrieve(query, top_k=5)
+        activate KB
+        KB-->>Lambda: chunks[] com scores
+        deactivate KB
+    and
+        Lambda->>Orch: HTTP GET /endpoint (timeout=10s)
+        activate Orch
+        Orch-->>Lambda: Response 200 (dados)
+        deactivate Orch
+    end
+    
+    Lambda->>Sanitizer: sanitize(api_response, allowlist)
+    activate Sanitizer
+    Sanitizer-->>Lambda: Dados API sanitizados
+    deactivate Sanitizer
+    
+    Lambda->>Lambda: Filtra chunks relevantes (score >= 0.7)
+    Lambda->>Lambda: Monta prompt combinado (system + RAG context + API data + user)
+    
+    Note over Lambda: Prompt combina:<br/>- Contexto documental (RAG)<br/>- Dados corporativos (API sanitizado)<br/>- Pergunta do usuário
+
+    Lambda->>Bedrock: InvokeModel(prompt_combinado, max_tokens=600)
+    activate Bedrock
+    Bedrock-->>Lambda: Resposta unificada
+    deactivate Bedrock
+    
+    Lambda->>Lambda: Validação de output
+    Lambda-->>MARH: Response 200 (resposta integrando RAG + dados API)
+    deactivate Lambda
+    
+    Note over MARH,Bedrock: Latência total: P50=2.1s, P95=5.3s<br/>Paralelo: max(RAG, API) + LLM<br/>Custo: ~$0.0015 (mais tokens no prompt)

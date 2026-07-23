@@ -1,0 +1,265 @@
+{
+  "metadata": {
+    "project": "MARH Consultive Agent POC",
+    "date": "2026-07-23",
+    "description": "Scoring matrix for architecture alternatives",
+    "scoring": {
+      "scale": "1-5 (1=worst, 5=best)",
+      "weights": {
+        "cost": 0.25,
+        "simplicity": 0.20,
+        "performance": 0.20,
+        "security": 0.15,
+        "scalability": 0.10,
+        "maintainability": 0.10
+      }
+    }
+  },
+  "decisions": [
+    {
+      "decision_id": "ADR-001",
+      "category": "Runtime",
+      "question": "Which compute service for agent execution?",
+      "alternatives": [
+        {
+          "name": "AWS Lambda",
+          "selected": true,
+          "scores": {
+            "cost": 5,
+            "simplicity": 5,
+            "performance": 4,
+            "security": 4,
+            "scalability": 5,
+            "maintainability": 5
+          },
+          "weighted_total": 4.65,
+          "pros": ["Zero fixed cost", "Auto-scaling", "No infra management"],
+          "cons": ["Cold start ~300ms", "15min timeout"]
+        },
+        {
+          "name": "ECS Fargate",
+          "selected": false,
+          "scores": {
+            "cost": 3,
+            "simplicity": 3,
+            "performance": 5,
+            "security": 4,
+            "scalability": 4,
+            "maintainability": 3
+          },
+          "weighted_total": 3.60,
+          "pros": ["No cold start", "Container flexibility"],
+          "cons": ["Fixed cost $35/month min", "More config"]
+        },
+        {
+          "name": "EC2",
+          "selected": false,
+          "scores": {
+            "cost": 2,
+            "simplicity": 1,
+            "performance": 5,
+            "security": 3,
+            "scalability": 2,
+            "maintainability": 1
+          },
+          "weighted_total": 2.40,
+          "pros": ["Full control", "No cold start"],
+          "cons": ["Fixed cost", "Patching", "Manual scaling"]
+        }
+      ]
+    },
+    {
+      "decision_id": "ADR-002",
+      "category": "LLM Model",
+      "question": "Which LLM model for response generation?",
+      "alternatives": [
+        {
+          "name": "Claude 3.5 Haiku",
+          "selected": true,
+          "scores": {
+            "cost": 5,
+            "simplicity": 5,
+            "performance": 5,
+            "security": 4,
+            "scalability": 4,
+            "maintainability": 5
+          },
+          "weighted_total": 4.75,
+          "pros": ["Lowest cost", "Fastest latency", "Good quality for task"],
+          "cons": ["Less reasoning capability", "May struggle with complex queries"]
+        },
+        {
+          "name": "Claude Sonnet 4",
+          "selected": false,
+          "scores": {
+            "cost": 2,
+            "simplicity": 5,
+            "performance": 3,
+            "security": 4,
+            "scalability": 3,
+            "maintainability": 5
+          },
+          "weighted_total": 3.45,
+          "pros": ["Best reasoning", "Higher quality"],
+          "cons": ["12x more expensive", "Higher latency"]
+        },
+        {
+          "name": "Llama 3 (Bedrock)",
+          "selected": false,
+          "scores": {
+            "cost": 5,
+            "simplicity": 4,
+            "performance": 4,
+            "security": 4,
+            "scalability": 4,
+            "maintainability": 4
+          },
+          "weighted_total": 4.25,
+          "pros": ["Low cost", "Open source"],
+          "cons": ["Lower quality in Portuguese", "Less tested"]
+        }
+      ]
+    },
+    {
+      "decision_id": "ADR-004",
+      "category": "Vector Store",
+      "question": "Which vector store for Knowledge Base?",
+      "alternatives": [
+        {
+          "name": "S3 Vectors",
+          "selected": true,
+          "scores": {
+            "cost": 5,
+            "simplicity": 5,
+            "performance": 3,
+            "security": 4,
+            "scalability": 4,
+            "maintainability": 5
+          },
+          "weighted_total": 4.35,
+          "pros": ["$5/month", "Zero management", "Native KB integration"],
+          "cons": ["Higher latency ~500ms", "Newer service"]
+        },
+        {
+          "name": "OpenSearch Serverless",
+          "selected": false,
+          "scores": {
+            "cost": 1,
+            "simplicity": 3,
+            "performance": 5,
+            "security": 5,
+            "scalability": 5,
+            "maintainability": 3
+          },
+          "weighted_total": 3.20,
+          "pros": ["Best performance ~200ms", "Complex queries", "Mature"],
+          "cons": ["$700/month minimum", "Over-engineered for POC"]
+        },
+        {
+          "name": "Aurora pgvector",
+          "selected": false,
+          "scores": {
+            "cost": 2,
+            "simplicity": 2,
+            "performance": 4,
+            "security": 5,
+            "scalability": 4,
+            "maintainability": 2
+          },
+          "weighted_total": 2.95,
+          "pros": ["SQL interface", "Familiar technology"],
+          "cons": ["$50+/month", "Requires VPC", "DB management"]
+        },
+        {
+          "name": "Pinecone",
+          "selected": false,
+          "scores": {
+            "cost": 3,
+            "simplicity": 4,
+            "performance": 5,
+            "security": 3,
+            "scalability": 5,
+            "maintainability": 4
+          },
+          "weighted_total": 3.85,
+          "pros": ["Great performance", "Easy to use"],
+          "cons": ["External vendor", "Data leaves AWS", "$70+/month"]
+        }
+      ]
+    },
+    {
+      "decision_id": "ADR-005",
+      "category": "Network",
+      "question": "Lambda inside or outside VPC?",
+      "alternatives": [
+        {
+          "name": "Lambda outside VPC",
+          "selected": true,
+          "scores": {
+            "cost": 5,
+            "simplicity": 5,
+            "performance": 5,
+            "security": 3,
+            "scalability": 5,
+            "maintainability": 5
+          },
+          "weighted_total": 4.65,
+          "pros": ["$0 network cost", "No cold start penalty", "Simple"],
+          "cons": ["No network isolation", "No egress control"]
+        },
+        {
+          "name": "Lambda in VPC",
+          "selected": false,
+          "scores": {
+            "cost": 2,
+            "simplicity": 2,
+            "performance": 3,
+            "security": 5,
+            "scalability": 4,
+            "maintainability": 2
+          },
+          "weighted_total": 2.85,
+          "pros": ["Network isolation", "Egress control", "Compliance"],
+          "cons": ["$105/month", "+1-2s cold start", "Complex setup"]
+        }
+      ]
+    },
+    {
+      "decision_id": "ADR-013",
+      "category": "Orchestration",
+      "question": "Bedrock Agents Classic vs Custom Lambda orchestration?",
+      "alternatives": [
+        {
+          "name": "Custom Lambda Orchestration",
+          "selected": true,
+          "scores": {
+            "cost": 5,
+            "simplicity": 3,
+            "performance": 5,
+            "security": 5,
+            "scalability": 4,
+            "maintainability": 3
+          },
+          "weighted_total": 4.25,
+          "pros": ["Full control over PII", "Deterministic classification saves tokens", "Custom error handling"],
+          "cons": ["More code to maintain", "Custom retry/circuit breaker"]
+        },
+        {
+          "name": "Bedrock Agents Classic",
+          "selected": false,
+          "scores": {
+            "cost": 3,
+            "simplicity": 4,
+            "performance": 3,
+            "security": 2,
+            "scalability": 4,
+            "maintainability": 4
+          },
+          "weighted_total": 3.30,
+          "pros": ["Managed orchestration", "Built-in memory", "Less code"],
+          "cons": ["Always uses LLM for classification", "Hard to sanitize PII", "Less control"]
+        }
+      ]
+    }
+  ]
+}

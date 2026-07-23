@@ -1,0 +1,320 @@
+{
+  "metadata": {
+    "project": "MARH Consultive Agent POC",
+    "date": "2026-07-23",
+    "region": "sa-east-1",
+    "description": "Security controls per layer with implementation status"
+  },
+  "principles": [
+    "PII never reaches the model",
+    "Least privilege (IAM)",
+    "Defense in depth",
+    "Zero trust between layers",
+    "Fail secure (deny on failure)"
+  ],
+  "layers": [
+    {
+      "layer_id": "L1",
+      "layer_name": "Entry",
+      "description": "API MARH integration and request validation",
+      "controls": [
+        {
+          "control_id": "L1-C01",
+          "name": "IAM Authentication",
+          "description": "Lambda Function URL with IAM Auth or AWS SDK invocation with IAM role",
+          "implementation": "Lambda resource policy restricting to API MARH role ARN",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L1-C02",
+          "name": "JSON Schema Validation",
+          "description": "Validate request payload against defined schema before processing",
+          "implementation": "jsonschema library in Lambda, reject malformed requests with 400",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L1-C03",
+          "name": "Payload Size Limit",
+          "description": "Reject requests exceeding 64KB",
+          "implementation": "Check content-length header; Lambda Function URL has 6MB limit inherently",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L1-C04",
+          "name": "Rate Limiting",
+          "description": "Throttle requests per user (10/min) and per company (100/min)",
+          "implementation": "In-memory rate limiter (POC); DynamoDB or ElastiCache (production)",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1",
+          "limitations_poc": "Not distributed; per-instance only"
+        }
+      ]
+    },
+    {
+      "layer_id": "L2",
+      "layer_name": "Identity",
+      "description": "User context and access control",
+      "controls": [
+        {
+          "control_id": "L2-C01",
+          "name": "Context Extraction",
+          "description": "Extract user context (company_id, role, permissions) from request payload",
+          "implementation": "Parse context from API MARH payload; user already authenticated by API MARH",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L2-C02",
+          "name": "Role-Based Access",
+          "description": "Restrict intents and data access based on user role (admin/rh/colaborador)",
+          "implementation": "Permission matrix checking role against allowed intents",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L2-C03",
+          "name": "No Privilege Escalation",
+          "description": "Agent never returns data that user wouldn't see in official journey",
+          "implementation": "Pass user context to ma-hr-orch; API enforces access control",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        }
+      ]
+    },
+    {
+      "layer_id": "L3",
+      "layer_name": "Secrets",
+      "description": "Credential and key management",
+      "controls": [
+        {
+          "control_id": "L3-C01",
+          "name": "Secrets Manager",
+          "description": "Store all secrets (API keys, tokens) in AWS Secrets Manager",
+          "implementation": "boto3 secretsmanager client; cache in Lambda memory during lifecycle",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0",
+          "secrets": [
+            "marh-agent/ma-hr-orch-api-key",
+            "marh-agent/bedrock-config",
+            "marh-agent/internal-signing-key"
+          ]
+        },
+        {
+          "control_id": "L3-C02",
+          "name": "KMS Encryption",
+          "description": "CMK for S3 documents and Secrets Manager envelope encryption",
+          "implementation": "3 CMKs: marh-agent-s3, marh-agent-secrets, marh-agent-logs",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L3-C03",
+          "name": "IAM Least Privilege",
+          "description": "Lambda role with minimum required permissions only",
+          "implementation": "Explicit allow for: bedrock:InvokeModel, bedrock:Retrieve, s3:GetObject, secretsmanager:GetSecretValue, kms:Decrypt, logs:*, xray:*",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L3-C04",
+          "name": "No Hardcoded Secrets",
+          "description": "No secrets in code, environment variables, or logs",
+          "implementation": "Code review checklist; .gitignore for .env files; scan in CI",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        }
+      ]
+    },
+    {
+      "layer_id": "L4",
+      "layer_name": "Data",
+      "description": "Data classification and sanitization",
+      "controls": [
+        {
+          "control_id": "L4-C01",
+          "name": "PII Removal from Input",
+          "description": "Scan user message for PII (CPF, email, phone, card) and replace with placeholders",
+          "implementation": "Regex-based scanner: CPF, email, phone, card number patterns",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0",
+          "patterns": [
+            {"type": "cpf", "regex": "\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}"},
+            {"type": "email", "regex": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"},
+            {"type": "phone", "regex": "\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}"},
+            {"type": "card_number", "regex": "\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}"}
+          ]
+        },
+        {
+          "control_id": "L4-C02",
+          "name": "API Response Allowlist",
+          "description": "Only allowlisted fields from ma-hr-orch response pass to LLM",
+          "implementation": "Allowlist dictionary per endpoint; unknown fields are discarded",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0",
+          "approach": "whitelist (not blacklist)",
+          "allowlists": {
+            "orders": ["order_id", "status", "created_at", "total_value", "product_name"],
+            "employees": ["count", "department_summary", "status_summary"],
+            "benefits": ["benefit_name", "balance", "category", "expiry_date"],
+            "products": ["product_name", "description", "category"],
+            "credit_days": ["next_credit_date", "frequency", "days_remaining"]
+          }
+        },
+        {
+          "control_id": "L4-C03",
+          "name": "Schema Validation (Response)",
+          "description": "Validate ma-hr-orch response against expected schema before processing",
+          "implementation": "pydantic models or jsonschema for each endpoint response",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L4-C04",
+          "name": "Data Classification",
+          "description": "Classify all data fields by sensitivity level",
+          "implementation": "Documented classification table; enforced in code via allowlist",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0",
+          "classifications": {
+            "PII_SENSITIVE": ["cpf", "rg", "cnh"],
+            "PII": ["full_name", "email", "phone", "address", "birth_date"],
+            "FINANCIAL": ["balance", "salary", "bank_account", "pix_key"],
+            "CREDENTIAL": ["jwt", "api_key", "token", "password"],
+            "INTERNAL": ["company_id", "user_id", "order_id"],
+            "PUBLIC": ["product_name", "status", "category"]
+          }
+        }
+      ]
+    },
+    {
+      "layer_id": "L5",
+      "layer_name": "Model",
+      "description": "LLM security (prompt injection, data exfiltration)",
+      "controls": [
+        {
+          "control_id": "L5-C01",
+          "name": "Anti-Prompt Injection",
+          "description": "System prompt with identity anchor and anti-manipulation instructions",
+          "implementation": "Clear system/user separation; instruction to ignore user attempts to change behavior",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L5-C02",
+          "name": "Output Validation (PII Re-scan)",
+          "description": "Re-scan LLM output for PII before returning to user",
+          "implementation": "Same regex patterns as input sanitization applied to output",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L5-C03",
+          "name": "URL Allowlist",
+          "description": "Only Alelo domain URLs allowed in output",
+          "implementation": "Extract URLs from response; remove any non-alelo.com.br URLs",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1",
+          "allowed_domains": ["alelo.com.br", "meualelo.com.br"]
+        },
+        {
+          "control_id": "L5-C04",
+          "name": "Anti-System Prompt Leak",
+          "description": "Prevent model from revealing system prompt content",
+          "implementation": "Detection patterns for common leak attempts; instruction in system prompt",
+          "poc_status": "IMPLEMENT",
+          "priority": "P2"
+        },
+        {
+          "control_id": "L5-C05",
+          "name": "GET-Only Tool Use",
+          "description": "Only GET operations allowed; no write/delete/update tools",
+          "implementation": "Hardcoded HTTP method in client; no PUT/POST/DELETE/PATCH allowed",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L5-C06",
+          "name": "Endpoint Allowlist",
+          "description": "Only pre-defined ma-hr-orch endpoints can be called",
+          "implementation": "Hardcoded list of allowed endpoints; reject any dynamic URL",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        }
+      ]
+    },
+    {
+      "layer_id": "L6",
+      "layer_name": "Network",
+      "description": "Network security and encryption in transit",
+      "controls": [
+        {
+          "control_id": "L6-C01",
+          "name": "HTTPS Everywhere",
+          "description": "All communications use HTTPS (TLS 1.2+)",
+          "implementation": "AWS SDK defaults to HTTPS; httpx client with verify=True",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L6-C02",
+          "name": "No VPC (POC)",
+          "description": "Lambda outside VPC; uses HTTPS regional endpoints",
+          "implementation": "Default Lambda configuration; no VPC attachment",
+          "poc_status": "IMPLEMENT",
+          "priority": "N/A",
+          "production_change": "Consider VPC if compliance requires"
+        },
+        {
+          "control_id": "L6-C03",
+          "name": "Destination Allowlist (Code)",
+          "description": "Only known AWS endpoints and ma-hr-orch URL are called",
+          "implementation": "Hardcoded base URLs; no dynamic URL construction from user/model input",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        }
+      ]
+    },
+    {
+      "layer_id": "L7",
+      "layer_name": "Observability",
+      "description": "Security monitoring and audit",
+      "controls": [
+        {
+          "control_id": "L7-C01",
+          "name": "No PII in Logs",
+          "description": "Sanitize all log entries before writing to CloudWatch",
+          "implementation": "Log sanitizer function; never log raw user messages or API responses",
+          "poc_status": "IMPLEMENT",
+          "priority": "P0"
+        },
+        {
+          "control_id": "L7-C02",
+          "name": "Security Event Logging",
+          "description": "Log all security-relevant events (rate limit, injection attempt, auth failure)",
+          "implementation": "Structured JSON logs with event types for security events",
+          "poc_status": "IMPLEMENT",
+          "priority": "P1"
+        },
+        {
+          "control_id": "L7-C03",
+          "name": "CloudTrail",
+          "description": "API-level audit trail for all AWS service calls",
+          "implementation": "Enable CloudTrail in account (if not already enabled)",
+          "poc_status": "DEFER_TO_PRODUCTION",
+          "priority": "P2"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_controls": 26,
+    "implement_in_poc": 22,
+    "defer_to_production": 4,
+    "priority_p0": 14,
+    "priority_p1": 9,
+    "priority_p2": 3
+  }
+}

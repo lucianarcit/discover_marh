@@ -1,0 +1,43 @@
+%% Network Topology - MARH Consultive Agent
+%% Data: 2026-07-23
+%% Decisão: Lambda FORA de VPC (sem NAT Gateway)
+
+graph LR
+    subgraph External["Internet / Externos"]
+        APIMARH["🔗 API MARH<br/>(Invocador)"]
+        MaHrOrch["⚙️ ma-hr-orch<br/>(HTTPS público)"]
+    end
+
+    subgraph AWS_Region["AWS sa-east-1 (São Paulo) — SEM VPC"]
+        Lambda["⚡ Lambda<br/>(fora de VPC)<br/>IP dinâmico"]
+        
+        subgraph AWSServices["Serviços AWS (Endpoints Regionais HTTPS)"]
+            Bedrock["Bedrock Runtime<br/>bedrock-runtime.sa-east-1"]
+            BedrockKB["Bedrock Agent Runtime<br/>bedrock-agent-runtime.sa-east-1"]
+            S3["S3<br/>s3.sa-east-1"]
+            SM["Secrets Manager<br/>secretsmanager.sa-east-1"]
+            KMS["KMS<br/>kms.sa-east-1"]
+            CW["CloudWatch<br/>logs.sa-east-1"]
+            XR["X-Ray<br/>xray.sa-east-1"]
+        end
+    end
+
+    %% Connections (all HTTPS 443)
+    APIMARH -->|"HTTPS 443<br/>IAM Auth"| Lambda
+    Lambda -->|"HTTPS 443"| Bedrock
+    Lambda -->|"HTTPS 443"| BedrockKB
+    Lambda -->|"HTTPS 443"| S3
+    Lambda -->|"HTTPS 443"| SM
+    Lambda -->|"HTTPS 443"| KMS
+    Lambda -->|"HTTPS 443"| CW
+    Lambda -->|"HTTPS 443"| XR
+    Lambda -->|"HTTPS 443<br/>Bearer Token"| MaHrOrch
+
+    %% Styling
+    classDef external fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+    classDef lambda fill:#ff9900,stroke:#333,stroke-width:2px,color:#fff
+    classDef service fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+
+    class APIMARH,MaHrOrch external
+    class Lambda lambda
+    class Bedrock,BedrockKB,S3,SM,KMS,CW,XR service

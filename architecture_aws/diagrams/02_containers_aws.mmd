@@ -1,0 +1,63 @@
+%% AWS Container Diagram - MARH Consultive Agent
+%% Data: 2026-07-23
+%% Region: sa-east-1
+
+graph TB
+    subgraph External["Sistemas Externos"]
+        APIMARH["🔗 API MARH<br/>(Invocador)"]
+        MaHrOrch["⚙️ ma-hr-orch<br/>(Dados Corporativos)<br/>HTTP GET only"]
+    end
+
+    subgraph AWS_SA_EAST_1["AWS sa-east-1 (São Paulo)"]
+        subgraph Compute["Computação"]
+            Lambda["⚡ AWS Lambda<br/>Python 3.12 / 512MB<br/>Function URL"]
+        end
+
+        subgraph AI_ML["AI/ML"]
+            BedrockRuntime["🧠 Bedrock Runtime<br/>Claude 3.5 Haiku<br/>(Geração)"]
+            BedrockKB["📚 Bedrock Knowledge Bases<br/>(Retrieval)"]
+        end
+
+        subgraph Storage["Armazenamento"]
+            S3Docs["📁 S3 Bucket<br/>(Documentos Markdown)<br/>KMS + Versioning"]
+            S3Vectors["📊 S3 Vectors<br/>(Embeddings)"]
+        end
+
+        subgraph Security["Segurança"]
+            SecretsManager["🔐 Secrets Manager<br/>(API Keys, Tokens)"]
+            KMS["🔑 KMS<br/>(Chaves de Criptografia)"]
+        end
+
+        subgraph Observability["Observabilidade"]
+            CloudWatch["📈 CloudWatch<br/>(Logs + Metrics)"]
+            XRay["🔍 X-Ray<br/>(Distributed Tracing)"]
+        end
+    end
+
+    %% Connections
+    APIMARH -->|"Invoke (IAM Auth)"| Lambda
+    Lambda -->|"InvokeModel"| BedrockRuntime
+    Lambda -->|"Retrieve"| BedrockKB
+    Lambda -->|"HTTP GET (HTTPS)"| MaHrOrch
+    Lambda -->|"GetSecretValue"| SecretsManager
+    Lambda -->|"PutLogEvents"| CloudWatch
+    Lambda -->|"PutTraceSegments"| XRay
+    BedrockKB -->|"Read embeddings"| S3Vectors
+    BedrockKB -->|"Read source docs"| S3Docs
+    SecretsManager -->|"Decrypt"| KMS
+    S3Docs -->|"Encrypt/Decrypt"| KMS
+
+    %% Styling
+    classDef external fill:#e8e8e8,stroke:#666,stroke-width:2px
+    classDef compute fill:#ff9900,stroke:#333,stroke-width:2px,color:#fff
+    classDef ai fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
+    classDef storage fill:#3f51b5,stroke:#333,stroke-width:2px,color:#fff
+    classDef security fill:#f44336,stroke:#333,stroke-width:2px,color:#fff
+    classDef observability fill:#4caf50,stroke:#333,stroke-width:2px,color:#fff
+
+    class APIMARH,MaHrOrch external
+    class Lambda compute
+    class BedrockRuntime,BedrockKB ai
+    class S3Docs,S3Vectors storage
+    class SecretsManager,KMS security
+    class CloudWatch,XRay observability

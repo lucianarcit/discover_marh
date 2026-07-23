@@ -1,0 +1,196 @@
+{
+  "metadata": {
+    "project": "MARH Consultive Agent POC",
+    "date": "2026-07-23",
+    "region": "sa-east-1",
+    "description": "Capacity planning scenarios for different user loads"
+  },
+  "assumptions": {
+    "avg_requests_per_user_per_day": 5,
+    "peak_multiplier": 3,
+    "peak_hours": "09:00-12:00, 14:00-17:00 BRT",
+    "intent_distribution": {
+      "STATIC_RESPONSE": 0.22,
+      "RAG_ONLY": 0.40,
+      "API_ONLY": 0.30,
+      "HYBRID_RAG_API": 0.05,
+      "REQUIRES_CLARIFICATION": 0.03
+    },
+    "llm_call_rate": 0.70,
+    "avg_lambda_duration_ms": 3000,
+    "lambda_memory_mb": 512
+  },
+  "scenarios": [
+    {
+      "scenario_id": "POC_SMALL",
+      "name": "POC Pequeno",
+      "simultaneous_users": 100,
+      "daily_requests": 100,
+      "monthly_requests": 3000,
+      "peak_rps": 1,
+      "resources": {
+        "lambda_concurrency_needed": 3,
+        "lambda_concurrency_available": 1000,
+        "lambda_utilization_pct": 0.3,
+        "bedrock_rpm_needed": 1,
+        "bedrock_rpm_available": 100,
+        "bedrock_utilization_pct": 1,
+        "bedrock_tokens_per_minute": 2000,
+        "ma_hr_orch_calls_per_minute": 1,
+        "s3_vectors_queries_per_minute": 1
+      },
+      "status": "COMFORTABLE",
+      "bottlenecks": [],
+      "estimated_monthly_cost_usd": 17,
+      "notes": "Well within all limits; free tier covers Lambda"
+    },
+    {
+      "scenario_id": "PILOT",
+      "name": "Piloto",
+      "simultaneous_users": 1000,
+      "daily_requests": 1000,
+      "monthly_requests": 30000,
+      "peak_rps": 10,
+      "resources": {
+        "lambda_concurrency_needed": 30,
+        "lambda_concurrency_available": 1000,
+        "lambda_utilization_pct": 3,
+        "bedrock_rpm_needed": 10,
+        "bedrock_rpm_available": 100,
+        "bedrock_utilization_pct": 10,
+        "bedrock_tokens_per_minute": 20000,
+        "ma_hr_orch_calls_per_minute": 7,
+        "s3_vectors_queries_per_minute": 5
+      },
+      "status": "COMFORTABLE",
+      "bottlenecks": [
+        {
+          "resource": "ma_hr_orch",
+          "concern": "Verify rate limit capacity for sustained 7 calls/min",
+          "severity": "low"
+        }
+      ],
+      "estimated_monthly_cost_usd": 42,
+      "notes": "Comfortable for all AWS resources; validate ma-hr-orch capacity"
+    },
+    {
+      "scenario_id": "PRODUCTION",
+      "name": "Produção",
+      "simultaneous_users": 10000,
+      "daily_requests": 10000,
+      "monthly_requests": 300000,
+      "peak_rps": 100,
+      "resources": {
+        "lambda_concurrency_needed": 300,
+        "lambda_concurrency_available": 1000,
+        "lambda_utilization_pct": 30,
+        "bedrock_rpm_needed": 100,
+        "bedrock_rpm_available": 100,
+        "bedrock_utilization_pct": 100,
+        "bedrock_tokens_per_minute": 200000,
+        "ma_hr_orch_calls_per_minute": 70,
+        "s3_vectors_queries_per_minute": 50
+      },
+      "status": "AT_RISK",
+      "bottlenecks": [
+        {
+          "resource": "bedrock_rpm",
+          "concern": "Bedrock RPM quota may be reached at peak; request increase",
+          "severity": "high"
+        },
+        {
+          "resource": "ma_hr_orch",
+          "concern": "70 calls/min may exceed ma-hr-orch capacity",
+          "severity": "medium"
+        },
+        {
+          "resource": "bedrock_tpm",
+          "concern": "200K tokens/min may approach regional limit",
+          "severity": "medium"
+        }
+      ],
+      "estimated_monthly_cost_usd": 262,
+      "mitigations": [
+        "Request Bedrock quota increase",
+        "Implement response caching (ElastiCache)",
+        "Validate ma-hr-orch rate limits",
+        "Consider provisioned throughput for Bedrock"
+      ],
+      "notes": "Requires quota increase and caching strategy"
+    },
+    {
+      "scenario_id": "HIGH_VOLUME",
+      "name": "Alto Volume",
+      "simultaneous_users": 50000,
+      "daily_requests": 50000,
+      "monthly_requests": 1500000,
+      "peak_rps": 500,
+      "resources": {
+        "lambda_concurrency_needed": 1500,
+        "lambda_concurrency_available": 1000,
+        "lambda_utilization_pct": 150,
+        "bedrock_rpm_needed": 500,
+        "bedrock_rpm_available": 100,
+        "bedrock_utilization_pct": 500,
+        "bedrock_tokens_per_minute": 1000000,
+        "ma_hr_orch_calls_per_minute": 350,
+        "s3_vectors_queries_per_minute": 250
+      },
+      "status": "REQUIRES_ARCHITECTURE_CHANGES",
+      "bottlenecks": [
+        {
+          "resource": "lambda_concurrency",
+          "concern": "Exceeds default 1000 limit; need quota increase to 3000+",
+          "severity": "critical"
+        },
+        {
+          "resource": "bedrock_rpm",
+          "concern": "5x over estimated quota; requires provisioned throughput",
+          "severity": "critical"
+        },
+        {
+          "resource": "ma_hr_orch",
+          "concern": "350 calls/min likely exceeds capacity",
+          "severity": "critical"
+        },
+        {
+          "resource": "bedrock_tpm",
+          "concern": "1M tokens/min likely exceeds regional capacity",
+          "severity": "critical"
+        }
+      ],
+      "estimated_monthly_cost_usd": 1234,
+      "mitigations": [
+        "Request Lambda concurrency increase to 3000",
+        "Implement aggressive caching (ElastiCache Redis)",
+        "Use Bedrock provisioned throughput",
+        "Rate limiting per company/user",
+        "Queue-based processing for non-real-time queries",
+        "Consider horizontal scaling with SQS"
+      ],
+      "architecture_changes_needed": [
+        "ElastiCache Redis for response caching",
+        "DynamoDB for rate limiting state",
+        "SQS for overflow handling",
+        "Provisioned concurrency for Lambda",
+        "API Gateway for throttling"
+      ],
+      "notes": "Significant architecture changes needed for this scale"
+    }
+  ],
+  "scaling_recommendations": {
+    "lambda": {
+      "reserved_concurrency_poc": 100,
+      "reserved_concurrency_production": 500,
+      "provisioned_concurrency_poc": 0,
+      "provisioned_concurrency_production": 20,
+      "memory_mb": 512,
+      "timeout_seconds": 30
+    },
+    "bedrock": {
+      "monitor_throttling": true,
+      "request_quota_increase_at": "50% utilization",
+      "consider_provisioned_throughput_at": "80% utilization"
+    }
+  }
+}
