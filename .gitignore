@@ -50,4 +50,5 @@ infra/.build/
 infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.backup
+infra/.credentials
 *.js.map
