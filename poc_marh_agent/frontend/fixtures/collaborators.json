@@ -1,0 +1,50 @@
+{
+  "_classification": "SYNTHETIC_TEST_DATA",
+  "_note": "Dados sintéticos para POC MARH Agent. Nenhuma informação real.",
+  "collaborators": [
+    {
+      "id": "COL-001",
+      "name": "Colaborador Sintético A",
+      "registration": "REG-10001",
+      "department": "Administrativo",
+      "status": "active",
+      "status_label": "Ativo",
+      "cards": [
+        {
+          "type": "Alimentação",
+          "last_digits": "1234",
+          "status": "active",
+          "delivery_status": "Entregue"
+        }
+      ],
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "COL-002",
+      "name": "Colaborador Sintético B",
+      "registration": "REG-10002",
+      "department": "Operacional",
+      "status": "active",
+      "status_label": "Ativo",
+      "cards": [
+        {
+          "type": "Refeição",
+          "last_digits": "5678",
+          "status": "active",
+          "delivery_status": "Em trânsito"
+        }
+      ],
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "COL-003",
+      "name": "Colaborador Sintético C",
+      "registration": "REG-10003",
+      "department": "Tecnologia",
+      "status": "inactive",
+      "status_label": "Inativo",
+      "cards": [],
+      "company_id": "empresa-sintetica-001"
+    }
+  ]
+}

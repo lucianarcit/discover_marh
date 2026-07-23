@@ -1,0 +1,61 @@
+{
+  "_classification": "SYNTHETIC_TEST_DATA",
+  "_note": "Dados sintéticos para POC MARH Agent. Nenhuma informação real.",
+  "orders": [
+    {
+      "id": "342671",
+      "product": "Produto Exemplo A",
+      "date": "2026-07-21",
+      "date_display": "21/07/2026",
+      "amount_cents": 9000,
+      "amount_display": "R$ 90,00",
+      "status": "paid",
+      "status_label": "Pago",
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "342580",
+      "product": "Produto Exemplo B",
+      "date": "2026-07-15",
+      "date_display": "15/07/2026",
+      "amount_cents": 15000,
+      "amount_display": "R$ 150,00",
+      "status": "pending",
+      "status_label": "Pendente",
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "342401",
+      "product": "Produto Exemplo C",
+      "date": "2026-07-08",
+      "date_display": "08/07/2026",
+      "amount_cents": 6000,
+      "amount_display": "R$ 60,00",
+      "status": "process",
+      "status_label": "Processando",
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "342100",
+      "product": "Produto Exemplo D",
+      "date": "2026-06-28",
+      "date_display": "28/06/2026",
+      "amount_cents": 20000,
+      "amount_display": "R$ 200,00",
+      "status": "paid",
+      "status_label": "Pago",
+      "company_id": "empresa-sintetica-001"
+    },
+    {
+      "id": "341800",
+      "product": "Produto Exemplo E",
+      "date": "2026-06-15",
+      "date_display": "15/06/2026",
+      "amount_cents": 4500,
+      "amount_display": "R$ 45,00",
+      "status": "cancel",
+      "status_label": "Cancelado",
+      "company_id": "empresa-sintetica-001"
+    }
+  ]
+}
