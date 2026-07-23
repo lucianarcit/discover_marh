@@ -12,12 +12,14 @@ import json
 from pydantic import ValidationError
 
 from marh_agent.application.orchestrator import Orchestrator
+from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
 from marh_agent.clients.mock_ma_hr_orch import MockMaHrOrchClient
 from marh_agent.domain.requests import ChatRequest
 
 
 _client = MockMaHrOrchClient()
-_orchestrator = Orchestrator(client=_client)
+_knowledge_client = MockKnowledgeClient()
+_orchestrator = Orchestrator(client=_client, knowledge_client=_knowledge_client)
 
 
 def lambda_handler(event: dict, context: object) -> dict:

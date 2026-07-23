@@ -2,7 +2,7 @@
 
 Fluxo:
   Request -> validação -> contexto confiável -> classificador
-  -> router -> allowlist -> template -> NavigationBuilder -> Response
+  -> router -> (allowlist | knowledge_client) -> template -> NavigationBuilder -> Response
 
 Independente de FastAPI — pode ser reutilizado no Lambda.
 """
@@ -13,6 +13,7 @@ import logging
 import time
 
 from marh_agent.classification.intent_classifier import classify
+from marh_agent.clients.knowledge_client import KnowledgeClient
 from marh_agent.clients.ma_hr_orch import MaHrOrchClient
 from marh_agent.domain.errors import ERROR_CATALOG
 from marh_agent.domain.requests import ChatRequest
@@ -26,8 +27,13 @@ logger = logging.getLogger(__name__)
 class Orchestrator:
     """Orquestrador do agente — núcleo independente de HTTP."""
 
-    def __init__(self, client: MaHrOrchClient) -> None:
+    def __init__(
+        self,
+        client: MaHrOrchClient,
+        knowledge_client: KnowledgeClient | None = None,
+    ) -> None:
         self._client = client
+        self._knowledge_client = knowledge_client
 
     def handle(self, request: ChatRequest) -> ChatResponse:
         """Processa uma requisição de chat e retorna a resposta."""
@@ -62,6 +68,7 @@ class Orchestrator:
             environment=request.environment,
             correlation_id=correlation_id,
             client=self._client,
+            knowledge_client=self._knowledge_client,
         )
 
         # 4. Log estruturado (sem dados sensíveis)

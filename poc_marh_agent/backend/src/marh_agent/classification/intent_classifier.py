@@ -96,21 +96,22 @@ def classify(message: str) -> ClassificationResult:
                 entities={},
             )
 
-    # 2. Ações transacionais (Grupo C)
-    for pattern, intent_id in _TRANSACTIONAL_PATTERNS:
-        if re.search(pattern, text, re.IGNORECASE):
-            return ClassificationResult(
-                intent_id=intent_id,
-                flow="REDIRECT_TO_OFFICIAL_JOURNEY",
-                entities={},
-            )
-
-    # 3. Informativas (Grupo B)
+    # 2. Informativas (Grupo B) — antes das transacionais para evitar falso positivo
+    # Ex: "você consegue cancelar?" é INT-014 (pergunta informativa), não INT-022 (ação)
     for pattern, intent_id in _INFORMATIVE_PATTERNS:
         if re.search(pattern, text, re.IGNORECASE):
             return ClassificationResult(
                 intent_id=intent_id,
                 flow="RAG_ONLY",
+                entities={},
+            )
+
+    # 3. Ações transacionais (Grupo C)
+    for pattern, intent_id in _TRANSACTIONAL_PATTERNS:
+        if re.search(pattern, text, re.IGNORECASE):
+            return ClassificationResult(
+                intent_id=intent_id,
+                flow="REDIRECT_TO_OFFICIAL_JOURNEY",
                 entities={},
             )
 

@@ -3,6 +3,7 @@
 import pytest
 
 from marh_agent.application.orchestrator import Orchestrator
+from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
 from marh_agent.clients.mock_ma_hr_orch import MockMaHrOrchClient
 from marh_agent.domain.requests import ChatRequest
 
@@ -10,7 +11,8 @@ from marh_agent.domain.requests import ChatRequest
 @pytest.fixture
 def orchestrator():
     client = MockMaHrOrchClient()
-    return Orchestrator(client=client)
+    knowledge_client = MockKnowledgeClient()
+    return Orchestrator(client=client, knowledge_client=knowledge_client)
 
 
 def _make_request(**kwargs):
@@ -400,3 +402,254 @@ def test_cancellation_word_not_transactional(orchestrator):
     req = _make_request(message="Pedidos em cancelamento")
     resp = orchestrator.handle(req)
     assert resp.flow != "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# ── Testes Intent Coverage Gate 2026-07-23 ───────────────────────────────────
+# Cobertura completa das 27 intenções do catálogo oficial
+
+# INT-008 — O que posso fazer? → RAG_ONLY com MockKnowledgeClient
+def test_int008_what_can_i_do(orchestrator):
+    req = _make_request(message="O que posso fazer?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-008"
+    assert resp.flow == "RAG_ONLY"
+    assert "consultar" in resp.message.lower() or "colaborador" in resp.message.lower()
+    assert resp.metadata.get("flow_detail") == "MOCK_KNOWLEDGE"
+
+
+# INT-009 — Quais informações posso consultar?
+def test_int009_consultable_info(orchestrator):
+    req = _make_request(message="Quais informações posso consultar?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-009"
+    assert resp.flow == "RAG_ONLY"
+    assert resp.message  # não vazio
+
+
+# INT-010 — Como faço para fazer um pedido? → RAG_ONLY com navigation opcional
+def test_int010_how_to_order(orchestrator):
+    req = _make_request(message="Como faço para fazer um pedido?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-010"
+    assert resp.flow == "RAG_ONLY"
+    assert "pedido" in resp.message.lower() or "boleto" in resp.message.lower()
+
+
+# INT-011 — Como faço para consultar um pedido?
+def test_int011_how_consult_order(orchestrator):
+    req = _make_request(message="Como faço para consultar um pedido?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-011"
+    assert resp.flow == "RAG_ONLY"
+
+
+# INT-012 — Como faço para consultar um colaborador?
+def test_int012_how_consult_collaborator(orchestrator):
+    req = _make_request(message="Como faço para consultar um colaborador?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-012"
+    assert resp.flow == "RAG_ONLY"
+
+
+# INT-013 — Consigo rastrear cartões? → RAG_ONLY informativo
+def test_int013_can_track(orchestrator):
+    req = _make_request(message="Consigo rastrear cartões?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-013"
+    assert resp.flow == "RAG_ONLY"
+    assert "rastreamento" in resp.message.lower() or "número do pedido" in resp.message.lower()
+
+
+# INT-014 — Você consegue cancelar pedido? → RAG_ONLY
+def test_int014_cannot_cancel_info(orchestrator):
+    req = _make_request(message="Você consegue cancelar pedido?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-014"
+    assert resp.flow == "RAG_ONLY"
+    assert "não consigo" in resp.message.lower() or "consultiva" in resp.message.lower()
+
+
+# INT-015 — Você consegue alterar dados de colaborador? → RAG_ONLY
+def test_int015_cannot_edit_collaborator_info(orchestrator):
+    req = _make_request(message="Você consegue alterar dados de um colaborador?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-015"
+    assert resp.flow == "RAG_ONLY"
+
+
+# INT-016 — Você consulta dados de qualquer empresa?
+def test_int016_company_scope(orchestrator):
+    req = _make_request(message="Você consulta dados de qualquer empresa?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-016"
+    assert resp.flow == "RAG_ONLY"
+    assert "empresa selecionada" in resp.message.lower()
+
+
+# INT-017 — Preciso selecionar empresa?
+def test_int017_company_required(orchestrator):
+    req = _make_request(message="Preciso selecionar uma empresa para usar o agente?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-017"
+    assert resp.flow == "RAG_ONLY"
+
+
+# INT-018 — O agente substitui o portal?
+def test_int018_agent_vs_portal(orchestrator):
+    req = _make_request(message="O agente substitui o portal web?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-018"
+    assert resp.flow == "RAG_ONLY"
+    assert "não substitui" in resp.message.lower() or "consultivo" in resp.message.lower()
+
+
+# INT-019 — O que é o MARH?
+def test_int019_what_is_marh(orchestrator):
+    req = _make_request(message="O que é o MARH?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-019"
+    assert resp.flow == "RAG_ONLY"
+    assert "marh" in resp.message.lower() or "meu alelo" in resp.message.lower()
+    assert resp.metadata.get("flow_detail") == "MOCK_KNOWLEDGE"
+
+
+# INT-020 — O que é o Espaço RH?
+def test_int020_what_is_espaco_rh(orchestrator):
+    req = _make_request(message="O que é o Espaço RH?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-020"
+    assert resp.flow == "RAG_ONLY"
+    assert "espaço rh" in resp.message.lower() or "meu alelo" in resp.message.lower()
+
+
+# INT-021 — Quais tipos de perguntas posso fazer?
+def test_int021_question_types(orchestrator):
+    req = _make_request(message="Quais tipos de pergunta posso fazer?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-021"
+    assert resp.flow == "RAG_ONLY"
+
+
+# INT-022 — Cancelar pedido → REDIRECT
+def test_int022_cancel_order(orchestrator):
+    req = _make_request(message="Cancela o pedido 342671")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-022"
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+    assert "No momento eu consigo apenas consultar" in resp.message
+
+
+# INT-023 — Alterar endereço → REDIRECT
+def test_int023_alter_address(orchestrator):
+    req = _make_request(message="Altera o endereço do colaborador")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# INT-024 — Criar pedido → REDIRECT (com navigation para #/new-order/products)
+def test_int024_create_order(orchestrator):
+    req = _make_request(message="Criar um novo pedido")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+    if resp.navigation:
+        assert "new-order" in resp.navigation.webview_url
+
+
+# INT-025 — Remover colaborador → REDIRECT
+def test_int025_remove_collaborator(orchestrator):
+    req = _make_request(message="Remove esse colaborador")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# INT-026 — Pagar pedido → REDIRECT
+def test_int026_pay_order(orchestrator):
+    req = _make_request(message="Pagar o pedido 342671")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# INT-027 — Emitir cartão → REDIRECT
+def test_int027_issue_card(orchestrator):
+    req = _make_request(message="Emitir um novo cartão")
+    resp = orchestrator.handle(req)
+    assert resp.flow == "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# MockKnowledgeClient — tópico retorna conteúdo aprovado
+def test_mock_knowledge_returns_approved_content():
+    from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
+    kc = MockKnowledgeClient()
+    result = kc.query("MARH_OVERVIEW")
+    assert result["found"] is True
+    assert result["data_classification"] == "APPROVED_KNOWLEDGE_MOCK"
+    assert "marh" in result["content"].lower() or "meu alelo" in result["content"].lower()
+    assert result["source_section"]
+
+
+# MockKnowledgeClient — tópico desconhecido retorna found=False
+def test_mock_knowledge_unknown_topic():
+    from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
+    kc = MockKnowledgeClient()
+    result = kc.query("TOPICO_INEXISTENTE")
+    assert result["found"] is False
+
+
+# RAG_ONLY sem API call — INT-019 não chama mock_ma_hr_orch
+def test_rag_only_no_api_call(orchestrator):
+    req = _make_request(message="O que é o MARH?")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-019"
+    assert resp.flow == "RAG_ONLY"
+    # Se tivesse chamado a API e não encontrado, retornaria ERR-007
+    assert resp.error_code is None
+
+
+# 3 variações positivas INT-019
+def test_int019_variations(orchestrator):
+    msgs = [
+        "O que é o MARH?",
+        "O que é MARH",
+        "Me explica o que é o MARH",
+    ]
+    for msg in msgs:
+        req = _make_request(message=msg)
+        resp = orchestrator.handle(req)
+        assert resp.flow == "RAG_ONLY", f"Falhou para: {msg}"
+
+
+# 3 variações positivas INT-003 com número de pedido diferente
+def test_int003_multiple_order_numbers(orchestrator):
+    for on in ["342671", "342672", "342673"]:
+        req = _make_request(message=f"Consultar pedido {on}")
+        resp = orchestrator.handle(req)
+        assert resp.intent_id == "INT-003"
+
+
+# 3 variações positivas INT-005 com diferentes status
+def test_int005_multiple_statuses(orchestrator):
+    queries = [
+        ("Pedidos pagos", "PAID"),
+        ("Pedidos cancelados", "CANCELLED"),
+        ("Pedidos pendentes", "PENDING"),
+    ]
+    for msg, expected_status in queries:
+        req = _make_request(message=msg)
+        resp = orchestrator.handle(req)
+        assert resp.intent_id == "INT-005", f"Falhou para: {msg}"
+        assert resp.flow != "REDIRECT_TO_OFFICIAL_JOURNEY"
+
+
+# Ambiguidade: "pedido" sem número → pede esclarecimento ou lista
+def test_ambiguous_order_no_number(orchestrator):
+    req = _make_request(message="E o pedido?")
+    resp = orchestrator.handle(req)
+    # Não deve inventar um número de pedido
+    assert resp.error_code not in ("ERR-003",) or "informado" in resp.message
+
+
+# Variação negativa INT-002: CPF → INT-002, não INT-001
+def test_int002_vs_int001_disambiguation(orchestrator):
+    req = _make_request(message="Consultar colaborador CPF 000.000.000-00")
+    resp = orchestrator.handle(req)
+    assert resp.intent_id == "INT-002"  # CPF detecado → INT-002

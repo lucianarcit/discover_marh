@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from marh_agent.application.orchestrator import Orchestrator
+from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
 from marh_agent.clients.mock_ma_hr_orch import MockMaHrOrchClient
 from marh_agent.domain.requests import ChatRequest
 
@@ -25,9 +26,10 @@ logging.basicConfig(
     stream=sys.stdout,
 )
 
-# Dependência: mock client
+# Dependências: mock clients
 _client = MockMaHrOrchClient()
-_orchestrator = Orchestrator(client=_client)
+_knowledge_client = MockKnowledgeClient()
+_orchestrator = Orchestrator(client=_client, knowledge_client=_knowledge_client)
 
 app = FastAPI(
     title="MARH Agent Backend — POC Mock Local",

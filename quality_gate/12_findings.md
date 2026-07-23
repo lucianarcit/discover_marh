@@ -39,29 +39,21 @@
 | Campo | Valor |
 |---|---|
 | **ID** | F-002 |
-| **Severidade** | HIGH |
-| **Categoria** | Segurança / PII |
-| **Arquivo** | `src/marh_agent/security/allowlists.py` |
-| **Linha** | 26 |
-| **Descrição** | O campo `steps` está na `ORDER_ALLOWED_FIELDS` e passa para o modelo sem filtragem dos seus campos internos. Na fixture atual `steps: []`, portanto não há vazamento. Mas a API real pode popular `steps` com `beneficiaryId`, CPF parcial, endereços de entrega, nomes de colaboradores. |
-| **Evidência** | `ORDER_ALLOWED_FIELDS = {..., "steps"}` sem `ORDER_STEPS_FIELDS` análogo ao `ORDER_PRODUCT_INFO_FIELDS`. |
-| **Impacto** | Em produção com API real, dados PII poderiam atravessar a allowlist e aparecer no contexto do LLM e na resposta ao usuário. |
-| **Correção recomendada** | Definir `ORDER_STEPS_FIELDS = {"label", "date", "description"}` e sub-filtrar `steps` em `filter_order()` antes de usar API real. |
-| **Correção aplicada** | ⚠️ NÃO — Registrado como condição de GO. Não alterado pois requer decisão sobre quais campos de `steps` são seguros. Teste `test_steps_do_not_leak_restricted_fields` adicionado para documentar o comportamento atual. |
+| **Severidade** | ~~HIGH~~ → **NOT_APPLICABLE_BY_CLIENT_DECISION** |
+| **Decisão** | DP-006 RESOLVED_UPSTREAM_SANITIZATION (2026-07-23) |
+| **Novo status** | A ma-hr-orch garante que apenas dados autorizados chegam ao agente. Sub-filtro de `steps` por visibilidade não é responsabilidade do agente. O agente continua validando schema/contrato técnico. |
+| **Ação** | Manter `steps` na allowlist de schema. Não criar sub-filtro por campo de autorização. |
+| **Histórico** | Anteriormente classificado como HIGH pois a responsabilidade de sanitização não estava confirmada. Com DP-006 resolvido, o risco é assumido upstream. |
 
 ### F-003 — `sanitize_response_text()` definida mas nunca chamada
 | Campo | Valor |
 |---|---|
 | **ID** | F-003 |
-| **Severidade** | HIGH |
-| **Categoria** | Segurança / PII |
-| **Arquivo** | `src/marh_agent/security/sanitization.py` |
-| **Linha** | 1-60 |
-| **Descrição** | As funções `sanitize_response_text()` e `contains_sensitive_data()` são definidas no módulo de sanitização mas nunca são importadas ou chamadas em nenhum ponto do pipeline (orchestrator, router, templates). A proteção contra PII depende exclusivamente da allowlist, sem camada de sanitização no texto de saída. |
-| **Evidência** | Grep por `sanitize_response_text` em toda a codebase retorna apenas a definição, sem chamadas. |
-| **Impacto** | Se um campo com PII escapar da allowlist (ex: via `steps` não filtrado), não será sanitizado na resposta textual. Cria falsa sensação de segurança na documentação. |
-| **Correção recomendada** | Conectar `sanitize_response_text(response.message)` no orchestrator após `route()`, antes de retornar ao caller. |
-| **Correção aplicada** | ⚠️ NÃO — Registrado como condição de GO. Não conectado pois requer decisão sobre o que sanitizar antes de usar LLM (o LLM gera texto diferente das templates atuais). |
+| **Severidade** | ~~HIGH~~ → **NOT_APPLICABLE_FOR_API_ONLY** |
+| **Decisão** | DP-006 RESOLVED_UPSTREAM_SANITIZATION (2026-07-23) |
+| **Novo status** | Em fluxos API_ONLY sem LLM, o texto da resposta é gerado por templates determinísticos — não há output de modelo a sanitizar. `sanitize_response_text()` será relevante apenas na etapa de integração RAG/LLM, fora do escopo desta POC. |
+| **Ação** | Manter `sanitization.py` no projeto para uso futuro. Não conectar ao pipeline API_ONLY. |
+| **Histórico** | Anteriormente classificado como HIGH pois havia risco de PII escapar de allowlist não completa. Com DP-006 resolvido, a responsabilidade de filtragem upstream está confirmada. |
 
 ### F-004 — `LookupError` (404 backend) não capturada no router
 | Campo | Valor |

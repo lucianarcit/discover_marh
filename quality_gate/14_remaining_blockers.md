@@ -11,17 +11,14 @@ O único BLOCKER identificado (F-001 — bug de classificação "cancelados") fo
 
 ---
 
-## Condições para GO (não são blockers da POC atual, mas bloqueiam produção)
+## Condições Anteriores — Reclassificadas por DP-006
 
-### COND-1 — Sub-filtro para `steps` [HIGH — F-002]
-**Quando bloqueia:** Antes de conectar a API real da ma-hr-orch que pode popular `steps` com dados PII.  
-**O que fazer:** Definir `ORDER_STEPS_FIELDS` e sub-filtrar em `filter_order()`.  
-**Estimativa:** 1 hora de implementação + 30 min de testes.
+### ~~COND-1~~ — Sub-filtro para `steps` [F-002 → NOT_APPLICABLE_BY_CLIENT_DECISION]
+**Status:** REMOVIDA — DP-006 RESOLVED_UPSTREAM_SANITIZATION (2026-07-23).  
+A ma-hr-orch é responsável por retornar apenas dados autorizados. Sub-filtro de `steps` por visibilidade não é responsabilidade do agente.
 
-### COND-2 — `sanitize_response_text()` conectada [HIGH — F-003]
-**Quando bloqueia:** Antes de usar o LLM para gerar texto baseado nos dados da API.  
-**O que fazer:** Chamar `sanitize_response_text(response.message)` no orchestrator.  
-**Estimativa:** 30 minutos.
+### ~~COND-2~~ — `sanitize_response_text()` conectada [F-003 → NOT_APPLICABLE_FOR_API_ONLY]
+**Status:** REMOVIDA — Em fluxos API_ONLY sem LLM, os templates são determinísticos. Sanitização de output de LLM será tratada na etapa de integração RAG/LLM.
 
 ---
 

@@ -147,14 +147,16 @@
 | Campo | Valor |
 |---|---|
 | **ID** | DP-006 |
-| **Impacto** | BLOQUEADOR_MVP |
+| **Status** | **RESOLVED_UPSTREAM_SANITIZATION** (2026-07-23) |
+| **Impacto** | ~~BLOQUEADOR_MVP~~ → **RESOLVIDO** |
 | **Responsável** | MA_HR_ORCH |
 | **Origem** | LAC-006, TEC-017, TEC-018, TEC-019, SEG-003 |
-| **Pergunta** | A camada ma-hr-orch filtra os seguintes campos antes de retornar ao agente: CPF, email, telefone, nome da mãe, endereço (colaboradores), billingDocumentNumber, contractNumber, idLegalPersonBilling (pedidos), content base64 (boleto)? |
-| **Contexto** | Os testes de integração (TEC-017, TEC-019, TEC-011) identificaram campos PII e restritos nas respostas brutas das APIs. A especificação define que esses dados não devem chegar ao modelo de linguagem (SEG-003). Não há evidência de que a sanitização está implementada na ma-hr-orch. |
-| **O que é necessário** | Confirmação técnica (com evidência — ex.: log de chamada mostrando que os campos não passam para o agente) de que a sanitização está implementada. |
-| **Impacto se não respondida** | PII pode chegar ao modelo de linguagem e ser exposto ao usuário — violação de SEG-003. |
-| **Backlog afetado** | BL-019 (Produção), impacta BL-005, BL-006 (MVP) |
+| **Decisão do cliente** | "A ma-hr-orch já realiza a sanitização. Os dados retornados pela API são dados que o cliente autenticado pode visualizar." |
+| **Interpretação** | A ma-hr-orch é responsável por autorização e sanitização de seus responses. Tudo que a operação retorna pode ser mostrado ao usuário autorizado. O agente não deve duplicar sanitização por campo. O agente não precisa manter allowlist de visibilidade como controle de autorização. |
+| **Controles que permanecem no agente** | (1) Nenhum payload completo nos logs; (2) Nenhuma mensagem completa nos logs; (3) Nenhum token/header de autenticação nos logs; (4) Empresa vem somente do contexto confiável; (5) Texto do usuário não altera company_id; (6) Schema inesperado gera erro controlado; (7) Frontend usa textContent; (8) Nenhuma credencial no frontend; (9) Dados da API não são enviados ao modelo nesta etapa (API_ONLY sem LLM). |
+| **O que muda** | O agente continua validando o schema/contrato técnico e formatando o response conforme seu contrato. Allowlists de visibilidade (filter_collaborator, filter_order) são reclassificadas como controles de schema, não de autorização. |
+| **Impacto em achados anteriores** | F-002 (sub-filtro de steps) → NOT_APPLICABLE_BY_CLIENT_DECISION. F-003 (sanitize_response_text) → NOT_APPLICABLE_FOR_API_ONLY. |
+| **Backlog afetado** | BL-019 (bloqueador removido), BL-005, BL-006 (MVP desbloqueado) |
 
 ---
 
@@ -196,7 +198,7 @@
 
 | ID | Pergunta central | Responsável |
 |---|---|---|
-| **DP-006** | ma-hr-orch filtra PII antes de retornar ao agente? | MA_HR_ORCH |
+| ~~**DP-006**~~ | ~~ma-hr-orch filtra PII antes de retornar ao agente?~~ | **RESOLVIDO** — RESOLVED_UPSTREAM_SANITIZATION (2026-07-23) |
 
 ### Decisões que bloqueiam o piloto (devem ser resolvidas antes de colocar usuários reais)
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from marh_agent.classification.intent_classifier import ClassificationResult
 from marh_agent.classification.status_mapper import get_display_label
+from marh_agent.clients.knowledge_client import KnowledgeClient
 from marh_agent.clients.ma_hr_orch import MaHrOrchClient
 from marh_agent.domain.errors import ERROR_CATALOG
 from marh_agent.domain.responses import ChatResponse, NavigationResponse
@@ -30,6 +31,24 @@ from marh_agent.templates.policies import (
     TRACKING_NOT_VALIDATED,
 )
 
+# Mapeamento de intent_id para tópico do KnowledgeClient
+_INTENT_KNOWLEDGE_TOPIC: dict[str, str] = {
+    "INT-008": "AGENT_CAPABILITIES",
+    "INT-009": "CONSULTABLE_INFO",
+    "INT-010": "ORDER_PROCESS",
+    "INT-011": "HOW_CONSULT_ORDER",
+    "INT-012": "HOW_CONSULT_COLLABORATOR",
+    "INT-013": "CARD_TRACKING_INFO",
+    "INT-014": "CANNOT_CANCEL",
+    "INT-015": "CANNOT_EDIT_COLLABORATOR",
+    "INT-016": "COMPANY_SCOPE",
+    "INT-017": "COMPANY_REQUIRED",
+    "INT-018": "AGENT_VS_PORTAL",
+    "INT-019": "MARH_OVERVIEW",
+    "INT-020": "ESPACO_RH_OVERVIEW",
+    "INT-021": "QUESTION_TYPES",
+}
+
 
 def route(
     classification: ClassificationResult,
@@ -37,6 +56,7 @@ def route(
     environment: str,
     correlation_id: str,
     client: MaHrOrchClient,
+    knowledge_client: KnowledgeClient | None = None,
 ) -> ChatResponse:
     """Roteia a classificação para o handler correto."""
     intent_id = classification.intent_id
@@ -77,9 +97,26 @@ def route(
                 metadata=metadata,
             )
 
-        # Informativas (Grupo B)
+        # Informativas (Grupo B) — MOCK_KNOWLEDGE quando disponível
         if flow == "RAG_ONLY":
-            msg = INFORMATIVE_RESPONSES.get(intent_id, ERROR_CATALOG["ERR-008"])
+            topic = _INTENT_KNOWLEDGE_TOPIC.get(intent_id)
+            knowledge_result = None
+            if topic and knowledge_client:
+                knowledge_result = knowledge_client.query(topic)
+
+            if knowledge_result and knowledge_result.get("found"):
+                msg = knowledge_result["content"]
+                metadata = {
+                    **metadata,
+                    "knowledge_source": knowledge_result["source_section"],
+                    "knowledge_topic": topic,
+                    "flow_detail": "MOCK_KNOWLEDGE",
+                }
+            else:
+                # Fallback: resposta estática de policies.py
+                msg = INFORMATIVE_RESPONSES.get(intent_id, ERROR_CATALOG["ERR-008"])
+                metadata = {**metadata, "flow_detail": "STATIC_POLICY_FALLBACK"}
+
             return ChatResponse(
                 correlation_id=correlation_id,
                 intent_id=intent_id,
