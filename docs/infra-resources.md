@@ -181,6 +181,7 @@
 
 | Fase | Recursos a adicionar |
 |------|---------------------|
+| **Fase 1** | Amplify Hosting (frontend estático com CI/CD) |
 | **Fase 2** | Nenhum recurso novo (só muda env vars da Lambda) |
 | **Fase 3** | S3 Bucket (documentos RAG), Bedrock Knowledge Base |
 | **Fase 4** | Nenhum recurso novo (só muda `BEDROCK_MODEL_ID`) |

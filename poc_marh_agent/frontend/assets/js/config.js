@@ -13,7 +13,7 @@ const CONFIG = Object.freeze({
   USE_MOCK_AGENT: false,
 
   /** URL do backend quando USE_MOCK_AGENT = false */
-  AGENT_API_URL: "http://localhost:8000/chat",
+  AGENT_API_URL: "https://pzn843po3h.execute-api.sa-east-1.amazonaws.com/chat",
 
   /** Timeout de requisição em milissegundos */
   REQUEST_TIMEOUT_MS: 30000,
