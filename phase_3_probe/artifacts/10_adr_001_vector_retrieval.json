@@ -1,0 +1,39 @@
+{
+  "decision": "KNOWLEDGE_BASES",
+  "reasoning": "bedrock-agent API alcançável em sa-east-1. Retrieve endpoint responde (sem KB real, retorna erro esperado). Menor complexidade operacional. Retrieve separado de geração preserva interfaces. Permissão de criação a ajustar antes do deploy.",
+  "knowledge_bases_status": {
+    "list_knowledge_bases": "API_ACCESSIBLE",
+    "existing_kbs": 0,
+    "retrieve_api": "ENDPOINT_REACHABLE"
+  },
+  "s3_vectors_status": {
+    "sdk_client": "CREATABLE",
+    "status": "AVAILABLE_AND_ACCESSIBLE",
+    "vector_buckets": 0
+  },
+  "comparison": {
+    "knowledge_bases": {
+      "disponibilidade_sa_east_1": true,
+      "retrieve_sem_retrieve_and_generate": true,
+      "vector_store_interno": "OpenSearch Serverless (gerenciado pela AWS)",
+      "custo_fixo": "~$0.10/OCU-hora mínimo (OpenSearch Serverless)",
+      "custo_por_query_retrieve": "verificar pricing sa-east-1",
+      "terraform": "aws_bedrockagent_knowledge_base + aws_bedrockagent_data_source",
+      "controle_score": "Retrieve retorna score por chunk, threshold aplicado no cliente",
+      "metadata_por_chunk": true,
+      "dependencias_adicionais": "OpenSearch Serverless (embutido)",
+      "operacao": "Zero administração de índice"
+    },
+    "s3_vectors": {
+      "disponibilidade_sa_east_1": "AVAILABLE_AND_ACCESSIBLE",
+      "sdk_boto3_atual": "CREATABLE",
+      "custo_fixo": "Apenas S3 storage",
+      "custo_por_query": "S3 GET + Lambda + embedding por query",
+      "terraform": "S3 bucket + IAM (sem recurso vetorial gerenciado)",
+      "controle_score": "Total — implementação própria",
+      "metadata_por_chunk": true,
+      "dependencias_adicionais": "Lambda de ingestão, busca manual",
+      "operacao": "Maior complexidade operacional"
+    }
+  }
+}

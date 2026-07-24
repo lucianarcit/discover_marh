@@ -1,0 +1,74 @@
+{
+  "anthropic.claude-3-sonnet-20240229-v1:0": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 1123.0,
+    "input_tokens": 13,
+    "output_tokens": 4
+  },
+  "mistral.mistral-large-2402-v1:0": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 401.7,
+    "input_tokens": 10,
+    "output_tokens": 10
+  },
+  "mistral.magistral-small-2509": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 282.5,
+    "input_tokens": 9,
+    "output_tokens": 3
+  },
+  "mistral.ministral-3-14b-instruct": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 259.1,
+    "input_tokens": 9,
+    "output_tokens": 3
+  },
+  "mistral.ministral-3-8b-instruct": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 200.9,
+    "input_tokens": 9,
+    "output_tokens": 3
+  },
+  "mistral.mistral-7b-instruct-v0:2": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 190.5,
+    "input_tokens": 16,
+    "output_tokens": 9
+  },
+  "mistral.mixtral-8x7b-instruct-v0:1": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 264.1,
+    "input_tokens": 16,
+    "output_tokens": 10
+  },
+  "google.gemma-3-27b-it": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 226.4,
+    "input_tokens": 15,
+    "output_tokens": 2
+  },
+  "google.gemma-3-12b-it": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 280.7,
+    "input_tokens": 15,
+    "output_tokens": 3
+  },
+  "google.gemma-3-4b-it": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 304.7,
+    "input_tokens": 15,
+    "output_tokens": 3
+  },
+  "nvidia.nemotron-nano-12b-v2": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 285.6,
+    "input_tokens": 22,
+    "output_tokens": 3
+  },
+  "qwen.qwen3-32b-v1:0": {
+    "status": "CONVERSE_ACTIVE_IN_REGION",
+    "duration_ms": 200.2,
+    "input_tokens": 18,
+    "output_tokens": 2
+  }
+}

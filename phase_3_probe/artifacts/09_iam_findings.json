@@ -1,0 +1,22 @@
+{
+  "permissions_confirmed": [
+    "bedrock:ListFoundationModels",
+    "bedrock-runtime:InvokeModel (embed)",
+    "bedrock-runtime:Converse",
+    "bedrock-agent:ListKnowledgeBases",
+    "bedrock-agent-runtime:Retrieve (endpoint)"
+  ],
+  "permissions_denied_or_unavailable": [],
+  "permissions_future_needed": [
+    "bedrock-agent:CreateKnowledgeBase",
+    "bedrock-agent:CreateDataSource",
+    "bedrock-agent:StartIngestionJob",
+    "bedrock-agent:GetKnowledgeBase",
+    "s3:GetObject (corpus bucket)",
+    "s3:PutObject (corpus bucket)",
+    "s3:ListBucket (corpus bucket)",
+    "logs:CreateLogGroup",
+    "logs:CreateLogStream",
+    "logs:PutLogEvents"
+  ]
+}

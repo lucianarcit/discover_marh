@@ -1,0 +1,161 @@
+{
+  "all_embedding_candidates": [
+    {
+      "modelId": "cohere.embed-v4:0",
+      "modelName": "Embed v4",
+      "providerName": "Cohere",
+      "inputModalities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "INFERENCE_PROFILE"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2025-10-02 00:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "amazon.titan-embed-image-v1:0",
+      "modelName": "Titan Multimodal Embeddings G1",
+      "providerName": "Amazon",
+      "inputModalities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": null,
+      "inferenceTypesSupported": [
+        "PROVISIONED"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2023-11-29 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "amazon.titan-embed-image-v1",
+      "modelName": "Titan Multimodal Embeddings G1",
+      "providerName": "Amazon",
+      "inputModalities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": null,
+      "inferenceTypesSupported": [
+        "ON_DEMAND"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2023-11-29 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "amazon.titan-embed-text-v2:0",
+      "modelName": "Titan Embeddings G2 - Text",
+      "providerName": "Amazon",
+      "inputModalities": [
+        "TEXT"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "ON_DEMAND"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2024-04-30 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "cohere.embed-english-v3:0:512",
+      "modelName": "Embed English",
+      "providerName": "Cohere",
+      "inputModalities": [
+        "TEXT"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "PROVISIONED"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2025-01-24 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "cohere.embed-english-v3",
+      "modelName": "Embed English",
+      "providerName": "Cohere",
+      "inputModalities": [
+        "TEXT"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "ON_DEMAND"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2025-01-24 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "cohere.embed-multilingual-v3:0:512",
+      "modelName": "Embed Multilingual",
+      "providerName": "Cohere",
+      "inputModalities": [
+        "TEXT"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "PROVISIONED"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2025-01-24 08:00:00+00:00"
+      }
+    },
+    {
+      "modelId": "cohere.embed-multilingual-v3",
+      "modelName": "Embed Multilingual",
+      "providerName": "Cohere",
+      "inputModalities": [
+        "TEXT"
+      ],
+      "outputModalities": [
+        "EMBEDDING"
+      ],
+      "responseStreamingSupported": false,
+      "inferenceTypesSupported": [
+        "ON_DEMAND"
+      ],
+      "modelLifecycle": {
+        "status": "ACTIVE",
+        "startOfLifeTime": "2025-01-24 08:00:00+00:00"
+      }
+    }
+  ],
+  "primary_candidate": "amazon.titan-embed-text-v2:0",
+  "primary_found_in_list": true
+}

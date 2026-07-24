@@ -1,0 +1,44 @@
+{
+  "cohere.embed-v4:0": {
+    "status": "ERROR",
+    "error_code": "ValidationException",
+    "message": "Invocation of model ID cohere.embed-v4:0 with on-demand throughput isn’t supported. Retry your request with the ID or ARN of an inference profile that contains this model."
+  },
+  "amazon.titan-embed-image-v1:0": {
+    "status": "ERROR",
+    "error_code": "ValidationException",
+    "message": "The provided model doesn't support on-demand throughput."
+  },
+  "amazon.titan-embed-image-v1": {
+    "status": "SUCCESS",
+    "dimension": 1024,
+    "duration_ms": 190.4,
+    "region": "sa-east-1"
+  },
+  "amazon.titan-embed-text-v2:0": {
+    "status": "SUCCESS",
+    "dimension": 1024,
+    "duration_ms": 233.4,
+    "region": "sa-east-1"
+  },
+  "cohere.embed-english-v3:0:512": {
+    "status": "ERROR",
+    "error_code": "ResourceNotFoundException",
+    "message": "Model not found."
+  },
+  "cohere.embed-english-v3": {
+    "status": "ERROR",
+    "error_code": "ValidationException",
+    "message": "Malformed input request: #: required key [images] not found#: required key [texts] not found#: required key [texts] not found#: required key [texts] not found#: required key [texts] not found#: required key [input_type] not found#: extraneous key [inputText] is not permitted, please reformat your input and try again."
+  },
+  "cohere.embed-multilingual-v3:0:512": {
+    "status": "ERROR",
+    "error_code": "ResourceNotFoundException",
+    "message": "Model not found."
+  },
+  "cohere.embed-multilingual-v3": {
+    "status": "ERROR",
+    "error_code": "ValidationException",
+    "message": "Malformed input request: #: required key [images] not found#: required key [texts] not found#: required key [texts] not found#: required key [texts] not found#: required key [texts] not found#: required key [input_type] not found#: extraneous key [inputText] is not permitted, please reformat your input and try again."
+  }
+}

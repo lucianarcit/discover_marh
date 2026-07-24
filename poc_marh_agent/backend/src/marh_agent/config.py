@@ -19,10 +19,35 @@ class Environment(StrEnum):
 
 
 class Mode(StrEnum):
-    """Modo de operação do agente."""
+    """Modo de operação legado — mantido para retrocompatibilidade."""
 
     MOCK_LOCAL = "MOCK_LOCAL"          # Mock clients, dev local ou testes
     INTEGRATED = "INTEGRATED"          # Clientes reais (ma-hr-orch + Bedrock)
+
+
+class DataSourceMode(StrEnum):
+    """Controla qual implementação de MaHrOrchClient é usada."""
+
+    MOCK = "MOCK"
+    INTEGRATED = "INTEGRATED"
+
+
+class KnowledgeMode(StrEnum):
+    """Controla qual implementação de KnowledgeClient é usada."""
+
+    MOCK = "MOCK"
+    BEDROCK_RAG = "BEDROCK_RAG"
+
+
+def _resolve_data_source_mode() -> DataSourceMode:
+    """Resolve DATA_SOURCE_MODE com fallback para AGENT_MODE legado."""
+    explicit = os.getenv("DATA_SOURCE_MODE")
+    if explicit:
+        return DataSourceMode(explicit)
+    legacy = os.getenv("AGENT_MODE", "MOCK_LOCAL")
+    if legacy == "INTEGRATED":
+        return DataSourceMode.INTEGRATED
+    return DataSourceMode.MOCK
 
 
 # --- Variáveis de ambiente ---
@@ -36,6 +61,16 @@ MODE: Mode = Mode(
     os.getenv("AGENT_MODE", "MOCK_LOCAL")
 )
 
+DATA_SOURCE_MODE: DataSourceMode = _resolve_data_source_mode()
+
+KNOWLEDGE_MODE: KnowledgeMode = KnowledgeMode(
+    os.getenv("KNOWLEDGE_MODE", "MOCK")
+)
+
+RETRIEVAL_SCORE_THRESHOLD: float = float(
+    os.getenv("RETRIEVAL_SCORE_THRESHOLD", "0.70")
+)
+
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 MAX_MESSAGE_LENGTH: int = int(os.getenv("MAX_MESSAGE_LENGTH", "2000"))
 
@@ -46,10 +81,11 @@ MA_HR_ORCH_TIMEOUT_SECONDS: int = int(os.getenv("MA_HR_ORCH_TIMEOUT_SECONDS", "1
 
 # --- Amazon Bedrock ---
 
-BEDROCK_REGION: str = os.getenv("BEDROCK_REGION", "us-east-1")
-BEDROCK_MODEL_ID: str = os.getenv(
-    "BEDROCK_MODEL_ID", "anthropic.claude-3-haiku-20240307-v1:0"
+BEDROCK_REGION: str = os.getenv("BEDROCK_REGION", "sa-east-1")
+BEDROCK_EMBED_MODEL_ID: str = os.getenv(
+    "BEDROCK_EMBED_MODEL_ID", "amazon.titan-embed-text-v2:0"
 )
+BEDROCK_MODEL_ID: str = os.getenv("BEDROCK_MODEL_ID", "")  # sem padrão — definir após Passo 10
 BEDROCK_KNOWLEDGE_BASE_ID: str = os.getenv("BEDROCK_KNOWLEDGE_BASE_ID", "")
 
 # --- CORS ---

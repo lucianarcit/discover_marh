@@ -1,0 +1,30 @@
+{
+  "decision": "GO_PHASE_3_IMPLEMENTATION",
+  "region": "sa-east-1",
+  "embedding_models_active": [
+    "amazon.titan-embed-image-v1",
+    "amazon.titan-embed-text-v2:0"
+  ],
+  "generation_models_converse_active": [
+    "anthropic.claude-3-sonnet-20240229-v1:0",
+    "mistral.mistral-large-2402-v1:0",
+    "mistral.magistral-small-2509",
+    "mistral.ministral-3-14b-instruct",
+    "mistral.ministral-3-8b-instruct",
+    "mistral.mistral-7b-instruct-v0:2",
+    "mistral.mixtral-8x7b-instruct-v0:1",
+    "google.gemma-3-27b-it",
+    "google.gemma-3-12b-it",
+    "google.gemma-3-4b-it",
+    "nvidia.nemotron-nano-12b-v2",
+    "qwen.qwen3-32b-v1:0"
+  ],
+  "vector_store_recommendation": "KNOWLEDGE_BASES",
+  "critical_blockers": [],
+  "high_blockers": [],
+  "conditions_to_resolve": [],
+  "cost_estimate_status": "PENDING_MODEL_AND_VECTOR_STORE_SELECTION",
+  "retrieval_score_threshold": "0.70_PROPOSED_PENDING_EVALUATION",
+  "generation_model_selection": "PROPOSED_PENDING_ACTIVE_IN_REGION_VALIDATION",
+  "next_permitted_step": "Passo 2 — Adicionar DATA_SOURCE_MODE e KNOWLEDGE_MODE ao config.py"
+}

@@ -1,0 +1,7 @@
+{
+  "account_masked": "4453****79",
+  "user_id_masked": "AROAW****K:u***@****.***",
+  "arn_masked": "arn:aws:sts::4453****79:assumed-role/AWSReservedSSO_AdministratorAccess_****/****@****.***",
+  "region_configured": "sa-east-1",
+  "status": "OK"
+}
