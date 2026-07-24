@@ -17,9 +17,13 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from marh_agent.application.orchestrator import Orchestrator
+from marh_agent.application.knowledge_client_factory import build_knowledge_client
 from marh_agent.config import (
     CORS_ALLOWED_ORIGINS,
+    DATA_SOURCE_MODE,
+    DataSourceMode,
     ENVIRONMENT,
+    KNOWLEDGE_MODE,
     LOG_LEVEL,
     MODE,
     Mode,
@@ -40,24 +44,31 @@ logger = logging.getLogger(__name__)
 
 
 def _build_orchestrator() -> Orchestrator:
-    """Constrói o Orchestrator com os clientes apropriados ao modo."""
-    if MODE == Mode.INTEGRATED:
+    """Constrói o Orchestrator com os clientes apropriados aos modos ativos.
+
+    Mesma lógica do lambda_handler — DATA_SOURCE_MODE e KNOWLEDGE_MODE independentes.
+    """
+    if DATA_SOURCE_MODE == DataSourceMode.INTEGRATED:
         raise NotImplementedError(
-            "INTEGRATED mode not yet available. Set AGENT_MODE=MOCK_LOCAL."
+            "DATA_SOURCE_MODE=INTEGRATED not yet available. "
+            "Set DATA_SOURCE_MODE=MOCK or AGENT_MODE=MOCK_LOCAL."
         )
     else:
         from marh_agent.clients.mock_ma_hr_orch import MockMaHrOrchClient
-        from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
+        ma_hr_client = MockMaHrOrchClient()
 
-        client = MockMaHrOrchClient()
-        knowledge_client = MockKnowledgeClient()
+    knowledge_client = build_knowledge_client()
 
     logger.info(
         "orchestrator_initialized",
-        extra={"mode": MODE.value, "environment": ENVIRONMENT.value},
+        extra={
+            "data_source_mode": DATA_SOURCE_MODE.value,
+            "knowledge_mode": str(KNOWLEDGE_MODE),
+            "environment": ENVIRONMENT.value,
+        },
     )
 
-    return Orchestrator(client=client, knowledge_client=knowledge_client)
+    return Orchestrator(client=ma_hr_client, knowledge_client=knowledge_client)
 
 
 _orchestrator = _build_orchestrator()

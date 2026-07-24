@@ -6,9 +6,15 @@ Responsabilidades:
   - Delegar ao Orchestrator
   - Retornar resposta no formato API Gateway proxy
 
-Seleção de modo:
-  - AGENT_MODE=MOCK_LOCAL  → MockMaHrOrchClient + MockKnowledgeClient
-  - AGENT_MODE=INTEGRATED  → HttpMaHrOrchClient + BedrockKnowledgeClient (futuro)
+Seleção de modo (eixos independentes):
+  DATA_SOURCE_MODE=MOCK       → MockMaHrOrchClient
+  DATA_SOURCE_MODE=INTEGRATED → HttpMaHrOrchClient (Fase 2)
+
+  KNOWLEDGE_MODE=MOCK         → MockKnowledgeClient
+  KNOWLEDGE_MODE=BEDROCK_RAG  → BedrockRagKnowledgeClient (Fase 3)
+
+Combinação da Fase 3 isolada:
+  DATA_SOURCE_MODE=MOCK + KNOWLEDGE_MODE=BEDROCK_RAG
 """
 
 from __future__ import annotations
@@ -20,7 +26,8 @@ import sys
 from pydantic import ValidationError
 
 from marh_agent.application.orchestrator import Orchestrator
-from marh_agent.config import MODE, ENVIRONMENT, Mode, LOG_LEVEL
+from marh_agent.application.knowledge_client_factory import build_knowledge_client
+from marh_agent.config import MODE, ENVIRONMENT, Mode, LOG_LEVEL, DATA_SOURCE_MODE, DataSourceMode
 from marh_agent.domain.requests import ChatRequest
 
 # --- Logging ---
@@ -37,37 +44,34 @@ logger = logging.getLogger(__name__)
 
 
 def _build_orchestrator() -> Orchestrator:
-    """Constrói o Orchestrator com os clientes apropriados ao modo."""
-    if MODE == Mode.INTEGRATED:
-        # Fase 2+: importar clientes reais
-        # from marh_agent.clients.http_ma_hr_orch import HttpMaHrOrchClient
-        # from marh_agent.clients.bedrock_knowledge_client import BedrockKnowledgeClient
-        # from marh_agent.config import (
-        #     MA_HR_ORCH_BASE_URL,
-        #     BEDROCK_KNOWLEDGE_BASE_ID,
-        #     BEDROCK_REGION,
-        # )
-        # client = HttpMaHrOrchClient(base_url=MA_HR_ORCH_BASE_URL)
-        # knowledge_client = BedrockKnowledgeClient(
-        #     knowledge_base_id=BEDROCK_KNOWLEDGE_BASE_ID,
-        #     region=BEDROCK_REGION,
-        # )
+    """Constrói o Orchestrator com os clientes apropriados aos modos ativos.
+
+    DATA_SOURCE_MODE controla MaHrOrchClient (independente de KNOWLEDGE_MODE).
+    KNOWLEDGE_MODE controla KnowledgeClient (independente de DATA_SOURCE_MODE).
+    """
+    # --- MaHrOrchClient (eixo DATA_SOURCE_MODE) ---
+    if DATA_SOURCE_MODE == DataSourceMode.INTEGRATED:
         raise NotImplementedError(
-            "INTEGRATED mode not yet available. Set AGENT_MODE=MOCK_LOCAL."
+            "DATA_SOURCE_MODE=INTEGRATED not yet available. "
+            "Set DATA_SOURCE_MODE=MOCK or AGENT_MODE=MOCK_LOCAL."
         )
     else:
         from marh_agent.clients.mock_ma_hr_orch import MockMaHrOrchClient
-        from marh_agent.clients.mock_knowledge_client import MockKnowledgeClient
+        ma_hr_client = MockMaHrOrchClient()
 
-        client = MockMaHrOrchClient()
-        knowledge_client = MockKnowledgeClient()
+    # --- KnowledgeClient (eixo KNOWLEDGE_MODE) ---
+    knowledge_client = build_knowledge_client()
 
     logger.info(
         "orchestrator_initialized",
-        extra={"mode": MODE.value, "environment": ENVIRONMENT.value},
+        extra={
+            "data_source_mode": DATA_SOURCE_MODE.value,
+            "knowledge_mode": str(KNOWLEDGE_MODE),
+            "environment": ENVIRONMENT.value,
+        },
     )
 
-    return Orchestrator(client=client, knowledge_client=knowledge_client)
+    return Orchestrator(client=ma_hr_client, knowledge_client=knowledge_client)
 
 
 # Instanciado no cold-start — reutilizado entre invocações
