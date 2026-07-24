@@ -117,7 +117,7 @@ def route(
                 metadata=metadata,
             )
 
-        # Informativas (Grupo B) — MOCK_KNOWLEDGE quando disponível
+        # Informativas (Grupo B) — KnowledgeClient quando disponível
         if flow == "RAG_ONLY":
             topic = _INTENT_KNOWLEDGE_TOPIC.get(intent_id)
             knowledge_result = None
@@ -126,11 +126,27 @@ def route(
 
             if knowledge_result and knowledge_result.get("found"):
                 msg = knowledge_result["content"]
+                # Ler flow_detail do resultado — cada implementação declara o seu.
+                # MockKnowledgeClient não retorna "metadata" → fallback "MOCK_KNOWLEDGE".
+                # BedrockRagKnowledgeClient retorna metadata com flow_detail="BEDROCK_RAG".
+                _kr_meta = knowledge_result.get("metadata") or {}
+                _flow_detail = _kr_meta.get("flow_detail") or "MOCK_KNOWLEDGE"
+                # Propagar campos seguros do resultado — nunca alteram intenção,
+                # autorização, navegação, presentation.variant ou ações transacionais.
+                _safe_extra: dict = {"flow_detail": _flow_detail}
+                for _field in (
+                    "data_classification",
+                    "retrieved_chunks",
+                    "approved_chunks",
+                    "score_threshold",
+                ):
+                    if _field in _kr_meta:
+                        _safe_extra[_field] = _kr_meta[_field]
                 metadata = {
                     **metadata,
                     "knowledge_source": knowledge_result["source_section"],
                     "knowledge_topic": topic,
-                    "flow_detail": "MOCK_KNOWLEDGE",
+                    **_safe_extra,
                 }
             else:
                 # Fallback: resposta estática de policies.py

@@ -1,0 +1,36 @@
+{
+  "started_at": "2026-07-24T14:45:01.263648+00:00",
+  "region": "sa-east-1",
+  "prefix": "marh-rag-e2e-07241445",
+  "temporary_model": "mistral.magistral-small-2509",
+  "preflight": {
+    "account_masked": "445358171379",
+    "region": "sa-east-1",
+    "corpus_path": "C:\\proj\\discover_alelo\\discover3\\knowledge\\marh_feature_knowledge.md",
+    "corpus_size_bytes": 11751,
+    "corpus_sha256": "5f7b9dfaa80f6963819f7b7e1219561fcadfbaa0ac391cdc40b481d5705fee63",
+    "clients_ok": [
+      "s3",
+      "s3vectors",
+      "bedrock",
+      "bedrock-agent",
+      "bedrock-agent-runtime",
+      "iam"
+    ],
+    "status": "PASSED"
+  },
+  "error": "ClientError: An error occurred (ValidationError) when calling the CreateRole operation: 1 validation error detected: Value at 'description' failed to satisfy constraint: Member must satisfy regular expression patt",
+  "decision": "NO_GO_PHASE_3_INFRA",
+  "teardown": {
+    "actions": [
+      "vector_index_deleted",
+      "vector_bucket_deleted",
+      "s3_object_deleted",
+      "s3_bucket_deleted"
+    ],
+    "errors": [],
+    "residual": 0,
+    "status": "COMPLETE"
+  },
+  "finished_at": "2026-07-24T14:45:08.740682+00:00"
+}

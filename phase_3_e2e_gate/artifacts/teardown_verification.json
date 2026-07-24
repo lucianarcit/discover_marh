@@ -1,0 +1,11 @@
+{
+  "actions": [
+    "vector_index_deleted",
+    "vector_bucket_deleted",
+    "s3_object_deleted",
+    "s3_bucket_deleted"
+  ],
+  "errors": [],
+  "residual": 0,
+  "status": "COMPLETE"
+}
