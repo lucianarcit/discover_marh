@@ -1,0 +1,12 @@
+{
+  "status": "COMPLETE",
+  "duration_seconds": 10,
+  "statistics": {
+    "numberOfDocumentsScanned": 1,
+    "numberOfNewDocumentsIndexed": 1,
+    "numberOfModifiedDocumentsIndexed": 0,
+    "numberOfDocumentsFailed": 0,
+    "numberOfDocumentsSkipped": 0
+  },
+  "failure_reasons": []
+}

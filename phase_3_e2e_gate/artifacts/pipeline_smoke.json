@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "case": "com_evidencia",
+      "topic": "MARH_OVERVIEW",
+      "found": true,
+      "content_len": 168,
+      "source_section": "marh_feature_knowledge.md",
+      "flow_detail": "BEDROCK_RAG",
+      "data_classification": "BEDROCK_RAG_GROUNDED",
+      "duration_ms": 2594.5
+    },
+    {
+      "case": "sem_evidencia",
+      "topic": "TOPICO_NAO_MAPEADO_GATE",
+      "found": false,
+      "content": null,
+      "reason": "topic_unknown",
+      "duration_ms": 0.0
+    },
+    {
+      "case": "multiplos_chunks",
+      "topic": "ORDER_PROCESS",
+      "found": true,
+      "content_len": 828,
+      "approved_chunks": 1,
+      "duration_ms": 4389.5
+    }
+  ],
+  "temporary_model": "mistral.magistral-small-2509",
+  "score_threshold_used": 0.65
+}

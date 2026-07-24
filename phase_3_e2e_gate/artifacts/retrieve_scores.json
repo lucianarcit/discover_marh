@@ -1,0 +1,403 @@
+{
+  "positive_cases": [
+    {
+      "case_id": "POS-AGENT_CAPABILITIES",
+      "topic": "AGENT_CAPABILITIES",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.7169073224067688,
+        0.5933361649513245,
+        0.5818315148353577,
+        0.5791293680667877
+      ],
+      "max_score": 0.7169073224067688,
+      "min_score": 0.5791293680667877,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 1012.9
+    },
+    {
+      "case_id": "POS-CONSULTABLE_INFO",
+      "topic": "CONSULTABLE_INFO",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.7380143404006958,
+        0.6039265096187592,
+        0.5922893285751343,
+        0.5912830829620361,
+        0.5791499614715576
+      ],
+      "max_score": 0.7380143404006958,
+      "min_score": 0.5791499614715576,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 405.7
+    },
+    {
+      "case_id": "POS-ORDER_PROCESS",
+      "topic": "ORDER_PROCESS",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.7726874351501465,
+        0.6401095390319824,
+        0.6363767385482788,
+        0.6339466869831085
+      ],
+      "max_score": 0.7726874351501465,
+      "min_score": 0.6339466869831085,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 471.0
+    },
+    {
+      "case_id": "POS-HOW_CONSULT_ORDER",
+      "topic": "HOW_CONSULT_ORDER",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.6914674043655396,
+        0.6546700596809387,
+        0.6261484026908875,
+        0.6227657794952393
+      ],
+      "max_score": 0.6914674043655396,
+      "min_score": 0.6227657794952393,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 362.5
+    },
+    {
+      "case_id": "POS-HOW_CONSULT_COLLABORATOR",
+      "topic": "HOW_CONSULT_COLLABORATOR",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.685522198677063,
+        0.6489004194736481,
+        0.6287034153938293,
+        0.6242837905883789,
+        0.6114788353443146
+      ],
+      "max_score": 0.685522198677063,
+      "min_score": 0.6114788353443146,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 377.9
+    },
+    {
+      "case_id": "POS-CARD_TRACKING_INFO",
+      "topic": "CARD_TRACKING_INFO",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.7540649473667145,
+        0.7283296287059784,
+        0.6399574875831604,
+        0.6284562349319458
+      ],
+      "max_score": 0.7540649473667145,
+      "min_score": 0.6284562349319458,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 383.7
+    },
+    {
+      "case_id": "POS-CANNOT_CANCEL",
+      "topic": "CANNOT_CANCEL",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.6515081226825714,
+        0.6311998665332794,
+        0.605761855840683,
+        0.6029780507087708,
+        0.6026641726493835
+      ],
+      "max_score": 0.6515081226825714,
+      "min_score": 0.6026641726493835,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 312.6
+    },
+    {
+      "case_id": "POS-CANNOT_EDIT_COLLABORATOR",
+      "topic": "CANNOT_EDIT_COLLABORATOR",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.7057350277900696,
+        0.701213002204895,
+        0.6678656339645386,
+        0.6632081270217896,
+        0.6441436409950256
+      ],
+      "max_score": 0.7057350277900696,
+      "min_score": 0.6441436409950256,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 337.7
+    },
+    {
+      "case_id": "POS-COMPANY_SCOPE",
+      "topic": "COMPANY_SCOPE",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.7163732945919037,
+        0.6282418966293335,
+        0.6105227172374725,
+        0.6048185527324677
+      ],
+      "max_score": 0.7163732945919037,
+      "min_score": 0.6048185527324677,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 334.1
+    },
+    {
+      "case_id": "POS-COMPANY_REQUIRED",
+      "topic": "COMPANY_REQUIRED",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.6714304089546204,
+        0.6019580960273743,
+        0.598175972700119,
+        0.5892291963100433
+      ],
+      "max_score": 0.6714304089546204,
+      "min_score": 0.5892291963100433,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 350.0
+    },
+    {
+      "case_id": "POS-AGENT_VS_PORTAL",
+      "topic": "AGENT_VS_PORTAL",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.6728453040122986,
+        0.5829114317893982,
+        0.582459568977356,
+        0.5769267082214355,
+        0.5760656595230103
+      ],
+      "max_score": 0.6728453040122986,
+      "min_score": 0.5760656595230103,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 358.4
+    },
+    {
+      "case_id": "POS-MARH_OVERVIEW",
+      "topic": "MARH_OVERVIEW",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.675895631313324,
+        0.6020409464836121,
+        0.5989814698696136,
+        0.5769422650337219
+      ],
+      "max_score": 0.675895631313324,
+      "min_score": 0.5769422650337219,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 357.9
+    },
+    {
+      "case_id": "POS-ESPACO_RH_OVERVIEW",
+      "topic": "ESPACO_RH_OVERVIEW",
+      "top_k": 5,
+      "results_returned": 4,
+      "scores": [
+        0.6617142558097839,
+        0.6458573043346405,
+        0.6396040916442871,
+        0.6000420451164246
+      ],
+      "max_score": 0.6617142558097839,
+      "min_score": 0.6000420451164246,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 257.7
+    },
+    {
+      "case_id": "POS-QUESTION_TYPES",
+      "topic": "QUESTION_TYPES",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.6836434006690979,
+        0.5857512354850769,
+        0.5818398594856262,
+        0.5803459882736206,
+        0.5729023218154907
+      ],
+      "max_score": 0.6836434006690979,
+      "min_score": 0.5729023218154907,
+      "source_files": [
+        "marh_feature_knowledge.md"
+      ],
+      "section_titles": [],
+      "duration_ms": 345.4
+    }
+  ],
+  "negative_cases": [
+    {
+      "case_id": "NEG-001",
+      "query_text": "Qual e a cotacao do dolar hoje?",
+      "expected_classification": "OUT_OF_CORPUS",
+      "expected_topic": "none",
+      "would_reach_rag_in_real_flow": false,
+      "classifier_or_router_outcome": "Router retorna ERR-008 (STATIC_RESPONSE) \u2014 KnowledgeClient nunca consultado.",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.5944786369800568,
+        0.5725494921207428,
+        0.57200887799263,
+        0.570814311504364,
+        0.570190817117691
+      ],
+      "max_score": 0.5944786369800568,
+      "retrieved_source": "marh_feature_knowledge.md",
+      "retrieved_section": null,
+      "duration_ms": 276.1
+    },
+    {
+      "case_id": "NEG-002",
+      "query_text": "Quantos colaboradores minha empresa possui?",
+      "expected_classification": "OUT_OF_CORPUS",
+      "expected_topic": "none",
+      "would_reach_rag_in_real_flow": false,
+      "classifier_or_router_outcome": "Router retorna ERR-008 (STATIC_RESPONSE) \u2014 KnowledgeClient nunca consultado.",
+      "top_k": 5,
+      "results_returned": 5,
+      "scores": [
+        0.6212796270847321,
+        0.6035686135292053,
+        0.6009142696857452,
+        0.5955449342727661,
+        0.5932342410087585
+      ],
+      "max_score": 0.6212796270847321,
+      "retrieved_source": "marh_feature_knowledge.md",
+      "retrieved_section": null,
+      "duration_ms": 318.3
+    },
+    {
+      "case_id": "NEG-003",
+      "query_text": "Qual e o CNPJ da Alelo?",
+      "expected_classification": "OUT_OF_CORPUS",
+      "expected_topic": "none",
+      "would_reach_rag_in_real_flow": false,
+      "classifier_or_router_outcome": "Router retorna ERR-008 (STATIC_RESPONSE) \u2014 KnowledgeClient nunca consultado.",
+      "top_k": 5,
+      "results_returned": 3,
+      "scores": [
+        0.7220041453838348,
+        0.6827422976493835,
+        0.6768653094768524
+      ],
+      "max_score": 0.7220041453838348,
+      "retrieved_source": "marh_feature_knowledge.md",
+      "retrieved_section": null,
+      "duration_ms": 328.3
+    }
+  ],
+  "all_positive_scores": [
+    0.7169073224067688,
+    0.5933361649513245,
+    0.5818315148353577,
+    0.5791293680667877,
+    0.7380143404006958,
+    0.6039265096187592,
+    0.5922893285751343,
+    0.5912830829620361,
+    0.5791499614715576,
+    0.7726874351501465,
+    0.6401095390319824,
+    0.6363767385482788,
+    0.6339466869831085,
+    0.6914674043655396,
+    0.6546700596809387,
+    0.6261484026908875,
+    0.6227657794952393,
+    0.685522198677063,
+    0.6489004194736481,
+    0.6287034153938293,
+    0.6242837905883789,
+    0.6114788353443146,
+    0.7540649473667145,
+    0.7283296287059784,
+    0.6399574875831604,
+    0.6284562349319458,
+    0.6515081226825714,
+    0.6311998665332794,
+    0.605761855840683,
+    0.6029780507087708,
+    0.6026641726493835,
+    0.7057350277900696,
+    0.701213002204895,
+    0.6678656339645386,
+    0.6632081270217896,
+    0.6441436409950256,
+    0.7163732945919037,
+    0.6282418966293335,
+    0.6105227172374725,
+    0.6048185527324677,
+    0.6714304089546204,
+    0.6019580960273743,
+    0.598175972700119,
+    0.5892291963100433,
+    0.6728453040122986,
+    0.5829114317893982,
+    0.582459568977356,
+    0.5769267082214355,
+    0.5760656595230103,
+    0.675895631313324,
+    0.6020409464836121,
+    0.5989814698696136,
+    0.5769422650337219,
+    0.6617142558097839,
+    0.6458573043346405,
+    0.6396040916442871,
+    0.6000420451164246,
+    0.6836434006690979,
+    0.5857512354850769,
+    0.5818398594856262,
+    0.5803459882736206,
+    0.5729023218154907
+  ]
+}

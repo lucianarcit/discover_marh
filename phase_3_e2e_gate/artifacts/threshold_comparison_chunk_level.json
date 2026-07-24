@@ -1,0 +1,54 @@
+{
+  "positive_score_stats": {
+    "min": 0.5729023218154907,
+    "median": 0.6282418966293335,
+    "max": 0.7726874351501465
+  },
+  "negative_score_max": 0.723820149898529,
+  "threshold_comparison": [
+    {
+      "threshold": 0.5,
+      "positives_approved": 62,
+      "positives_rejected": 0,
+      "negatives_approved": 13,
+      "negatives_rejected": 0
+    },
+    {
+      "threshold": 0.6,
+      "positives_approved": 44,
+      "positives_rejected": 18,
+      "negatives_approved": 6,
+      "negatives_rejected": 7
+    },
+    {
+      "threshold": 0.65,
+      "positives_approved": 19,
+      "positives_rejected": 43,
+      "negatives_approved": 3,
+      "negatives_rejected": 10
+    },
+    {
+      "threshold": 0.7,
+      "positives_approved": 8,
+      "positives_rejected": 54,
+      "negatives_approved": 1,
+      "negatives_rejected": 12
+    },
+    {
+      "threshold": 0.75,
+      "positives_approved": 2,
+      "positives_rejected": 60,
+      "negatives_approved": 0,
+      "negatives_rejected": 13
+    },
+    {
+      "threshold": 0.8,
+      "positives_approved": 0,
+      "positives_rejected": 62,
+      "negatives_approved": 0,
+      "negatives_rejected": 13
+    }
+  ],
+  "recommendation": 0.7,
+  "status": "KEEP_0_70"
+}

@@ -1,10 +1,10 @@
 {
-  "started_at": "2026-07-24T14:45:01.263648+00:00",
+  "started_at": "2026-07-24T17:19:36.460850+00:00",
   "region": "sa-east-1",
-  "prefix": "marh-rag-e2e-07241445",
+  "prefix": "marh-rag-e2e-07241719",
   "temporary_model": "mistral.magistral-small-2509",
   "preflight": {
-    "account_masked": "445358171379",
+    "account_masked": "4453****79",
     "region": "sa-east-1",
     "corpus_path": "C:\\proj\\discover_alelo\\discover3\\knowledge\\marh_feature_knowledge.md",
     "corpus_size_bytes": 11751,
@@ -17,20 +17,153 @@
       "bedrock-agent-runtime",
       "iam"
     ],
+    "gate_script_sha256": "aad98e2d228946a9...",
     "status": "PASSED"
   },
-  "error": "ClientError: An error occurred (ValidationError) when calling the CreateRole operation: 1 validation error detected: Value at 'description' failed to satisfy constraint: Member must satisfy regular expression patt",
-  "decision": "NO_GO_PHASE_3_INFRA",
+  "ingestion": {
+    "status": "COMPLETE",
+    "duration_seconds": 10,
+    "statistics": {
+      "numberOfDocumentsScanned": 1,
+      "numberOfNewDocumentsIndexed": 1,
+      "numberOfModifiedDocumentsIndexed": 0,
+      "numberOfDocumentsFailed": 0,
+      "numberOfDocumentsSkipped": 0
+    },
+    "failure_reasons": []
+  },
+  "retrieve": {
+    "positive_cases": 14,
+    "negative_cases": 3
+  },
+  "threshold": {
+    "methodology": "query_level",
+    "positive_queries": 14,
+    "negative_queries": 3,
+    "threshold_comparison": [
+      {
+        "threshold": 0.5,
+        "TP": 14,
+        "FN": 0,
+        "TN": 0,
+        "FP": 3,
+        "precision": 0.8235,
+        "recall": 1.0,
+        "specificity": 0.0,
+        "F1": 0.9032,
+        "balanced_accuracy": 0.5
+      },
+      {
+        "threshold": 0.6,
+        "TP": 14,
+        "FN": 0,
+        "TN": 1,
+        "FP": 2,
+        "precision": 0.875,
+        "recall": 1.0,
+        "specificity": 0.3333,
+        "F1": 0.9333,
+        "balanced_accuracy": 0.6667
+      },
+      {
+        "threshold": 0.65,
+        "TP": 14,
+        "FN": 0,
+        "TN": 2,
+        "FP": 1,
+        "precision": 0.9333,
+        "recall": 1.0,
+        "specificity": 0.6667,
+        "F1": 0.9655,
+        "balanced_accuracy": 0.8333
+      },
+      {
+        "threshold": 0.7,
+        "TP": 6,
+        "FN": 8,
+        "TN": 2,
+        "FP": 1,
+        "precision": 0.8571,
+        "recall": 0.4286,
+        "specificity": 0.6667,
+        "F1": 0.5714,
+        "balanced_accuracy": 0.5476
+      },
+      {
+        "threshold": 0.75,
+        "TP": 2,
+        "FN": 12,
+        "TN": 3,
+        "FP": 0,
+        "precision": 1.0,
+        "recall": 0.1429,
+        "specificity": 1.0,
+        "F1": 0.25,
+        "balanced_accuracy": 0.5714
+      },
+      {
+        "threshold": 0.8,
+        "TP": 0,
+        "FN": 14,
+        "TN": 3,
+        "FP": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "F1": 0.0,
+        "balanced_accuracy": 0.5
+      }
+    ],
+    "recommendation": 0.65,
+    "status": "USE_0_65_PROVISIONALLY"
+  },
+  "smoke": {
+    "results": [
+      {
+        "case": "com_evidencia",
+        "topic": "MARH_OVERVIEW",
+        "found": true,
+        "content_len": 168,
+        "source_section": "marh_feature_knowledge.md",
+        "flow_detail": "BEDROCK_RAG",
+        "data_classification": "BEDROCK_RAG_GROUNDED",
+        "duration_ms": 2594.5
+      },
+      {
+        "case": "sem_evidencia",
+        "topic": "TOPICO_NAO_MAPEADO_GATE",
+        "found": false,
+        "content": null,
+        "reason": "topic_unknown",
+        "duration_ms": 0.0
+      },
+      {
+        "case": "multiplos_chunks",
+        "topic": "ORDER_PROCESS",
+        "found": true,
+        "content_len": 828,
+        "approved_chunks": 1,
+        "duration_ms": 4389.5
+      }
+    ],
+    "temporary_model": "mistral.magistral-small-2509",
+    "score_threshold_used": 0.65
+  },
+  "decision": "GO_PHASE_3_INFRA_WITH_CONDITIONS",
   "teardown": {
     "actions": [
+      "data_source_deleted",
+      "knowledge_base_deleted",
       "vector_index_deleted",
       "vector_bucket_deleted",
       "s3_object_deleted",
-      "s3_bucket_deleted"
+      "s3_bucket_deleted",
+      "iam_policy_deleted",
+      "iam_role_deleted"
     ],
     "errors": [],
     "residual": 0,
     "status": "COMPLETE"
   },
-  "finished_at": "2026-07-24T14:45:08.740682+00:00"
+  "finished_at": "2026-07-24T17:21:45.197644+00:00"
 }

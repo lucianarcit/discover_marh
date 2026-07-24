@@ -1,0 +1,10 @@
+{
+  "dimension": 1024,
+  "distance_metric": "cosine",
+  "data_type": "float32",
+  "non_filterable_metadata_keys": [
+    "AMAZON_BEDROCK_TEXT",
+    "AMAZON_BEDROCK_METADATA"
+  ],
+  "status": "VALIDATED"
+}

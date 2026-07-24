@@ -1,1 +1,15 @@
-{}
+{
+  "s3_bucket": "marh-rag-e2e-07241719-corpus",
+  "s3_key": "knowledge/marh_feature_knowledge.md",
+  "vector_bucket": "marh-rag-e2e-07241719-vbucket",
+  "vector_bucket_arn_masked": "arn:aws:s3vectors:sa****",
+  "vector_index": "marh-rag-e2e-07241719-vindex",
+  "vector_index_arn_masked": "arn:aws:s3vectors:sa****",
+  "iam_role_name": "marh-rag-e2e-07241719-kb-role",
+  "iam_role_arn_masked": "arn:aws:iam::4453581****",
+  "iam_policy_arn_masked": "arn:aws:iam::4453581****",
+  "iam_policy_name": "marh-rag-e2e-07241719-kb-policy",
+  "knowledge_base_id": "FNDW7VAZLH",
+  "data_source_id": "532VEH3DZ8",
+  "ingestion_job_id": "LGPSXW1FP0"
+}

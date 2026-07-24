@@ -2,3 +2,4 @@
 # Instalar com: pip install -r phase_3_e2e_gate/requirements.txt
 boto3>=1.43.0
 python-dotenv>=1.0.0
+pytest>=8.0.0
