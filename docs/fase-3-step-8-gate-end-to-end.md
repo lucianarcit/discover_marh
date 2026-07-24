@@ -16,16 +16,21 @@
 
 | Arquivo | Propósito |
 |---|---|
-| `application/router.py` | Correção: `flow_detail` lido dinamicamente do KnowledgeClient |
 | `tests/unit/test_router_flow_detail.py` | 19 testes da correção do Router |
 | `phase_3_e2e_gate/gate_runner.py` | Script do gate: preflight → recursos → ingestão → Retrieve → análise → smoke → teardown |
 | `phase_3_e2e_gate/requirements.txt` | Dependências do gate para Python do sistema (`boto3`) |
 | `phase_3_e2e_gate/resource_manifest.json` | Manifesto progressivo dos recursos criados no gate |
+
+## 2. Arquivos alterados
+
+| Arquivo | Mudança |
+|---|---|
+| `application/router.py` | Correção: `flow_detail` lido dinamicamente do KnowledgeClient |
 | `poc_marh_agent/backend/pyproject.toml` | Grupo `[rag]` adicionado com `boto3>=1.43.0` como dependência opcional |
 
 ---
 
-## 2. Correção do Router (pré-requisito do gate)
+## 3. Correção do Router (pré-requisito do gate)
 
 **Problema registrado no Passo 7:** o Router hardcodava `flow_detail="MOCK_KNOWLEDGE"` para qualquer `found=True`, independente da implementação de `KnowledgeClient` usada.
 
@@ -62,7 +67,7 @@ _flow_detail = _kr_meta.get("flow_detail") or "MOCK_KNOWLEDGE"
 
 ---
 
-## 3. Testes da correção (19)
+## 4. Testes da correção (19)
 
 | Grupo | Quantidade |
 |---|---|
@@ -75,7 +80,7 @@ _flow_detail = _kr_meta.get("flow_detail") or "MOCK_KNOWLEDGE"
 
 ---
 
-## 4. Dependências corrigidas
+## 5. Dependências corrigidas
 
 **Problema:** `gate_runner.py` usa o Python do sistema, que não tinha `boto3`.
 
@@ -93,26 +98,13 @@ rag = [
 
 ---
 
-## 5. Execuções do gate
+## 6. Execuções do gate
 
 ### Execução 1 — falha: `ExpiredToken`
 
-- Credencial SSO expirada antes da execução
+- Credencial temporária AWS expirada antes da execução
 - Nenhum recurso criado
 - Teardown: nada a destruir
-
-### Execução 3 — resultado pendente
-
-> **Instrução de atualização:** quando o gate terminar com sucesso, adicionar aqui os dados reais de:
-> - Knowledge Base ID (mascarado), status ACTIVE, duração
-> - Ingestão: status COMPLETE, docs processados, duração
-> - Retrieve: scores por tópico (min/max/mediana), scores negativos, duração
-> - Análise de threshold: comparativo 0.50–0.80, recomendação final
-> - Smoke: found, flow_detail, data_classification, content_len, duração por caso
-> - Teardown: actions, errors, residual=0
-> - Decisão: GO_PHASE_3_INFRA ou GO_PHASE_3_INFRA_WITH_CONDITIONS
->
-> Preservar as execuções 1 e 2 sem alteração. Atualizar cabeçalho (Status, KNOWLEDGE_BASE_END_TO_END, GATE_DECISION) e seção 9 (critérios ✅).
 
 ---
 
@@ -121,10 +113,10 @@ rag = [
 **Preflight:** PASSED — todos os 6 clientes boto3 acessíveis em sa-east-1
 
 **Progresso:**
-- S3 bucket criado: `marh-rag-e2e-07241445-corpus`
+- S3 bucket criado (prefixo `marh-rag-e2e-07241445`)
 - Corpus enviado: `knowledge/marh_feature_knowledge.md` (11.751 bytes, sha256=`5f7b9dfa...`)
-- S3 Vector bucket criado: `marh-rag-e2e-07241445-vbucket`
-- S3 Vector index criado: `marh-rag-e2e-07241445-vindex` (1024 dim, cosine, float32)
+- S3 Vector bucket criado (1024 dim, cosine, float32)
+- S3 Vector index criado
 - **IAM role — FALHOU:** `ValidationError` — caracteres acentuados (`ó`, `á`, `—`) não são aceitos no campo `description` da AWS
 
 **Teardown:** COMPLETE — residual=0
@@ -142,7 +134,26 @@ rag = [
 
 ---
 
-## 6. Arquitetura do gate
+### Execução 3 — resultado pendente
+
+> **Instrução de atualização:** quando o gate terminar com sucesso, substituir este bloco pelos dados reais. Preservar integralmente as execuções 1 e 2.
+>
+> Registrar (sem IDs completos, ARNs, bucket names, Account ID ou respostas brutas):
+> - Knowledge Base: status ACTIVE, duração
+> - Ingestão: status COMPLETE, docs processados, docs falhos, duração
+> - Retrieve: scores por tópico (min/max/mediana), scores das queries negativas, duração
+> - Análise de threshold: tabela comparativa 0.50–0.80, recomendação, status (KEEP_0_70 / ADJUST_THRESHOLD)
+> - Smoke: found, flow_detail, data_classification, content_len, duração por caso
+> - Teardown: actions, errors, residual=0
+> - Decisão: GO_PHASE_3_INFRA ou GO_PHASE_3_INFRA_WITH_CONDITIONS
+>
+> Atualizar cabeçalho (Status, KNOWLEDGE_BASE_END_TO_END, GATE_DECISION) e seções 7, 9 e 10.
+>
+> Não marcar GO_PHASE_3_INFRA enquanto ingestão, Retrieve, smoke e teardown não estiverem todos comprovados.
+
+---
+
+## 7. Arquitetura do gate
 
 ```
 gate_runner.py
@@ -198,7 +209,7 @@ Temporary=true
 
 ---
 
-## 7. Por que script Python e não Terraform
+## 8. Por que script Python e não Terraform
 
 O gate é descartável e operacional — não apenas declarativo:
 
@@ -209,9 +220,7 @@ O gate é descartável e operacional — não apenas declarativo:
 
 ---
 
-## 8. Próxima execução
-
-Executar com credencial válida:
+## 9. Como executar
 
 ```powershell
 cd C:\proj\discover_alelo
@@ -227,7 +236,7 @@ python phase_3_e2e_gate/gate_runner.py
 
 ---
 
-## 9. Critérios para GO_PHASE_3_INFRA
+## 10. Critérios para GO_PHASE_3_INFRA
 
 | Critério | Status |
 |---|---|
@@ -245,7 +254,7 @@ python phase_3_e2e_gate/gate_runner.py
 
 ---
 
-## 10. Limitações registradas
+## 11. Limitações registradas
 
 - `KNOWLEDGE_BASE_END_TO_END=NOT_YET_VALIDATED` — ainda não validado
 - Modelo de geração definitivo: `PROPOSED_PENDING_DATASET_EVALUATION`
@@ -254,7 +263,7 @@ python phase_3_e2e_gate/gate_runner.py
 
 ---
 
-## 11. Próximo passo após gate aprovado
+## 12. Próximo passo após gate aprovado
 
 **Passo 9 — Terraform do ambiente RAG HML**
 
