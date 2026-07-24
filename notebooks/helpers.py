@@ -210,16 +210,16 @@ def format_metrics_table(rows: list[dict], highlight_threshold: float | None = N
     """
     headers = ["threshold", "TP", "FN", "TN", "FP", "recall", "F1", "balanced_accuracy"]
     th_row = "".join(
-        f"<th style='padding:6px 12px;background:#2c3e50;color:white'>{h}</th>"
+        f"<th style='padding:6px 12px;background:#2c3e50;color:#ffffff'>{h}</th>"
         for h in headers
     )
     body_rows = []
     for row in rows:
         is_highlight = row["threshold"] == highlight_threshold
-        bg = "#eafaf1" if is_highlight else "white"
+        bg = "#eafaf1" if is_highlight else "#ffffff"
         weight = "bold" if is_highlight else "normal"
         cells = "".join(
-            f"<td style='padding:6px 12px;font-weight:{weight}'>{row.get(h, '')}</td>"
+            f"<td style='padding:6px 12px;font-weight:{weight};color:#111111'>{row.get(h, '')}</td>"
             for h in headers
         )
         body_rows.append(
@@ -227,7 +227,7 @@ def format_metrics_table(rows: list[dict], highlight_threshold: float | None = N
         )
     body = "".join(body_rows)
     return (
-        f"<table style='border-collapse:collapse;width:100%'>"
+        f"<table style='border-collapse:collapse;width:100%;background:#ffffff;color:#111111'>"
         f"<thead><tr>{th_row}</tr></thead>"
         f"<tbody>{body}</tbody>"
         f"</table>"
@@ -255,7 +255,7 @@ def smoke_case_html(case: dict) -> str:
     list_html = "<ul>" + "".join(items) + "</ul>"
     return (
         f"<div style='border:1px solid #bdc3c7;border-radius:6px;padding:12px;"
-        f"margin:8px 0;background:#fdfefe'>"
+        f"margin:8px 0;background:#fdfefe;color:#111111'>"
         f"<b>{topic}</b> {badge}"
         f"{list_html}</div>"
     )

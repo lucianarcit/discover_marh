@@ -234,7 +234,7 @@ else:
         ("Distância cosine",                ok_metric),
         ("nonFilterableMetadataKeys corretas", ok_keys),
     ]
-    html = "<h4>Validação do Vector Index:</h4><ul>"
+    html = "<div style='color:#111111'><h4>Validação do Vector Index:</h4><ul>"
     all_ok = True
     for label, err in checks:
         passed = err is None
@@ -243,7 +243,7 @@ else:
         if err:
             html += f" — <code>{err}</code>"
         html += "</li>"
-    html += f"</ul><p><b>Resultado geral:</b> {pass_fail_badge(all_ok, 'metadataConfiguration VALIDATED')}</p>"
+    html += f"</ul><p><b>Resultado geral:</b> {pass_fail_badge(all_ok, 'metadataConfiguration VALIDATED')}</p></div>"
     display(HTML(html))
 '''))
 
@@ -259,6 +259,7 @@ else:
     stats = ing.get("statistics", {})
     ok = ing.get("status") == "COMPLETE"
     html = f"""
+    <div style='color:#111111'>
     <h4>Ingestão do corpus:</h4>
     <ul>
       <li>{pass_fail_badge(ok)} Status: <b>{ing.get("status")}</b></li>
@@ -267,6 +268,7 @@ else:
       <li>Documentos indexados:  {stats.get("numberOfNewDocumentsIndexed", 0)}</li>
       <li>Documentos com falha:  {stats.get("numberOfDocumentsFailed", 0)}</li>
     </ul>
+    </div>
     """
     reasons = ing.get("failure_reasons", [])
     if reasons:
@@ -290,16 +292,20 @@ else:
     neg = rs.get("negative_cases", [])
 
     # Tabela positivos — aspas simples dentro das f-strings (compatível Python 3.11)
+    td = "color:#111111;padding:6px 10px"
+    td_c = "color:#111111;padding:6px 10px;text-align:center"
+
     def pos_row(c):
         topic   = c.get("topic", "-")
         results = c.get("results_returned", 0)
         score   = round(c.get("max_score", 0) or 0, 4)
         sources = ", ".join(c.get("source_files") or [])
         return (
-            f"<tr><td>{topic}</td>"
-            f"<td style='text-align:center'>{results}</td>"
-            f"<td style='text-align:center'>{score}</td>"
-            f"<td>{sources}</td></tr>"
+            f"<tr style='background:#ffffff'>"
+            f"<td style='{td}'>{topic}</td>"
+            f"<td style='{td_c}'>{results}</td>"
+            f"<td style='{td_c}'>{score}</td>"
+            f"<td style='{td}'>{sources}</td></tr>"
         )
 
     def neg_row(c):
@@ -308,28 +314,28 @@ else:
         score    = round(c.get("max_score", 0) or 0, 4)
         reaches  = c.get("would_reach_rag_in_real_flow", "N/A")
         return (
-            f"<tr><td>{case_id}</td>"
-            f"<td style='text-align:center'>{results}</td>"
-            f"<td style='text-align:center'>{score}</td>"
-            f"<td>{reaches}</td></tr>"
+            f"<tr style='background:#ffffff'>"
+            f"<td style='{td}'>{case_id}</td>"
+            f"<td style='{td_c}'>{results}</td>"
+            f"<td style='{td_c}'>{score}</td>"
+            f"<td style='{td_c}'>{reaches}</td></tr>"
         )
 
     pos_rows = "".join(pos_row(c) for c in pos)
     neg_rows = "".join(neg_row(c) for c in neg)
-    th_style = "background:#2c3e50;color:white;padding:6px 10px"
+    th_style = "background:#2c3e50;color:#ffffff;padding:6px 10px"
+    tbl = "border-collapse:collapse;width:100%;background:#ffffff;color:#111111"
 
     html = (
-        f"<h4>Consultas positivas ({len(pos)} tópicos oficiais):</h4>"
-        "<table style='border-collapse:collapse;width:100%'>"
-        "<thead><tr>"
+        f"<h4 style='color:#111111'>Consultas positivas ({len(pos)} tópicos oficiais):</h4>"
+        f"<table style='{tbl}'><thead><tr>"
         f"<th style='{th_style}'>Tópico</th>"
         f"<th style='{th_style}'>Resultados</th>"
         f"<th style='{th_style}'>Top Score</th>"
         f"<th style='{th_style}'>Fonte</th>"
         f"</tr></thead><tbody>{pos_rows}</tbody></table><br>"
-        f"<h4>Consultas negativas ({len(neg)}):</h4>"
-        "<table style='border-collapse:collapse;width:100%'>"
-        "<thead><tr>"
+        f"<h4 style='color:#111111'>Consultas negativas ({len(neg)}):</h4>"
+        f"<table style='{tbl}'><thead><tr>"
         f"<th style='{th_style}'>Caso</th>"
         f"<th style='{th_style}'>Resultados</th>"
         f"<th style='{th_style}'>Top Score</th>"
@@ -456,7 +462,7 @@ else:
     threshold_usado = sm.get("score_threshold_used", "?")
     model_temp = sm.get("temporary_model", "?")
     display(HTML(
-        f"<p><b>Threshold usado:</b> {threshold_usado} &nbsp; "
+        f"<p style='color:#111111'><b>Threshold usado:</b> {threshold_usado} &nbsp; "
         f"<b>Modelo temporário:</b> <code>{model_temp}</code> "
         f"(não é o modelo definitivo — seleção no Passo 10)</p>"
     ))
@@ -477,12 +483,12 @@ else:
         ("ORDER_PROCESS found=True",                   caso3 and caso3.get("found") is True),
         ("ORDER_PROCESS approved_chunks>=1",           caso3 and (caso3.get("approved_chunks") or 0) >= 1),
     ]
-    html = "<h4>Validações do smoke:</h4><ul>"
+    html = "<div style='color:#111111'><h4>Validações do smoke:</h4><ul>"
     all_ok = True
     for label, ok in checks:
         all_ok = all_ok and bool(ok)
         html += f"<li>{pass_fail_badge(bool(ok))} {label}</li>"
-    html += f"</ul><p><b>Smoke:</b> {pass_fail_badge(all_ok, 'PASSOU' if all_ok else 'FALHOU')}</p>"
+    html += f"</ul><p><b>Smoke:</b> {pass_fail_badge(all_ok, 'PASSOU' if all_ok else 'FALHOU')}</p></div>"
     display(HTML(html))
 '''))
 
@@ -530,6 +536,7 @@ else:
     actions = td.get("actions", [])
     errors  = td.get("errors", [])
     html = f"""
+    <div style='color:#111111'>
     <h4>Teardown:</h4>
     <ul>
       <li>{pass_fail_badge(ok)} Status: <b>{td.get("status")}</b></li>
@@ -537,11 +544,12 @@ else:
       <li>Erros: {len(errors)}</li>
       <li>Residuais: <b>{td.get("residual", "?")}</b></li>
     </ul>
+    </div>
     """
     if actions:
-        html += "<p><b>Ações executadas:</b></p><ul>"
+        html += "<div style='color:#111111'><p><b>Ações executadas:</b></p><ul>"
         html += "".join(f"<li><code>{a}</code></li>" for a in actions)
-        html += "</ul>"
+        html += "</ul></div>"
     display(HTML(html))
 '''))
 
