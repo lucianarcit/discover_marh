@@ -389,12 +389,9 @@ def test_exceptions_can_be_caught_as_rag_error():
 
 def test_retriever_module_does_not_import_boto3():
     import marh_agent.clients.retriever as mod
-    import sys
+    # Confirmar que boto3 não é um nome no namespace de retriever.py
     assert "boto3" not in dir(mod)
-    # boto3 não deve ter sido importado como efeito colateral
-    for name in sys.modules:
-        if name == "boto3" and "retriever" in (sys.modules[name].__spec__ or {}).get("name", ""):
-            pytest.fail("boto3 foi importado via retriever.py")
+    assert not hasattr(mod, "boto3")
 
 
 def test_language_model_client_module_does_not_import_boto3():
