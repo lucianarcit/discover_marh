@@ -161,3 +161,25 @@ Quando o `refresh_token` expirar:
 | `artifacts/api_runs/` | Respostas de API (podem conter dados sensíveis) |
 | `.venv/` | Virtual environment |
 | `__pycache__/` | Bytecode Python |
+
+---
+
+## Fase 3 — RAG
+
+Substituição do `MockKnowledgeClient` por RAG real com Bedrock + S3 Vectors.
+
+| Indicador | Estado |
+|---|---|
+| `PASSO_8A` | CONCLUÍDO |
+| `PASSO_8B` | IMPLEMENTADO — revisão visual pendente |
+| `GATE_DECISION` | `GO_PHASE_3_INFRA_WITH_CONDITIONS` |
+| `NEXT_STEP` | `PHASE_3_STEP_9_TERRAFORM_RAG_HML` |
+
+**Links rápidos:**
+
+- [Plano da Fase 3](docs/fase-3-plano.md)
+- [Gate End-to-End — Passo 8A](docs/fase-3-step-8-gate-end-to-end.md)
+- [Notebook de Demonstração — Passo 8B](docs/fase-3-step-8b-notebook-validacao-demo.md)
+- [Notebook executável](notebooks/phase3_rag_validation_demo.ipynb)
+- [Relatório HTML para cliente](reports/phase3_rag_validation_demo.html)
+- [Índice completo da documentação](docs/README.md)

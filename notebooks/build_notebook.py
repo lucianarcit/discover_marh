@@ -34,7 +34,33 @@ def code(source: str) -> nbformat.NotebookNode:
 
 cells = []
 
-# ── Célula 0 — Configuração ──────────────────────────────────
+# ── Célula 0 — Diagnóstico do ambiente ───────────────────────
+cells.append(code('''\
+# Diagnóstico do ambiente — verificar antes de executar o restante
+import sys
+from pathlib import Path
+
+print("Python   :", sys.version.split()[0])
+print("Executável:", sys.executable)
+print("Diretório :", Path.cwd())
+
+# Verificar que o executável pertence ao projeto discover_alelo
+exe = sys.executable.lower()
+if "discover_alelo" not in exe:
+    print()
+    print("⚠️  ATENÇÃO: o kernel NÃO pertence ao projeto discover_alelo.")
+    print("   Kernel atual:", sys.executable)
+    print("   Esperado    : C:\\\\proj\\\\discover_alelo\\\\.venv\\\\Scripts\\\\python.exe")
+    print()
+    print("   Solução:")
+    print("   1. Clicar no kernel (canto superior direito do VS Code)")
+    print("   2. Select Another Kernel → Python 3.11 — discover_alelo")
+    print("   3. Reiniciar o kernel e executar novamente")
+else:
+    print("✓  Kernel correto — discover_alelo")
+'''))
+
+# ── Célula 1 — Configuração ──────────────────────────────────
 cells.append(code('''\
 # Configuração — executar primeiro
 EXECUTION_MODE = "OFFLINE_EVIDENCE"
@@ -263,41 +289,53 @@ else:
     pos = rs.get("positive_cases", [])
     neg = rs.get("negative_cases", [])
 
-    # Tabela positivos
-    pos_rows = "".join(
-        f"<tr><td>{c["topic"]}</td>"
-        f"<td style=\\'text-align:center\\'>{c.get("results_returned", 0)}</td>"
-        f"<td style=\\'text-align:center\\'>{round(c.get("max_score", 0), 4)}</td>"
-        f"<td>{", ".join(c.get("source_files", []))}</td></tr>"
-        for c in pos
+    # Tabela positivos — aspas simples dentro das f-strings (compatível Python 3.11)
+    def pos_row(c):
+        topic   = c.get("topic", "-")
+        results = c.get("results_returned", 0)
+        score   = round(c.get("max_score", 0) or 0, 4)
+        sources = ", ".join(c.get("source_files") or [])
+        return (
+            f"<tr><td>{topic}</td>"
+            f"<td style='text-align:center'>{results}</td>"
+            f"<td style='text-align:center'>{score}</td>"
+            f"<td>{sources}</td></tr>"
+        )
+
+    def neg_row(c):
+        case_id  = c.get("case_id", "-")
+        results  = c.get("results_returned", 0)
+        score    = round(c.get("max_score", 0) or 0, 4)
+        reaches  = c.get("would_reach_rag_in_real_flow", "N/A")
+        return (
+            f"<tr><td>{case_id}</td>"
+            f"<td style='text-align:center'>{results}</td>"
+            f"<td style='text-align:center'>{score}</td>"
+            f"<td>{reaches}</td></tr>"
+        )
+
+    pos_rows = "".join(pos_row(c) for c in pos)
+    neg_rows = "".join(neg_row(c) for c in neg)
+    th_style = "background:#2c3e50;color:white;padding:6px 10px"
+
+    html = (
+        f"<h4>Consultas positivas ({len(pos)} tópicos oficiais):</h4>"
+        "<table style='border-collapse:collapse;width:100%'>"
+        "<thead><tr>"
+        f"<th style='{th_style}'>Tópico</th>"
+        f"<th style='{th_style}'>Resultados</th>"
+        f"<th style='{th_style}'>Top Score</th>"
+        f"<th style='{th_style}'>Fonte</th>"
+        f"</tr></thead><tbody>{pos_rows}</tbody></table><br>"
+        f"<h4>Consultas negativas ({len(neg)}):</h4>"
+        "<table style='border-collapse:collapse;width:100%'>"
+        "<thead><tr>"
+        f"<th style='{th_style}'>Caso</th>"
+        f"<th style='{th_style}'>Resultados</th>"
+        f"<th style='{th_style}'>Top Score</th>"
+        f"<th style='{th_style}'>Chega ao RAG no fluxo real?</th>"
+        f"</tr></thead><tbody>{neg_rows}</tbody></table>"
     )
-    neg_rows = "".join(
-        f"<tr><td>{c["case_id"]}</td>"
-        f"<td style=\\'text-align:center\\'>{c.get("results_returned", 0)}</td>"
-        f"<td style=\\'text-align:center\\'>{round(c.get("max_score", 0), 4)}</td>"
-        f"<td>{c.get("would_reach_rag_in_real_flow", "N/A")}</td></tr>"
-        for c in neg
-    )
-    th = "style=\\'background:#2c3e50;color:white;padding:6px 10px\\'"
-    html = f"""
-    <h4>Consultas positivas ({len(pos)} tópicos oficiais):</h4>
-    <table style=\\'border-collapse:collapse;width:100%\\'>
-      <thead><tr>
-        <th {th}>Tópico</th><th {th}>Resultados</th>
-        <th {th}>Top Score</th><th {th}>Fonte</th>
-      </tr></thead>
-      <tbody>{pos_rows}</tbody>
-    </table>
-    <br>
-    <h4>Consultas negativas ({len(neg)}):</h4>
-    <table style=\\'border-collapse:collapse;width:100%\\'>
-      <thead><tr>
-        <th {th}>Caso</th><th {th}>Resultados</th>
-        <th {th}>Top Score</th><th {th}>Chega ao RAG no fluxo real?</th>
-      </tr></thead>
-      <tbody>{neg_rows}</tbody>
-    </table>
-    """
     display(HTML(html))
 '''))
 
